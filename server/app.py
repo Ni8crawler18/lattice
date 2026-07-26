@@ -688,3 +688,36 @@ def api_job_results(job_id: str, format: str = "json"):
     if format == "csv":
         return PlainTextResponse(jobstore.results_csv(job), media_type="text/csv")
     return job.public(with_result=True)
+
+
+# ----------------------------------------------------------------------
+# Remote MCP: the same 7 tools, served over streamable HTTP at {api}/mcp.
+# No local checkout needed -- register with just the URL and an API key:
+#   claude mcp add --transport http lattice \
+#     https://lattice-api-96cn.onrender.com/mcp \
+#     --header "X-API-Key: <ltk_key>"
+# The existing key middleware guards /mcp like any other endpoint; the MCP
+# tools then call this same server over loopback with the master key.
+# ----------------------------------------------------------------------
+
+import contextlib                                             # noqa: E402
+
+# lattice_mcp reads LATTICE_API at import: point it at THIS process
+# (Render binds $PORT; locally the default 8077 is already right).
+os.environ.setdefault("LATTICE_API", f"http://127.0.0.1:{os.environ.get('PORT', '8077')}")
+from server.lattice_mcp import mcp as _lattice_mcp            # noqa: E402
+
+# Mounted at root with the MCP app's own /mcp route (a prefix mount would
+# 307-redirect "/mcp" -> "/mcp/", which MCP clients don't follow on POST).
+# Last route, so it only sees paths nothing above matched.
+app.mount("/", _lattice_mcp.streamable_http_app())
+
+
+@contextlib.asynccontextmanager
+async def _mcp_lifespan(app):
+    # FastMCP's session manager must be running for the mounted app to
+    # serve; Starlette does not run a sub-app's lifespan on its own.
+    async with _lattice_mcp.session_manager.run():
+        yield
+
+app.router.lifespan_context = _mcp_lifespan

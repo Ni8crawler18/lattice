@@ -16,7 +16,7 @@ Auth: requests carry X-API-Key from LATTICE_KEY (or, when run inside this
 repo, the .env master key) -- mint one via POST /keys.
 
 Design notes:
-- stdlib urllib only; the single dependency is the `mcp` SDK.
+- Dependencies: the `mcp` SDK + httpx (async client -- required, see _call).
 - Tools mirror the public API 1:1 and return the API's JSON verbatim --
   no reshaping, so tool output always matches the OpenAPI schema at /docs.
 - Text -> DIGIPIN is NOT offered: DIGIPIN tools take coordinates, per the
@@ -25,8 +25,6 @@ Design notes:
 
 import json
 import os
-import urllib.error
-import urllib.request
 
 from mcp.server.fastmcp import FastMCP
 
@@ -36,7 +34,7 @@ API = os.environ.get("LATTICE_API", "http://127.0.0.1:8077").rstrip("/")
 def _api_key() -> str:
     """LATTICE_KEY env, falling back to the repo's .env master key so the
     local server Just Works without pasting secrets into .mcp.json."""
-    key = os.environ.get("LATTICE_KEY", "").strip()
+    key = (os.environ.get("LATTICE_KEY") or os.environ.get("LATTICE_API_KEY") or "").strip()
     if key:
         return key
     try:
@@ -51,6 +49,11 @@ def _api_key() -> str:
 
 mcp = FastMCP(
     "lattice",
+    # Also served remotely: server/app.py mounts this over streamable HTTP at
+    # {api}/mcp, so agents can register the deployed URL with no local code.
+    # stateless_http: each request stands alone -- survives Render restarts.
+    stateless_http=True,
+    streamable_http_path="/mcp",
     instructions=(
         "Indian address intelligence. Free-text Indian addresses are "
         "landmark-led, multi-script and non-canonical; these tools parse them "
@@ -61,26 +64,29 @@ mcp = FastMCP(
 )
 
 
-def _call(method: str, path: str, body: dict | None = None) -> dict:
-    req = urllib.request.Request(
-        API + path,
-        data=json.dumps(body).encode() if body is not None else None,
-        headers={"Content-Type": "application/json", "X-API-Key": _api_key()},
-        method=method,
-    )
+async def _call(method: str, path: str, body: dict | None = None) -> dict:
+    """Async on purpose: when this server is mounted INSIDE the API process
+    (server/app.py, /mcp over HTTP), a blocking client here would freeze the
+    event loop while waiting on a request the same loop must serve -- a
+    deadlock. httpx.AsyncClient yields the loop instead."""
+    import httpx
     try:
-        with urllib.request.urlopen(req, timeout=180) as r:
-            return json.loads(r.read())
-    except urllib.error.HTTPError as e:
-        detail = e.read().decode(errors="replace")[:400]
-        return {"error": f"HTTP {e.code}", "detail": detail}
-    except urllib.error.URLError as e:
+        async with httpx.AsyncClient(timeout=180) as client:
+            r = await client.request(
+                method, API + path,
+                content=json.dumps(body).encode() if body is not None else None,
+                headers={"Content-Type": "application/json", "X-API-Key": _api_key()},
+            )
+    except httpx.HTTPError as e:
         return {"error": "lattice API unreachable",
-                "detail": f"{e.reason} -- is it running at {API}?"}
+                "detail": f"{e} -- is it running at {API}?"}
+    if r.status_code >= 400:
+        return {"error": f"HTTP {r.status_code}", "detail": r.text[:400]}
+    return r.json()
 
 
 @mcp.tool()
-def parse_address(address: str) -> dict:
+async def parse_address(address: str) -> dict:
     """Parse one messy Indian address (any script) into structured components.
 
     Returns house_number/building/street/locality/post_office/city/district/
@@ -88,62 +94,62 @@ def parse_address(address: str) -> dict:
     score with reasons and the single best field to ask the customer for,
     and an offline postal-directory check of the pincode.
     """
-    return _call("POST", "/parse", {"address": address})
+    return await _call("POST", "/parse", {"address": address})
 
 
 @mcp.tool()
-def compare_addresses(a: str, b: str) -> dict:
+async def compare_addresses(a: str, b: str) -> dict:
     """Do two address strings refer to the same physical door?
 
     Returns score (0-1), verdict (same/likely/different), coarse vs fine
     signal breakdown, matched landmarks, and any veto (e.g. house-number
     mismatch). Decision threshold used downstream is 0.75.
     """
-    return _call("POST", "/compare", {"a": a, "b": b})
+    return await _call("POST", "/compare", {"a": a, "b": b})
 
 
 @mcp.tool()
-def dedupe_batch(addresses: list[str]) -> dict:
+async def dedupe_batch(addresses: list[str]) -> dict:
     """Deduplicate up to 40 address strings to unique physical locations.
 
     Returns cluster ids, unique_locations, duplicates_collapsed, one golden
     (canonical merged) record per cluster with provenance, and per-address
     deliverability scores.
     """
-    return _call("POST", "/batch", {"addresses": addresses})
+    return await _call("POST", "/batch", {"addresses": addresses})
 
 
 @mcp.tool()
-def match_address(address: str, top_k: int = 5) -> dict:
+async def match_address(address: str, top_k: int = 5) -> dict:
     """Match an incoming address against the reference corpus.
 
     Answers: has this address (under any spelling) been seen before?
     Returns top-k candidates with scores and evidence.
     """
-    return _call("POST", "/match", {"address": address, "top_k": top_k})
+    return await _call("POST", "/match", {"address": address, "top_k": top_k})
 
 
 @mcp.tool()
-def check_pincode(pincode: str) -> dict:
+async def check_pincode(pincode: str) -> dict:
     """Look up a 6-digit PIN in the offline postal directory (19,238 pins):
     does it exist, which state/district does it belong to, which areas
     does it serve."""
-    return _call("GET", f"/pincode/{pincode}")
+    return await _call("GET", f"/pincode/{pincode}")
 
 
 @mcp.tool()
-def digipin_encode(latitude: float, longitude: float) -> dict:
+async def digipin_encode(latitude: float, longitude: float) -> dict:
     """Coordinates -> DIGIPIN code (India Post's official 4m x 4m grid).
     Coordinates only -- free-text addresses need geocoding first, which
     Lattice deliberately does not claim to do."""
-    return _call("POST", "/digipin/encode",
+    return await _call("POST", "/digipin/encode",
                  {"latitude": latitude, "longitude": longitude})
 
 
 @mcp.tool()
-def digipin_decode(digipin: str) -> dict:
+async def digipin_decode(digipin: str) -> dict:
     """DIGIPIN code -> cell centre coordinates and bounds."""
-    return _call("POST", "/digipin/decode", {"digipin": digipin})
+    return await _call("POST", "/digipin/decode", {"digipin": digipin})
 
 
 if __name__ == "__main__":
