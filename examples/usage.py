@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
 """Lattice API in ~50 lines -- stdlib only, nothing to install.
 
-    python3 examples/usage.py                  # runs against the deployed API
+    python3 examples/usage.py            # runs against the deployed API
 
-    export LATTICE_API=http://127.0.0.1:8077   # optional: point at a local server
-    export LATTICE_KEY=ltk_...                 # optional: mints one if absent
+    export LATTICE_API=<url>             # optional: point at another instance
+    export LATTICE_KEY=ltk_...           # optional: mints one if absent
 
 Covers the three questions Lattice answers:
   1. what does this address say?          POST /parse

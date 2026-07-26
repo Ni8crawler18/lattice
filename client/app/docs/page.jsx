@@ -74,7 +74,7 @@ const SNIP_RESPONSE = `{
 
 const SNIP_PY = `import os, requests
 
-BASE = "${RENDER_URL}"              # or http://127.0.0.1:8077
+BASE = "${RENDER_URL}"
 KEY  = os.environ["LATTICE_KEY"]
 
 def lattice_parse(record):
@@ -128,6 +128,7 @@ const ENDPOINTS = [
   ["POST /digipin/encode · /decode", "coordinates ↔ DIGIPIN (India Post grid)", "yes"],
   ["POST /digipin/group · /neighbors", "grid-cell delivery batches · adjacent cells", "yes"],
   ["POST /stt", "spoken address (raw audio body) → transcript", "yes"],
+  ["POST /stt/parse", "audio (mp3/wav/live mic) → transcript → full /parse contract", "yes"],
   ["GET /pincode/{pin}", "offline postal-directory lookup", "yes"],
   ["GET /health", "liveness + record count", "no"],
 ];
@@ -164,7 +165,6 @@ export default function DocsPage() {
       <div className="content">
         <Section title="Base URLs">
           <pre style={mono}>{`production    ${RENDER_URL}
-local dev     http://127.0.0.1:8077
 console       repoints via ?api=<url>&key=<key> in the URL bar`}</pre>
           <P>
             Every endpoint except <code>/health</code>, <code>/docs</code> and <code>POST /keys</code> requires

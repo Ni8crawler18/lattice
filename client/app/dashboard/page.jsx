@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { apiBase, apiKey, batchAddresses, compareAddresses, fetchReal, getJob, getJobResults, jobCsvUrl, listJobs, parseAddress, submitCsvJob } from "@/lib/api";
 import GroupByDigipin from "../map/GroupByDigipin";
@@ -106,6 +106,9 @@ const I = {
   digipin: <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.6"><path d="M2.5 2.5h11v11h-11zM2.5 8h11M8 2.5v11" strokeLinecap="round"/></svg>,
   mcp: <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.6"><rect x="2.5" y="2.5" width="4.5" height="4.5" rx="1"/><rect x="9" y="9" width="4.5" height="4.5" rx="1"/><path d="M7 11.2H4.8a1 1 0 0 1-1-1V8.8M9 4.8h2.2a1 1 0 0 1 1 1V7" strokeLinecap="round"/></svg>,
   docs: <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.6"><path d="M4 2.5h5.5l3 3V13.5H4z" strokeLinejoin="round"/><path d="M9.5 2.5v3h3M6 8.5h4M6 11h4" strokeLinecap="round"/></svg>,
+  rest: <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.6"><path d="M6 4 3 8l3 4M10 4l3 4-3 4" strokeLinecap="round" strokeLinejoin="round"/></svg>,
+  mic: <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.6"><rect x="6" y="2" width="4" height="7" rx="2"/><path d="M3.5 8a4.5 4.5 0 0 0 9 0M8 12.5V14" strokeLinecap="round"/></svg>,
+  key: <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.6"><circle cx="5.5" cy="6" r="3"/><path d="M8 8.5 13.5 14M11 11.5l2-2M12.5 13l1.5-1.5" strokeLinecap="round"/></svg>,
 };
 
 /* ---------------------------- shared visuals ---------------------------- */
@@ -991,7 +994,6 @@ echo "export LATTICE_KEY=$KEY"
 const SNIP_USAGE = `#!/usr/bin/env python3
 """Lattice API, stdlib only -- nothing to install.
     python3 examples/usage.py            # runs against the deployed API
-    LATTICE_API=http://127.0.0.1:8077    # optional: local server
     LATTICE_KEY=ltk_...                  # optional: mints one if absent
 """
 import json, os, time, urllib.request
@@ -1040,38 +1042,15 @@ const API_SAMPLES = [
 
 const maskKey = (k) => (k ? k.slice(0, 9) + "*".repeat(Math.max(4, k.length - 9)) : "");
 
-function ApiTester() {
+function ApiTester({ goKeys }) {
   const [key, setKey] = useState("");
-  const [showOnce, setShowOnce] = useState(null);   // full key, visible until copied
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState("");
-  const [copied, setCopied] = useState(false);
-  const [minting, setMinting] = useState(false);
   const [body, setBody] = useState(JSON.stringify(API_SAMPLES[0][1], null, 2));
   const [resp, setResp] = useState(null);
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState("");
   useEffect(() => { setKey(apiKey()); }, []);
-
-  const mint = async () => {
-    setMinting(true); setErr("");
-    try {
-      const r = await fetch(apiBase() + "/keys", {
-        method: "POST", headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name: "console-tester" }),
-      });
-      if (!r.ok) throw new Error(`HTTP ${r.status}`);
-      const k = (await r.json()).api_key;
-      setKey(k); setShowOnce(k); setCopied(false);
-    } catch (e) { setErr(`Key mint failed: ${e.message}`); }
-    finally { setMinting(false); }
-  };
-
-  const copyOnce = async () => {
-    try { await navigator.clipboard.writeText(showOnce); } catch { /* http context */ }
-    setCopied(true);
-    setTimeout(() => setShowOnce(null), 900);   // copied -> key disappears, mask remains
-  };
 
   const send = async () => {
     setBusy(true); setErr(""); setResp(null);
@@ -1099,18 +1078,6 @@ function ApiTester() {
         <span className="right">POST /parse · unstructured in, structured + DIGIPIN + lat/lon out</span>
       </div>
       <div className="block-body">
-        {showOnce && (
-          <div style={{ display: "flex", gap: 12, alignItems: "center", flexWrap: "wrap",
-                        background: "var(--amber-soft)", border: "1px solid #eddbb6",
-                        padding: "11px 14px", marginBottom: 14 }}>
-            <span style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.07em",
-                           textTransform: "uppercase", color: "var(--amber)" }}>shown once</span>
-            <code style={{ ...mono, fontSize: 12.5, color: "var(--ink)" }}>{showOnce}</code>
-            <button className="chip-btn" style={{ marginLeft: "auto" }} onClick={copyOnce}>
-              {copied ? "Copied ✓" : "Copy key"}
-            </button>
-          </div>
-        )}
         <div style={{ display: "flex", gap: 10, alignItems: "center", flexWrap: "wrap", marginBottom: 14 }}>
           <label style={{ margin: 0 }}>API key</label>
           {editing ? (
@@ -1129,10 +1096,8 @@ function ApiTester() {
                              color: "var(--ink-2)", letterSpacing: "0.04em" }}>
                 {maskKey(key) || "no key set"}
               </code>
-              <button className="chip-btn" onClick={mint} disabled={minting}>
-                {minting ? "Minting…" : "Mint new key"}
-              </button>
               <button className="chip-btn" onClick={() => setEditing(true)}>Use my key</button>
+              {goKeys && <button className="chip-btn" onClick={goKeys}>Mint one → API keys</button>}
             </>
           )}
         </div>
@@ -1173,66 +1138,285 @@ function ApiTester() {
   );
 }
 
-function AgentsView() {
+function RestApiView({ go }) {
   return (
     <div className="view">
-      <ApiTester />
+      <ApiTester goKeys={() => go("keys")} />
 
-      <div className="block statgrid">
+      <div className="block statgrid three">
+        <div className="scell">
+          <div className="k">REST endpoints</div>
+          <div className="v">21</div>
+          <div className="d">full OpenAPI 3 spec · self-service API keys</div>
+        </div>
+        <a className="scell act" href={apiBase() + "/docs"} target="_blank" rel="noreferrer"
+           style={{ textDecoration: "none", color: "inherit" }}>
+          <div className="k">Interactive spec</div>
+          <div className="qtitle">Open Swagger UI →</div>
+          <div className="d">{"{api}"}/docs · try every endpoint live</div>
+        </a>
+        <div className="scell">
+          <div className="k">Sample DB</div>
+          <div className="qtitle" style={{ fontFamily: "var(--mono)", fontSize: 13 }}>data/sample_input.json</div>
+          <div className="d">12 multilingual records, ready to POST</div>
+        </div>
+      </div>
+
+      <div className="note">
+        <b>The contract in one line.</b> Unstructured address in — any script, spoken or
+        typed — structured components, deliverability risk, lat/long and DIGIPIN out,
+        with an honest <b>status</b> + <b>message</b> when the input isn't enough. Full
+        guide under <b>Documentation</b>; keys under <b>API keys</b>.
+      </div>
+    </div>
+  );
+}
+
+/* ------------------------------ speech → json ------------------------------ */
+
+function SttView() {
+  const [rec, setRec] = useState(false);
+  const [busy, setBusy] = useState(false);
+  const [resp, setResp] = useState(null);
+  const [err, setErr] = useState("");
+  const mrRef = useRef(null);
+  const fileRef = useRef(null);
+  const mono = { fontFamily: "var(--mono)", fontSize: 11.5, lineHeight: 1.65 };
+
+  const sendAudio = async (blob, type) => {
+    setBusy(true); setErr(""); setResp(null);
+    try {
+      const r = await fetch(apiBase() + "/stt/parse", {
+        method: "POST",
+        headers: { "Content-Type": type || "audio/webm", ...apiHeaders() },
+        body: blob,
+      });
+      setResp({ status: r.status, data: await r.json() });
+    } catch (e) { setErr(`Request failed: ${e.message}`); }
+    finally { setBusy(false); }
+  };
+
+  const start = async () => {
+    setErr(""); setResp(null);
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const mr = new MediaRecorder(stream);
+      const chunks = [];
+      mr.ondataavailable = (e) => e.data.size && chunks.push(e.data);
+      mr.onstop = () => {
+        stream.getTracks().forEach((t) => t.stop());
+        setRec(false);
+        const type = mr.mimeType || "audio/webm";
+        sendAudio(new Blob(chunks, { type }), type);
+      };
+      mr.start();
+      mrRef.current = mr;
+      setRec(true);
+    } catch (e) { setErr(`Microphone unavailable: ${e.message}`); }
+  };
+
+  const stop = () => mrRef.current?.state === "recording" && mrRef.current.stop();
+
+  const onFile = (e) => {
+    const f = e.target.files?.[0];
+    if (f) sendAudio(f, f.type || "audio/mpeg");
+    e.target.value = "";
+  };
+
+  const d = resp?.data;
+  return (
+    <div className="view">
+      <div className="block">
+        <div className="block-head">
+          <h3>Speak an address — any language</h3>
+          <span className="right">POST /stt/parse · Saaras STT → full parse pipeline → JSON</span>
+        </div>
+        <div className="block-body">
+          <div className="two" style={{ alignItems: "start" }}>
+            <div>
+              <label>Input</label>
+              <div style={{ display: "flex", gap: 10, alignItems: "center", flexWrap: "wrap" }}>
+                <button className="btn" style={{ background: rec ? "var(--magenta)" : undefined, borderColor: rec ? "var(--magenta)" : undefined }}
+                        onClick={rec ? stop : start} disabled={busy}>
+                  {rec ? "■ Stop & transcribe" : "● Record live"}
+                </button>
+                <button className="chip-btn" onClick={() => fileRef.current?.click()} disabled={busy || rec}>
+                  Upload mp3 / wav
+                </button>
+                <input ref={fileRef} type="file" accept=".mp3,.wav,.m4a,.ogg,audio/*" onChange={onFile} hidden />
+                {busy && <span className="hint"><span className="spin" />transcribing &amp; parsing…</span>}
+              </div>
+              <div style={{ fontSize: 11.5, color: "var(--muted)", marginTop: 14, lineHeight: 1.7, maxWidth: "48ch" }}>
+                Say it the way a customer would: <i>"Ganesh mandir ke peeche, blue gate wala
+                ghar, Kothrud, Pune char one one zero three eight"</i> — Hindi, Marathi,
+                Tamil, Bengali or English. The transcript runs through the same pipeline
+                as typed input: components, risk, lat/long, DIGIPIN.
+              </div>
+              {d?.transcript !== undefined && (
+                <div style={{ marginTop: 16 }}>
+                  <label>Heard</label>
+                  <div style={{ ...mono, fontSize: 13, padding: "10px 13px", background: "var(--canvas)",
+                                border: "1px solid var(--line)", color: "var(--ink)" }}>
+                    {d.transcript || "—"}
+                    {d.spoken_language && <span style={{ color: "var(--muted)" }}>  · {d.spoken_language}</span>}
+                  </div>
+                </div>
+              )}
+            </div>
+            <div>
+              <label>Response {resp && <span style={{ color: resp.status === 200 ? "var(--green)" : "var(--magenta)" }}>· HTTP {resp.status}</span>}</label>
+              <pre style={{ ...mono, margin: 0, padding: "12px 14px", minHeight: 170, maxHeight: 460, overflow: "auto",
+                            background: "var(--canvas)", border: "1px solid var(--line)", color: "var(--ink-2)" }}>
+{d ? JSON.stringify(d, null, 2) : "—  record or upload audio to see the structured output"}
+              </pre>
+              {err && <div className="error">{err}</div>}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div className="note">
+        <b>Why voice.</b> The next hundred million users speak their address — they don't
+        drop pins or type in Latin script. <span style={{ fontFamily: "var(--mono)" }}>POST /stt/parse</span> accepts
+        mp3, wav or a live mic recording as the raw request body and returns the standard
+        /parse contract plus the transcript and detected language.
+      </div>
+    </div>
+  );
+}
+
+/* -------------------------------- api keys -------------------------------- */
+
+function KeysView() {
+  const [name, setName] = useState("");
+  const [minting, setMinting] = useState(false);
+  const [showOnce, setShowOnce] = useState(null);
+  const [copied, setCopied] = useState(false);
+  const [hist, setHist] = useState(null);   // {keys:[...]} | {forbidden:true}
+  const [err, setErr] = useState("");
+  const mono = { fontFamily: "var(--mono)", fontSize: 11.5, lineHeight: 1.65 };
+
+  const loadHist = useCallback(async () => {
+    try {
+      const r = await fetch(apiBase() + "/keys", { headers: apiHeaders() });
+      if (r.status === 403) { setHist({ forbidden: true }); return; }
+      if (!r.ok) throw new Error(`HTTP ${r.status}`);
+      setHist(await r.json());
+    } catch { setHist(null); }
+  }, []);
+  useEffect(() => { loadHist(); }, [loadHist]);
+
+  const mint = async () => {
+    setMinting(true); setErr("");
+    try {
+      const r = await fetch(apiBase() + "/keys", {
+        method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name: name.trim() || "engineer" }),
+      });
+      if (!r.ok) throw new Error(`HTTP ${r.status}`);
+      setShowOnce((await r.json()).api_key); setCopied(false);
+      loadHist();
+    } catch (e) { setErr(`Mint failed: ${e.message}`); }
+    finally { setMinting(false); }
+  };
+
+  const copyOnce = async () => {
+    try { await navigator.clipboard.writeText(showOnce); } catch { /* http context */ }
+    setCopied(true);
+    setTimeout(() => setShowOnce(null), 900);
+  };
+
+  return (
+    <div className="view">
+      <div className="block">
+        <div className="block-head">
+          <h3>Generate a key</h3>
+          <span className="right">POST /keys · self-service, one per engineer</span>
+        </div>
+        <div className="block-body">
+          {showOnce && (
+            <div style={{ display: "flex", gap: 12, alignItems: "center", flexWrap: "wrap",
+                          background: "var(--amber-soft)", border: "1px solid #eddbb6",
+                          padding: "11px 14px", marginBottom: 14 }}>
+              <span style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.07em",
+                             textTransform: "uppercase", color: "var(--amber)" }}>shown once</span>
+              <code style={{ ...mono, fontSize: 12.5, color: "var(--ink)" }}>{showOnce}</code>
+              <button className="chip-btn" style={{ marginLeft: "auto" }} onClick={copyOnce}>
+                {copied ? "Copied ✓" : "Copy key"}
+              </button>
+            </div>
+          )}
+          <div style={{ display: "flex", gap: 10, alignItems: "center", flexWrap: "wrap" }}>
+            <label style={{ margin: 0 }}>Name / team</label>
+            <input value={name} onChange={(e) => setName(e.target.value)} placeholder="priya-backend"
+                   spellCheck={false}
+                   style={{ ...mono, flex: 1, minWidth: 200, maxWidth: 340, padding: "9px 12px",
+                            border: "1px solid var(--line-2)", background: "var(--canvas)", color: "var(--ink)" }} />
+            <button className="btn" style={{ height: 38, padding: "0 24px", fontSize: 13 }}
+                    onClick={mint} disabled={minting}>
+              {minting ? "Minting…" : "Generate key"}
+            </button>
+          </div>
+          {err && <div className="error">{err}</div>}
+          <div style={{ fontSize: 11.5, color: "var(--muted)", marginTop: 12, lineHeight: 1.7, maxWidth: "72ch" }}>
+            The key is displayed <b>once</b> — copy it before it disappears; afterwards it only
+            ever appears masked. Keys are stateless (HMAC-signed against the server's master
+            secret): the same key works on localhost, on Render and on every replica, survives
+            restarts, and is revoked only by rotating the master secret.
+          </div>
+        </div>
+      </div>
+
+      <div className="block">
+        <div className="block-head">
+          <h3>History</h3>
+          <span className="right">GET /keys · masked audit log · master key only</span>
+        </div>
+        {hist?.keys?.length ? (
+          <table>
+            <thead><tr><th>Key</th><th>Name</th><th>Created</th></tr></thead>
+            <tbody>
+              {hist.keys.slice().reverse().map((k, i) => (
+                <tr key={i}>
+                  <td style={{ fontFamily: "var(--mono)", fontSize: 12 }}>{k.key}</td>
+                  <td style={{ fontSize: 12.5 }}>{k.name}</td>
+                  <td style={{ fontFamily: "var(--mono)", fontSize: 12, color: "var(--muted)" }}>{k.created}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        ) : (
+          <div className="block-body" style={{ fontSize: 12.5, color: "var(--muted)" }}>
+            {hist?.forbidden
+              ? "History requires the master key — this console is not using it."
+              : "No keys minted on this instance yet (the audit log is per-deployment and best-effort on ephemeral disks; validation itself is stateless)."}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+/* ----------------------------------- mcp ----------------------------------- */
+
+function McpView() {
+  return (
+    <div className="view">
+      <div className="block statgrid three">
         <div className="scell">
           <div className="k">MCP tools</div>
           <div className="v" style={{ color: "var(--blue)" }}>7</div>
           <div className="d">parse · resolve · dedupe · match · validate</div>
         </div>
         <div className="scell">
-          <div className="k">REST endpoints</div>
-          <div className="v">20</div>
-          <div className="d">full OpenAPI 3 spec · self-service API keys</div>
-        </div>
-        <div className="scell">
           <div className="k">Transport</div>
           <div className="v" style={{ fontSize: 22, paddingTop: 4 }}>stdio</div>
           <div className="d">works against local or deployed API</div>
         </div>
-        <div className="scell act" style={{ cursor: "pointer" }}
-             onClick={() => window.open(apiBase() + "/docs", "_blank")}>
-          <div className="k">Interactive spec</div>
-          <div className="qtitle">Open Swagger UI →</div>
-          <div className="d">{"{api}"}/docs · try every endpoint live</div>
-        </div>
-      </div>
-
-      <div className="note">
-        <b>Why this exists.</b> The next generation of ops software is agentic — and an
-        agent booking a delivery or reviewing a loan file needs the same three answers a
-        human does: what does this address say, is it the one we already have, will it
-        deliver. Lattice exposes exactly those as tools. The full integration guide —
-        tool reference, registration, API contract — lives under <b>Documentation</b> in
-        the sidebar.
-      </div>
-    </div>
-  );
-}
-
-function DocsView() {
-  return (
-    <div className="view">
-      <div className="block statgrid three">
-        <Link className="scell act" href="/docs" style={{ textDecoration: "none", color: "inherit" }}>
-          <div className="k">Integration docs</div>
-          <div className="qtitle">Read the API docs →</div>
-          <div className="d">auth, /parse contract, snippets, deploy — for the engineering team</div>
-        </Link>
-        <a className="scell act" href={apiBase() + "/docs"} target="_blank" rel="noreferrer"
-           style={{ textDecoration: "none", color: "inherit" }}>
-          <div className="k">OpenAPI spec</div>
-          <div className="qtitle">Swagger UI →</div>
-          <div className="d">try every endpoint live against this instance</div>
-        </a>
         <div className="scell">
-          <div className="k">Sample DB</div>
-          <div className="qtitle" style={{ fontFamily: "var(--mono)", fontSize: 13 }}>data/sample_input.json</div>
-          <div className="d">12 multilingual records, ready to POST</div>
+          <div className="k">Server</div>
+          <div className="qtitle" style={{ fontFamily: "var(--mono)", fontSize: 13 }}>server/lattice_mcp.py</div>
+          <div className="d">registered project-scope via .mcp.json</div>
         </div>
       </div>
 
@@ -1265,7 +1449,7 @@ function DocsView() {
               </div>
               <pre style={{ margin: "8px 0 0", fontFamily: "var(--mono)", fontSize: 10.5, lineHeight: 1.65,
                             color: "var(--ink-2)", overflowX: "auto", background: "var(--canvas)",
-                            border: "1px solid var(--line)", borderRadius: 10, padding: "10px 13px" }}>
+                            border: "1px solid var(--line)", padding: "10px 13px" }}>
 {MCP_CONFIG}
               </pre>
             </div>
@@ -1285,6 +1469,78 @@ function DocsView() {
           </div>
         </div>
       </div>
+
+      <div className="note">
+        <b>Why this exists.</b> The next generation of ops software is agentic — and an
+        agent booking a delivery or reviewing a loan file needs the same three answers a
+        human does: what does this address say, is it the one we already have, will it
+        deliver. Lattice exposes exactly those as tools any MCP-capable agent can call.
+      </div>
+    </div>
+  );
+}
+
+function DocsView() {
+  return (
+    <div className="view">
+      <div className="block statgrid three">
+        <Link className="scell act" href="/docs" style={{ textDecoration: "none", color: "inherit" }}>
+          <div className="k">Integration docs</div>
+          <div className="qtitle">Read the API docs →</div>
+          <div className="d">auth, /parse contract, snippets, deploy — for the engineering team</div>
+        </Link>
+        <a className="scell act" href={apiBase() + "/docs"} target="_blank" rel="noreferrer"
+           style={{ textDecoration: "none", color: "inherit" }}>
+          <div className="k">OpenAPI spec</div>
+          <div className="qtitle">Swagger UI →</div>
+          <div className="d">try every endpoint live against this instance</div>
+        </a>
+        <div className="scell">
+          <div className="k">Sample DB</div>
+          <div className="qtitle" style={{ fontFamily: "var(--mono)", fontSize: 13 }}>data/sample_input.json</div>
+          <div className="d">12 multilingual records, ready to POST</div>
+        </div>
+      </div>
+
+      <div className="duo">
+        <div className="block">
+          <div className="block-head">
+            <h3>1 · Get a key</h3>
+            <span className="right">examples/createkey.sh · in this repo</span>
+          </div>
+          <div className="block-body">
+            <pre style={{ margin: 0, fontFamily: "var(--mono)", fontSize: 10.5, lineHeight: 1.65,
+                          color: "var(--ink-2)", overflowX: "auto", background: "var(--canvas)",
+                          border: "1px solid var(--line)", borderRadius: 10, padding: "10px 13px" }}>
+{SNIP_CREATEKEY}
+            </pre>
+            <div style={{ fontSize: 11.5, color: "var(--muted)", marginTop: 10 }}>
+              Keys are self-service and shown once. No arguments needed — it defaults to the
+              deployed API; pass a URL to mint against a local server.
+            </div>
+          </div>
+        </div>
+
+        <div className="block">
+          <div className="block-head">
+            <h3>2 · Use the API</h3>
+            <span className="right">examples/usage.py · stdlib only, nothing to install</span>
+          </div>
+          <div className="block-body">
+            <pre style={{ margin: 0, fontFamily: "var(--mono)", fontSize: 10.5, lineHeight: 1.65,
+                          color: "var(--ink-2)", overflowX: "auto", maxHeight: 420, overflowY: "auto",
+                          background: "var(--canvas)", border: "1px solid var(--line)",
+                          borderRadius: 10, padding: "10px 13px" }}>
+{SNIP_USAGE}
+            </pre>
+            <div style={{ fontSize: 11.5, color: "var(--muted)", marginTop: 10 }}>
+              Copy-paste runnable: parse → compare → async CSV job, against the deployed
+              API by default. Mints its own key if <span style={{ fontFamily: "var(--mono)" }}>LATTICE_KEY</span> is unset.
+            </div>
+          </div>
+        </div>
+      </div>
+
     </div>
   );
 }
@@ -1306,11 +1562,18 @@ const VIEWS = {
              sub: "points bucketed into grid cells — one cell, one delivery batch" },
   evidence: { title: "Evidence", icon: I.evidence, stage: null,
               sub: "benchmarks, provenance, and the honest caveats" },
-  agents: { title: "Agents & API", icon: I.mcp, stage: null,
-            sub: "OpenAPI spec + MCP server — systems and agents as users" },
+  rest: { title: "REST API", icon: I.rest, stage: null,
+          sub: "one call: unstructured address in, structured JSON + DIGIPIN out" },
+  stt: { title: "Speech → JSON", icon: I.mic, stage: null,
+         sub: "spoken address — mp3 or live mic — through the same pipeline" },
+  mcp: { title: "MCP", icon: I.mcp, stage: null,
+         sub: "the address toolset for AI agents — 7 tools over stdio" },
+  keys: { title: "API keys", icon: I.key, stage: null,
+          sub: "self-service generation, shown once, masked history" },
   docs: { title: "Documentation", icon: I.docs, stage: null,
           sub: "integration guide — tool reference, registration, API contract" },
 };
+const INTEGRATE_KEYS = ["rest", "stt", "mcp", "keys", "docs"];
 const FLOW_KEYS = ["overview", "parse", "resolve", "batch", "deliver", "digipin", "evidence"];
 
 export default function Page() {
@@ -1339,12 +1602,11 @@ export default function Page() {
           </button>
         ))}
         <div className="nav-group">Integrate</div>
-        <button className={`nav-item${view === "agents" ? " on" : ""}`} onClick={() => setView("agents")}>
-          {I.mcp}Agents &amp; API
-        </button>
-        <button className={`nav-item${view === "docs" ? " on" : ""}`} onClick={() => setView("docs")}>
-          {I.docs}Documentation
-        </button>
+        {INTEGRATE_KEYS.map((k) => [k, VIEWS[k]]).map(([k, v]) => (
+          <button key={k} className={`nav-item${view === k ? " on" : ""}`} onClick={() => setView(k)}>
+            {v.icon}{v.title}
+          </button>
+        ))}
       </aside>
 
       <div className="main">
@@ -1360,7 +1622,10 @@ export default function Page() {
           {view === "deliver" && <Deliver real={real} />}
           {view === "digipin" && <div className="view"><GroupByDigipin /></div>}
           {view === "evidence" && <Evidence />}
-          {view === "agents" && <AgentsView />}
+          {view === "rest" && <RestApiView go={setView} />}
+          {view === "stt" && <SttView />}
+          {view === "mcp" && <McpView />}
+          {view === "keys" && <KeysView />}
           {view === "docs" && <DocsView />}
         </div>
       </div>

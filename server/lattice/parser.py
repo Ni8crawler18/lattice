@@ -15,14 +15,17 @@ from . import sarvam
 # Relations, normalised. Keys are what people actually write.
 RELATIONS = {
     "behind": ["behind", "peeche", "pichhe", "back side", "backside", "back of", "magé",
-               "magi", "pichhe", "मागे", "पीछे", "pase", "backsid"],
+               "magi", "pichhe", "मागे", "पीछे", "pase", "backsid",
+               "பின்னால்", "பின்புறம்", "pinnal"],
     "opposite": ["opposite", "opp", "saamne", "samne", "in front of", "front of",
-                 "समोर", "सामने", "எதிரில்", "edhiril"],
+                 "समोर", "सामने", "எதிரில்", "எதிரே", "edhiril", "ethiril"],
     "near": ["near", "nr", "paas", "pass", "ke paas", "close to", "besides", "nearby",
-             "जवळ", "पास", "కి దగ్గర", "কাছে", "koло"],
-    "beside": ["beside", "next to", "bagal", "bagal mein", "adjacent", "side of"],
-    "above": ["above", "upar", "over", "top of", "1st floor above"],
-    "below": ["below", "under", "neeche", "ground floor of"],
+             "जवळ", "पास", "కి దగ్గర", "কাছে", "koло",
+             "அருகில்", "அருகே", "arugil", "aruge"],
+    "beside": ["beside", "next to", "bagal", "bagal mein", "adjacent", "side of",
+               "பக்கத்தில்", "pakkathil"],
+    "above": ["above", "upar", "over", "top of", "1st floor above", "மேலே"],
+    "below": ["below", "under", "neeche", "ground floor of", "கீழே"],
 }
 
 _REL_LOOKUP = {kw.lower(): rel for rel, kws in RELATIONS.items() for kw in kws}
@@ -66,6 +69,14 @@ Keys (use null when genuinely absent -- never invent):
                        "opp SBI ATM"           -> {"name":"SBI ATM","relation":"opposite"}
                      Expand the name to its full common form: "mndir"->"Mandir",
                      "SBI"->"SBI", "Reliance Fresh"->"Reliance Fresh".
+                     Landmarks appear in ANY script and the relation word may
+                     FOLLOW the name (Tamil/Telugu/Kannada postpositions):
+                       "பெரியார் பேருந்து நிலையம் அருகில்"
+                         -> {"name":"Periyar Bus Stand","relation":"near"}
+                       "பழைய தபால் அலுவலகம் எதிரில்"
+                         -> {"name":"Old Post Office","relation":"opposite"}
+                     A bus stand, temple, post office, school, hospital or shop
+                     used as a reference point is a landmark -- never drop it.
 
 HARD RULES -- violating these is worse than returning null:
 - NEVER infer, guess or supply a city that is not written in the input. If no
@@ -228,6 +239,9 @@ def parse(raw: str) -> ParsedAddress:
         setattr(out, k, _clean(data.get(k)))
 
     out.landmarks = _parse_landmarks(data, raw)
+    if not out.landmarks:
+        out.landmarks = _landmarks_from_raw(raw)
+    _ensure_latin(out)
     if out.landmarks:
         out.landmark = out.landmarks[0]["name"]
         out.landmark_relation = out.landmarks[0]["relation"]
@@ -237,3 +251,70 @@ def parse(raw: str) -> ParsedAddress:
 
     out.completeness, out.missing = _score(out.as_dict())
     return out
+
+
+def _landmarks_from_raw(raw: str) -> list[dict]:
+    """Deterministic fallback when the model returns NO landmarks.
+
+    Model recall on landmark extraction is flaky, especially for non-Latin
+    input ("சரவணா ஸ்டோர்ஸ் எதிரில்" comes back empty on some completions).
+    But an address segment containing a spatial-relation keyword IS a landmark
+    phrase -- so comma-split the raw string, and where a segment carries a
+    relation keyword, strip the keyword and keep the remainder as the name.
+    Names come out as-written (no expansion); _ensure_latin transliterates.
+    """
+    out, seen = [], set()
+    for seg in re.split(r"[,\n;]", raw):
+        seg = seg.strip()
+        if len(seg) < 4:
+            continue
+        low = seg.lower()
+        hit = None
+        for kw, rel in sorted(_REL_LOOKUP.items(), key=lambda kv: -len(kv[0])):
+            if re.search(rf"(?<!\w){re.escape(kw)}(?!\w)", low):
+                hit = (kw, rel)
+                break
+        if not hit:
+            continue
+        kw, rel = hit
+        name = re.sub(rf"(?i)(?<!\w){re.escape(kw)}(?!\w)", " ", seg)
+        name = re.sub(r"^\s*(to|ke|se|the)\s+", "", name.strip(" ,.-"), flags=re.I)
+        name = re.sub(r"\s+", " ", name).strip(" ,.-")
+        key = re.sub(r"[^\w]", "", name.lower())
+        if len(key) < 3 or key in seen:
+            continue
+        seen.add(key)
+        out.append({"name": name, "relation": rel})
+    return out
+
+
+_INDIC = re.compile(r"[ऀ-෿]")   # Devanagari .. Sinhala blocks
+
+
+def _ensure_latin(out: ParsedAddress) -> None:
+    """Safety net for the prompt's TRANSLITERATE rule.
+
+    The model occasionally leaves a field in the input's native script; every
+    downstream consumer (resolver canon keys, pincode directory, geocoder)
+    assumes canonical Latin, so a native-script value silently breaks matching
+    and validation. Transliterate just those values. Best-effort: no LID code
+    or a failed call leaves the original in place.
+    """
+    if not out.language_code or out.language_code.startswith("en"):
+        return
+
+    def to_latin(value: str) -> str:
+        if not _INDIC.search(value):
+            return value
+        try:
+            return sarvam.transliterate(value, source=out.language_code) or value
+        except Exception:
+            return value
+
+    for k in SCHEMA_KEYS:
+        v = getattr(out, k)
+        if v:
+            setattr(out, k, to_latin(v))
+    for lm in out.landmarks:
+        if lm.get("name"):
+            lm["name"] = to_latin(lm["name"])

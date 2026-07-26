@@ -1,7 +1,8 @@
 // Backend base URL resolution, in priority order:
 //   1. ?api=<url> query param — repointable from the URL bar on stage
+//      (e.g. ?api=http://127.0.0.1:8077 to hit a local server)
 //   2. NEXT_PUBLIC_LATTICE_API — set per deployment
-//   3. localhost:8077 in dev, Render URL otherwise
+//   3. the deployed Render API — everywhere, including local dev
 export function apiBase() {
   if (typeof window !== "undefined") {
     const q = new URLSearchParams(window.location.search).get("api");
@@ -9,10 +10,6 @@ export function apiBase() {
   }
   if (process.env.NEXT_PUBLIC_LATTICE_API) {
     return process.env.NEXT_PUBLIC_LATTICE_API.replace(/\/$/, "");
-  }
-  if (typeof window !== "undefined" &&
-      /^(localhost|127\.0\.0\.1)$/.test(window.location.hostname)) {
-    return "http://127.0.0.1:8077";
   }
   return "https://lattice-api-96cn.onrender.com";
 }

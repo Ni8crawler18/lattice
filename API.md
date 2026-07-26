@@ -1,6 +1,6 @@
 # Lattice API — integration contract
 
-Base URL: `http://127.0.0.1:8077` (local) · `https://lattice-api-96cn.onrender.com` (hosted)
+Base URL: `https://lattice-api-96cn.onrender.com`
 
 Sample DB to test with: [`data/sample_input.json`](data/sample_input.json) — 12
 unstructured records (English, Hinglish, Devanagari), real Razorpay IFSC strings
@@ -66,7 +66,7 @@ so any record with a real pincode always gets *some* lat/long + DIGIPIN,
 truncated to its honest precision.
 
 ```bash
-curl -s -X POST http://127.0.0.1:8077/parse \
+curl -s -X POST https://lattice-api-96cn.onrender.com/parse \
   -H 'Content-Type: application/json' -H "X-API-Key: $KEY" \
   -d '{"address": "गणेश मंदिराच्या मागे, निळा गेट, कोथरूड, पुणे ४११०३८"}'
 ```
@@ -134,7 +134,7 @@ Run the sample DB through `/parse` one record at a time:
 
 ```bash
 jq -c '.records[]' data/sample_input.json | while read -r rec; do
-  curl -s -X POST http://127.0.0.1:8077/parse \
+  curl -s -X POST https://lattice-api-96cn.onrender.com/parse \
     -H 'Content-Type: application/json' -H "X-API-Key: $KEY" \
     -d "$(jq -c '{address}' <<< "$rec")"
 done
@@ -150,8 +150,9 @@ done
 | `POST /digipin/encode` | `{latitude, longitude}` → `{digipin}` |
 | `POST /digipin/decode` | `{digipin}` → cell centre + bounds |
 | `POST /digipin/group` | points → grid-cell delivery batches |
-| `POST /stt` | raw audio body (webm/wav) → `{transcript, language_code}` |
+| `POST /stt` | raw audio body (webm/wav/mp3) → `{transcript, language_code}` |
+| `POST /stt/parse` | raw audio body → transcript → the full `/parse` contract + `transcript`, `spoken_language` |
 | `GET /pincode/{pin}` | offline postal-directory lookup |
 | `GET /health` | no auth — liveness + record count |
 
-Interactive docs: `http://127.0.0.1:8077/docs`.
+Interactive docs: `https://lattice-api-96cn.onrender.com/docs`.

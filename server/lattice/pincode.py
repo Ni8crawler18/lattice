@@ -34,6 +34,48 @@ _CITY_EQUIV = {
     "chennai": "madras", "prayagraj": "allahabad", "vadodara": "baroda",
 }
 
+# The parser transliterates to Latin, but when a native-script value slips
+# through, comparing it against the directory's Latin names is meaningless.
+# Rule: an unreadable value is UNVERIFIABLE (None), never a conflict.
+# For common state/city names we can do better and actively confirm:
+_NATIVE_PLACE = {
+    # states -- own script and Hindi
+    "தமிழ்நாடு": "tamil nadu", "தமிழ் நாடு": "tamil nadu", "तमिलनाडु": "tamil nadu",
+    "महाराष्ट्र": "maharashtra", "कर्नाटक": "karnataka", "ಕರ್ನಾಟಕ": "karnataka",
+    "केरल": "kerala", "കേരളം": "kerala", "കേരള": "kerala",
+    "आंध्र प्रदेश": "andhra pradesh", "ఆంధ్రప్రదేశ్": "andhra pradesh",
+    "तेलंगाना": "telangana", "తెలంగాణ": "telangana",
+    "पश्चिम बंगाल": "west bengal", "পশ্চিমবঙ্গ": "west bengal",
+    "गुजरात": "gujarat", "ગુજરાત": "gujarat", "राजस्थान": "rajasthan",
+    "पंजाब": "punjab", "ਪੰਜਾਬ": "punjab", "उत्तर प्रदेश": "uttar pradesh",
+    "मध्य प्रदेश": "madhya pradesh", "बिहार": "bihar",
+    "ओडिशा": "odisha", "ଓଡ଼ିଶା": "odisha", "असम": "assam", "অসম": "assam",
+    "हरियाणा": "haryana", "झारखंड": "jharkhand", "छत्तीसगढ़": "chhattisgarh",
+    "उत्तराखंड": "uttarakhand", "हिमाचल प्रदेश": "himachal pradesh",
+    "दिल्ली": "delhi", "தில்லி": "delhi", "डेल्ही": "delhi",
+    # major cities
+    "மதுரை": "madurai", "சென்னை": "chennai", "கோயம்புத்தூர்": "coimbatore",
+    "मुंबई": "mumbai", "पुणे": "pune", "पुण्यात": "pune", "नागपूर": "nagpur",
+    "कोलकाता": "kolkata", "কলকাতা": "kolkata", "बेंगलुरु": "bengaluru",
+    "ಬೆಂಗಳೂರು": "bengaluru", "हैदराबाद": "hyderabad", "హైదరాబాద్": "hyderabad",
+    "लखनऊ": "lucknow", "जयपुर": "jaipur", "अहमदाबाद": "ahmedabad",
+    "અમદાવાદ": "ahmedabad", "इंदौर": "indore", "भोपाल": "bhopal",
+}
+
+_HAS_LATIN = re.compile(r"[A-Za-z]")
+
+
+def _comparable(name: str | None) -> str | None:
+    """Latin form of a value if we can compare it against the directory:
+    the value itself when it contains Latin letters, a known alias when it
+    is a recognised native-script name, else None (unverifiable)."""
+    if not name:
+        return None
+    n = str(name).strip()
+    if _HAS_LATIN.search(n):
+        return n
+    return _NATIVE_PLACE.get(n)
+
 
 @lru_cache(maxsize=1)
 def _directory() -> dict:
@@ -102,7 +144,9 @@ def validate(parsed: dict) -> dict:
     state, city, locality = parsed.get("state"), parsed.get("city"), parsed.get("locality")
 
     if state:
-        out["state_consistent"] = _name_match(state, [entry["state"]])
+        s = _comparable(state)
+        # unreadable script -> None (unverifiable), never a conflict
+        out["state_consistent"] = _name_match(s, [entry["state"]]) if s else None
         if out["state_consistent"] is False:
             out["conflicts"].append(
                 f"Pincode {pin} is in {entry['state']}, address says {state}.")
@@ -110,8 +154,10 @@ def validate(parsed: dict) -> dict:
         out["inferred"]["state"] = entry["state"]
 
     if city:
+        c = _comparable(city)
         # A city matches if it names the district or any served area.
-        out["city_consistent"] = _name_match(city, [entry["district"], *entry["areas"]])
+        out["city_consistent"] = (
+            _name_match(c, [entry["district"], *entry["areas"]]) if c else None)
         if out["city_consistent"] is False:
             out["conflicts"].append(
                 f"Pincode {pin} belongs to {entry['district']} district "
@@ -120,7 +166,8 @@ def validate(parsed: dict) -> dict:
         out["inferred"]["district"] = entry["district"]
 
     if locality:
-        out["locality_listed"] = _name_match(locality, entry["areas"])
+        loc = _comparable(locality)
+        out["locality_listed"] = _name_match(loc, entry["areas"]) if loc else None
         # not a conflict when False -- the directory lists post offices, not
         # every colloquial locality name; absence is weak evidence
 

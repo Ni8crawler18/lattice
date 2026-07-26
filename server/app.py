@@ -221,19 +221,15 @@ def _geo_digipin(p: dict, raw: str, inferred: dict | None = None) -> dict:
     }
 
 
-@app.post("/parse")
-def api_parse(body: ParseIn):
-    """Unstructured address (any script) -> structured components +
-    deliverability + pincode check + lat/lon + DIGIPIN (geocoder-derived).
-
-    Optional hint fields (pincode/city/district/state) fill what the string
-    doesn't state. `status` + `message` say plainly how usable the result
-    is and what single field would most improve it.
-    """
-    p = parse(body.address).as_dict()
+def _pipeline(address: str, hints: dict | None = None, rec_id=None) -> dict:
+    """The whole Layer 0-3 pipeline for one string: parse -> hints -> score
+    -> pincode check -> geocode + DIGIPIN -> plain-language verdict.
+    Shared by /parse (typed input) and /stt/parse (spoken input)."""
+    hints = hints or {}
+    p = parse(address).as_dict()
     hints_used = []
     for k in ("pincode", "city", "district", "state"):
-        v = getattr(body, k)
+        v = hints.get(k)
         if not v:
             continue
         v = str(v).strip()
@@ -250,33 +246,76 @@ def api_parse(body: ParseIn):
             hints_used.append(k)
     pc = pincode_dir.validate(p)
     dl = score(p)
-    geo = _geo_digipin(p, body.address, inferred=pc.get("inferred"))
+    geo = _geo_digipin(p, address, inferred=pc.get("inferred"))
 
-    # plain-language verdict: always return everything we could extract,
-    # and say exactly what is missing when that isn't enough.
-    problems = []
-    if not geo.get("location"):
-        problems.append("could not be placed on the map at all")
-    elif geo["location"]["precision"] != "street-level":
-        problems.append(f"is located only at {geo['location']['precision']}")
-    if dl.get("band") == "high":
-        problems.append("carries high delivery-failure risk")
-    ask = (dl.get("ask_for") or {}).get("label")
-    if problems:
-        status = "partial"
-        message = ("Not enough information for a confident result: the address "
-                   + "; ".join(problems) + ". Every extractable field is returned"
-                   + (f"; the single most valuable addition would be: {ask}." if ask else "."))
+    # Plain-language verdict. Composed, not templated-scary: say what checks
+    # out (city/pincode agree), what is missing and why that blocks delivery,
+    # and the single highest-value field to collect. Every extractable field
+    # is returned either way.
+    precise = bool(geo.get("location")) and geo["location"]["precision"] == "street-level"
+    if precise and dl.get("band") != "high":
+        status, message = "ok", "Address parsed, validated and located."
     else:
-        status = "ok"
-        message = "Address parsed, validated and located."
+        status = "partial"
+        parts = []
+        # 1 -- what level the address IS good to
+        if not geo.get("location"):
+            parts.append("The address could not be placed on the map.")
+        else:
+            level = geo["location"]["precision"].removesuffix("-level")
+            parts.append(f"The address is valid at the {level} level but is not "
+                         "precise enough for reliable delivery.")
+        # 2 -- acknowledge what is consistent, then name what is missing
+        good = []
+        conflicts = pc.get("conflicts") or []
+        if pc.get("exists") and not conflicts:
+            agreed = [n for n, k in (("city", "city_consistent"),
+                                     ("state", "state_consistent")) if pc.get(k) is True]
+            good.append(f"the pincode is consistent with the stated {' and '.join(agreed)}"
+                        if agreed else "the pincode is valid")
+        missing = []
+        if not p.get("house_number"):
+            missing.append("the house/flat/door number is missing")
+        if not p.get("locality") and not p.get("building"):
+            missing.append("no locality or building name is available")
+        if good and missing:
+            parts.append(f"{good[0].capitalize()}; however, {' and '.join(missing)}.")
+        elif good:
+            parts.append(f"{good[0].capitalize()}.")
+        elif missing:
+            parts.append(f"{' and '.join(missing).capitalize()}.")
+        if conflicts:
+            parts.append("Directory check: " + " ".join(conflicts))
+        # 3 -- landmarks help but don't pinpoint a door
+        if p.get("landmarks") and not p.get("house_number"):
+            parts.append("Landmarks provide additional context but are not "
+                         "sufficient to uniquely identify the destination.")
+        # 4 -- the one field that most improves it
+        ask = (dl.get("ask_for") or {}).get("label")
+        if ask:
+            parts.append(f"Adding the {ask.lower()} would substantially "
+                         "improve deliverability.")
+        message = " ".join(parts)
     out = {"status": status, "message": message,
            **p, "deliverability": dl, "pincode_check": pc, **geo}
     if hints_used:
         out["hints_used"] = hints_used
-    if body.id is not None:
-        out["id"] = body.id
+    if rec_id is not None:
+        out["id"] = rec_id
     return out
+
+
+@app.post("/parse")
+def api_parse(body: ParseIn):
+    """Unstructured address (any script) -> structured components +
+    deliverability + pincode check + lat/lon + DIGIPIN (geocoder-derived).
+
+    Optional hint fields (pincode/city/district/state) fill what the string
+    doesn't state. `status` + `message` say plainly how usable the result
+    is and what single field would most improve it.
+    """
+    hints = {k: getattr(body, k) for k in ("pincode", "city", "district", "state")}
+    return _pipeline(body.address, hints, body.id)
 
 
 @app.post("/compare")
@@ -452,6 +491,39 @@ async def api_stt(request: Request):
         return sarvam.transcribe(audio, request.headers.get("content-type", "audio/webm"))
     except Exception as exc:
         raise HTTPException(status_code=502, detail=f"stt failed: {exc}")
+
+
+@app.post("/stt/parse")
+async def api_stt_parse(request: Request):
+    """Spoken address -> structured JSON, one call.
+
+    Raw audio in the body (mp3, wav, webm/opus from a live mic recording --
+    any format Saaras accepts; set Content-Type accordingly). The transcript
+    runs through the full pipeline, so the response is the /parse contract
+    plus `transcript` / `spoken_language`.
+    """
+    audio = await request.body()
+    if not audio or len(audio) < 100:
+        raise HTTPException(status_code=422, detail="empty audio body")
+    if len(audio) > 10_000_000:
+        raise HTTPException(status_code=413, detail="audio too large (10 MB max)")
+    try:
+        heard = sarvam.transcribe(audio, request.headers.get("content-type", "audio/webm"))
+    except Exception as exc:
+        raise HTTPException(status_code=502, detail=f"stt failed: {exc}")
+    transcript = (heard.get("transcript") or "").strip()
+    if len(transcript) < 3:
+        return {"status": "error",
+                "message": "Could not hear an address in the audio -- it came "
+                           "back empty. Speak the full address clearly, or "
+                           "check the recording.",
+                "transcript": transcript,
+                "spoken_language": heard.get("language_code")}
+    out = _pipeline(transcript)
+    return {"transcript": transcript,
+            "spoken_language": heard.get("language_code"),
+            "language_probability": heard.get("language_probability"),
+            **out}
 
 
 @app.get("/pincode/{pin}")

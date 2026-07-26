@@ -29,6 +29,25 @@ write a line HERE and let Argon cycle it.
   **Documentation** (new `I.docs` icon; also added the missing `I.mcp` so the Agents nav
   item finally shows its icon). `/docs` route untouched.
 
+- **Neon (user request): quickstart scripts** — new `examples/createkey.sh` (mint key →
+  export line) and `examples/usage.py` (stdlib-only: parse → compare → async CSV job;
+  auto-mints a key). Default to the deployed URL `https://lattice-api-96cn.onrender.com`;
+  both verified end-to-end against Render (compare 0.99 "same", job collapsed the
+  Madhavleela pair). Rendered as copy-paste blocks in the console's **Documentation**
+  view (`SNIP_CREATEKEY` / `SNIP_USAGE` in `dashboard/page.jsx`).
+- **Neon (user request): Render URL everywhere** — all user-facing docs now show
+  `https://lattice-api-96cn.onrender.com`, never `127.0.0.1:8077`: API.md (base URL +
+  both curl snippets + interactive-docs link), `/docs` page (Base URLs block, python
+  snippet), console Documentation snippets, `examples/*`. **Behavior change, Argon
+  heads-up:** `lib/api.js` no longer falls back to `127.0.0.1:8077` on localhost — the
+  console now hits Render by default even in local dev; use `?api=http://127.0.0.1:8077`
+  to point at the local API. Side benefit: `apiBase()` no longer SSR/client-diverges on
+  its default, which removes the whole hydration-mismatch class below.
+- **Neon hotfix in `/docs`** (`client/app/docs/page.jsx`): React hydration error —
+  `apiBase()` renders the Render URL on SSR but localhost in the browser; the Swagger
+  link now resolves via `useState(RENDER_URL)` + `useEffect(setBase(apiBase()))`. Same
+  pattern applies if any top-level SSR'd markup ever calls `apiBase()` directly.
+
 **No `next build`/`next start` until final freeze.** A production build at 11:05 froze
 the bundle seconds before an edit and silently killed HMR — the console ran stale code.
 Argon does ONE production build as the last step before the demo, after code freeze.
@@ -65,6 +84,12 @@ Argon does ONE production build as the last step before the demo, after code fre
 - [x] **Docs** — CLAUDE.md updated (Layer 3 wording, digipin/pincode/golden bullets, endpoint list, pincode data file) + tasklist statuses.
 
   **Xenon → Argon (A4):** `/digipin/*` and `/pincode/{pin}` shapes are in task 1/2 notes above. In `/batch`, render `golden_records[].canonical_text` as the cluster's merged record and badge `contested_fields`; `provenance[field].agreement` is a display-ready `"2/3"` string. Thanks for the `_ask_for` hotfix — confirmed, and my scorer tests pass on top of it.
+
+- [x] **5. Vercel production deploy** — (Xenon, 2026-07-26)
+  - Live at **https://lattice-client-gamma.vercel.app** (project `lattice-client`); `/`, `/dashboard`, `/map`, `/docs` all 200.
+  - ROOT CAUSE of the console's "Failed to fetch": the client pointed at `lattice-api.onrender.com`, which is NOT our service (someone else's — blanket 403 "forbidden"). Ours is **`https://lattice-api-96cn.onrender.com`** (Render `srv-d9irctbrjlhs73femvk0`, auto-deploys from github.com/Ni8crawler18/lattice@main, already running current code incl. `/digipin/group|neighbors|from-address`).
+  - Fixed via `NEXT_PUBLIC_LATTICE_API=https://lattice-api-96cn.onrender.com` (Production) + redeploy; verified the bundle carries the URL and a live Devanagari `/parse` from the Vercel origin returns 200 with `access-control-allow-origin: *`.
+  - **Argon:** `lib/api.js` still hardcodes the wrong `lattice-api.onrender.com` as the LAST-RESORT fallback (env var wins in prod, so the deployed site is fine) — swap it to `-96cn` next time you're in that file. The baked `DEV_KEY` is now public in the bundle; rotate `LATTICE_API_KEY` on Render after the demo.
 
 ## Sprint: 2026-07-26 — Neon
 
