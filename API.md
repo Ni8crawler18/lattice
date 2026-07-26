@@ -1,6 +1,6 @@
 # Lattice API — integration contract
 
-Base URL: `http://127.0.0.1:8077` (local) · `https://lattice-api.onrender.com` (hosted)
+Base URL: `http://127.0.0.1:8077` (local) · `https://lattice-api-96cn.onrender.com` (hosted)
 
 Sample DB to test with: [`data/sample_input.json`](data/sample_input.json) — 12
 unstructured records (English, Hinglish, Devanagari), real Razorpay IFSC strings
@@ -12,7 +12,7 @@ Every engineer mints their own key. It is **shown once** — copy it immediately
 afterwards only a masked form (`ltk_518e2*****`) appears anywhere:
 
 ```bash
-curl -s -X POST https://lattice-api.onrender.com/keys \
+curl -s -X POST https://lattice-api-96cn.onrender.com/keys \
   -H 'Content-Type: application/json' \
   -d '{"name": "your-name"}'
 # -> {"api_key": "ltk_…", "shown_once": true}

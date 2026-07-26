@@ -234,8 +234,19 @@ def api_parse(body: ParseIn):
     hints_used = []
     for k in ("pincode", "city", "district", "state"):
         v = getattr(body, k)
-        if v and not p.get(k):
-            p[k] = str(v).strip()
+        if not v:
+            continue
+        v = str(v).strip()
+        if not p.get(k):
+            p[k] = v
+            hints_used.append(k)
+        elif k == "city" and p["city"].lower() != v.lower():
+            # parser sometimes files a locality (e.g. "Itwari") as the city;
+            # the caller's city column is authoritative context. Keep the
+            # string's own word -- demote it to locality -- and use the hint.
+            if not p.get("locality"):
+                p["locality"] = p["city"]
+            p["city"] = v
             hints_used.append(k)
     pc = pincode_dir.validate(p)
     dl = score(p)
@@ -247,9 +258,9 @@ def api_parse(body: ParseIn):
     if not geo.get("location"):
         problems.append("could not be placed on the map at all")
     elif geo["location"]["precision"] != "street-level":
-        problems.append(f"located only at {geo['location']['precision']}")
+        problems.append(f"is located only at {geo['location']['precision']}")
     if dl.get("band") == "high":
-        problems.append("high delivery-failure risk")
+        problems.append("carries high delivery-failure risk")
     ask = (dl.get("ask_for") or {}).get("label")
     if problems:
         status = "partial"

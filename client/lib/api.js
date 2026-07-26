@@ -14,7 +14,7 @@ export function apiBase() {
       /^(localhost|127\.0\.0\.1)$/.test(window.location.hostname)) {
     return "http://127.0.0.1:8077";
   }
-  return "https://lattice-api.onrender.com";
+  return "https://lattice-api-96cn.onrender.com";
 }
 
 // API key resolution: ?key=<k> in the URL bar, then env, then the demo
