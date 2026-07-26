@@ -33,6 +33,30 @@ def _precision(rank: int | None, addresstype: str | None) -> str:
     return "city-level"
 
 
+_ORDER = ["city-level", "locality-level", "street-level"]
+
+
+def _verified_precision(base: str, matched_query: str, display_name: str) -> tuple[str, bool]:
+    """Nominatim fuzz-matches: querying '12th Street, Bangalore Town' can
+    return 'Central Street, Tasker Town' at street rank -- a different street,
+    confidently. Believing that rank is the confident-wrong-output failure
+    mode this product exists to prevent.
+
+    So verify: the query's MOST SPECIFIC segment (its discriminating tokens,
+    generics stripped) must appear in the returned display_name to keep the
+    claimed precision. Otherwise cap it -- locality-level if some middle
+    segment matched, city-level if only the tail did."""
+    from .resolver import _tokens
+    dn = _tokens(display_name)
+    segs = [t for t in (_tokens(s) for s in matched_query.split(",")) if t]
+    if not segs or not dn:
+        return base, False
+    if segs[0] & dn:
+        return base, True
+    cap = "locality-level" if any(s & dn for s in segs[1:-1]) else "city-level"
+    return _ORDER[min(_ORDER.index(base), _ORDER.index(cap))], False
+
+
 def _query(q: str) -> dict | None:
     r = httpx.get(
         NOMINATIM,
@@ -95,10 +119,13 @@ def geocode(text: str) -> dict | None:
                 continue
             _CACHE[ck] = hit
         if hit:
+            base = _precision(hit.get("place_rank"), hit.get("addresstype"))
+            precision, verified = _verified_precision(base, q, hit.get("display_name", ""))
             return {
                 "latitude": float(hit["lat"]),
                 "longitude": float(hit["lon"]),
-                "precision": _precision(hit.get("place_rank"), hit.get("addresstype")),
+                "precision": precision,
+                "match_verified": verified,
                 "matched_query": q,
                 "display_name": hit.get("display_name", ""),
                 "source": "osm-nominatim",
