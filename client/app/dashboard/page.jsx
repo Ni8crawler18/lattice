@@ -104,6 +104,8 @@ const I = {
   batch: <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.6"><path d="M2.5 5 8 2.5 13.5 5 8 7.5 2.5 5ZM2.5 8 8 10.5 13.5 8M2.5 11 8 13.5l5.5-2.5" strokeLinecap="round" strokeLinejoin="round"/></svg>,
   parse: <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.6"><path d="M5.5 2.5c-1.6 0-1.6 1.5-1.6 2.6S3.6 7.6 2.5 8c1.1.4 1.4 1.8 1.4 2.9s0 2.6 1.6 2.6M10.5 2.5c1.6 0 1.6 1.5 1.6 2.6s.3 2.5 1.4 2.9c-1.1.4-1.4 1.8-1.4 2.9s0 2.6-1.6 2.6" strokeLinecap="round"/></svg>,
   digipin: <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.6"><path d="M2.5 2.5h11v11h-11zM2.5 8h11M8 2.5v11" strokeLinecap="round"/></svg>,
+  mcp: <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.6"><rect x="2.5" y="2.5" width="4.5" height="4.5" rx="1"/><rect x="9" y="9" width="4.5" height="4.5" rx="1"/><path d="M7 11.2H4.8a1 1 0 0 1-1-1V8.8M9 4.8h2.2a1 1 0 0 1 1 1V7" strokeLinecap="round"/></svg>,
+  docs: <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.6"><path d="M4 2.5h5.5l3 3V13.5H4z" strokeLinejoin="round"/><path d="M9.5 2.5v3h3M6 8.5h4M6 11h4" strokeLinecap="round"/></svg>,
 };
 
 /* ---------------------------- shared visuals ---------------------------- */
@@ -970,6 +972,66 @@ const MCP_CONFIG = `{
   }
 }`;
 
+const SNIP_CREATEKEY = `#!/usr/bin/env bash
+# Mint a Lattice API key and print the export line.
+#   ./examples/createkey.sh [name] [api-url]
+set -euo pipefail
+
+NAME="\${1:-$(whoami)}"
+API="\${2:-\${LATTICE_API:-https://lattice-api-96cn.onrender.com}}"
+
+KEY=$(curl -sf -X POST "$API/keys" \\
+  -H 'Content-Type: application/json' \\
+  -d "{\\"name\\": \\"$NAME\\"}" \\
+  | python3 -c "import sys, json; print(json.load(sys.stdin)['api_key'])")
+
+echo "export LATTICE_KEY=$KEY"
+# shown once -- save it. Send as:  X-API-Key: $LATTICE_KEY`;
+
+const SNIP_USAGE = `#!/usr/bin/env python3
+"""Lattice API, stdlib only -- nothing to install.
+    python3 examples/usage.py            # runs against the deployed API
+    LATTICE_API=http://127.0.0.1:8077    # optional: local server
+    LATTICE_KEY=ltk_...                  # optional: mints one if absent
+"""
+import json, os, time, urllib.request
+
+API = os.environ.get("LATTICE_API", "https://lattice-api-96cn.onrender.com").rstrip("/")
+KEY = os.environ.get("LATTICE_KEY", "")
+
+def call(path, body=None, raw=None):
+    data = raw.encode() if raw is not None else (
+        json.dumps(body).encode() if body is not None else None)
+    req = urllib.request.Request(API + path, data=data)
+    req.add_header("X-API-Key", KEY)
+    if body is not None:
+        req.add_header("Content-Type", "application/json")
+    with urllib.request.urlopen(req) as r:
+        return json.load(r)
+
+if not KEY:   # self-service: mint a key on first run (shown once -- save it)
+    KEY = call("/keys", {"name": "usage-example"})["api_key"]
+    print("minted key (save it):  export LATTICE_KEY=" + KEY)
+
+# 1. one messy, multi-script address -> structured components + risk
+p = call("/parse", {"address": "गणेश मंदिराच्या मागे, निळा गेट, कोथरूड, पुणे ४११०३८"})
+print("locality:", p["locality"], "· pincode:", p["pincode"],
+      "· risk:", p["deliverability"]["band"])
+
+# 2. two strings, written nothing alike -- same door?
+r = call("/compare", {
+    "a": "Ganesh mandir ke peeche, blue gate wala ghar, Kothrud, Pune 411038",
+    "b": "Blue gate house, behind Ganesh Temple, Kothrood, Pune - 411 038",
+})["result"]
+print("verdict:", r["verdict"], "· score:", r["score"])
+
+# 3. a whole file: CSV in, poll, CSV/JSON out
+csv_text = 'order_id,address\\n1,"MADHAVLEELA COMPLEX, MASKASATH SQUARE, ITWARI"'
+job = call("/jobs/csv?label=example", raw=csv_text)
+while call("/jobs/" + job["id"])["status"] not in ("done", "failed"):
+    time.sleep(1)
+print(call("/jobs/" + job["id"] + "/results")["summary"])`;
+
 const API_SAMPLES = [
   ["Devanagari", { address: "गणेश मंदिराच्या मागे, निळा गेट, एसबीआय एटीएम समोर, कोथरूड, पुणे ४११०३८" }],
   ["Hinglish", { address: "Ganesh mandir ke peeche, blue gate wala ghar, opp SBI ATM, Kothrud, Pune 411038" }],
@@ -1116,25 +1178,6 @@ function AgentsView() {
     <div className="view">
       <ApiTester />
 
-      <div className="block statgrid three">
-        <Link className="scell act" href="/docs" style={{ textDecoration: "none", color: "inherit" }}>
-          <div className="k">Integration docs</div>
-          <div className="qtitle">Read the API docs →</div>
-          <div className="d">auth, /parse contract, snippets, deploy — for the engineering team</div>
-        </Link>
-        <a className="scell act" href={apiBase() + "/docs"} target="_blank" rel="noreferrer"
-           style={{ textDecoration: "none", color: "inherit" }}>
-          <div className="k">OpenAPI spec</div>
-          <div className="qtitle">Swagger UI →</div>
-          <div className="d">try every endpoint live against this instance</div>
-        </a>
-        <div className="scell">
-          <div className="k">Sample DB</div>
-          <div className="qtitle" style={{ fontFamily: "var(--mono)", fontSize: 13 }}>data/sample_input.json</div>
-          <div className="d">12 multilingual records, ready to POST</div>
-        </div>
-      </div>
-
       <div className="block statgrid">
         <div className="scell">
           <div className="k">MCP tools</div>
@@ -1156,6 +1199,40 @@ function AgentsView() {
           <div className="k">Interactive spec</div>
           <div className="qtitle">Open Swagger UI →</div>
           <div className="d">{"{api}"}/docs · try every endpoint live</div>
+        </div>
+      </div>
+
+      <div className="note">
+        <b>Why this exists.</b> The next generation of ops software is agentic — and an
+        agent booking a delivery or reviewing a loan file needs the same three answers a
+        human does: what does this address say, is it the one we already have, will it
+        deliver. Lattice exposes exactly those as tools. The full integration guide —
+        tool reference, registration, API contract — lives under <b>Documentation</b> in
+        the sidebar.
+      </div>
+    </div>
+  );
+}
+
+function DocsView() {
+  return (
+    <div className="view">
+      <div className="block statgrid three">
+        <Link className="scell act" href="/docs" style={{ textDecoration: "none", color: "inherit" }}>
+          <div className="k">Integration docs</div>
+          <div className="qtitle">Read the API docs →</div>
+          <div className="d">auth, /parse contract, snippets, deploy — for the engineering team</div>
+        </Link>
+        <a className="scell act" href={apiBase() + "/docs"} target="_blank" rel="noreferrer"
+           style={{ textDecoration: "none", color: "inherit" }}>
+          <div className="k">OpenAPI spec</div>
+          <div className="qtitle">Swagger UI →</div>
+          <div className="d">try every endpoint live against this instance</div>
+        </a>
+        <div className="scell">
+          <div className="k">Sample DB</div>
+          <div className="qtitle" style={{ fontFamily: "var(--mono)", fontSize: 13 }}>data/sample_input.json</div>
+          <div className="d">12 multilingual records, ready to POST</div>
         </div>
       </div>
 
@@ -1208,15 +1285,6 @@ function AgentsView() {
           </div>
         </div>
       </div>
-
-      <div className="note">
-        <b>Why this exists.</b> The next generation of ops software is agentic — and an
-        agent booking a delivery or reviewing a loan file needs the same three answers a
-        human does: what does this address say, is it the one we already have, will it
-        deliver. Lattice exposes exactly those as tools. Text→DIGIPIN runs through a
-        pluggable geocoder (OSM by default) and labels its precision honestly — a
-        locality-level fix is truncated to a locality-level cell, never sold as 4m.
-      </div>
     </div>
   );
 }
@@ -1240,6 +1308,8 @@ const VIEWS = {
               sub: "benchmarks, provenance, and the honest caveats" },
   agents: { title: "Agents & API", icon: I.mcp, stage: null,
             sub: "OpenAPI spec + MCP server — systems and agents as users" },
+  docs: { title: "Documentation", icon: I.docs, stage: null,
+          sub: "integration guide — tool reference, registration, API contract" },
 };
 const FLOW_KEYS = ["overview", "parse", "resolve", "batch", "deliver", "digipin", "evidence"];
 
@@ -1272,6 +1342,9 @@ export default function Page() {
         <button className={`nav-item${view === "agents" ? " on" : ""}`} onClick={() => setView("agents")}>
           {I.mcp}Agents &amp; API
         </button>
+        <button className={`nav-item${view === "docs" ? " on" : ""}`} onClick={() => setView("docs")}>
+          {I.docs}Documentation
+        </button>
       </aside>
 
       <div className="main">
@@ -1288,6 +1361,7 @@ export default function Page() {
           {view === "digipin" && <div className="view"><GroupByDigipin /></div>}
           {view === "evidence" && <Evidence />}
           {view === "agents" && <AgentsView />}
+          {view === "docs" && <DocsView />}
         </div>
       </div>
     </div>

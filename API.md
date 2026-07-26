@@ -6,6 +6,12 @@ Sample DB to test with: [`data/sample_input.json`](data/sample_input.json) — 1
 unstructured records (English, Hinglish, Devanagari), real Razorpay IFSC strings
 plus multi-script examples.
 
+Ready-made scripts (stdlib only, nothing to install):
+[`examples/createkey.sh`](examples/createkey.sh) mints a key and prints the
+export line; [`examples/usage.py`](examples/usage.py) runs `/parse`,
+`/compare` and an async CSV dedupe job end to end. Both honour `LATTICE_API`
+(base URL) and `LATTICE_KEY` (usage.py mints one if absent).
+
 ## 1. Authentication — generate your own key
 
 Every engineer mints their own key. It is **shown once** — copy it immediately;

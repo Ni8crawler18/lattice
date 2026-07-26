@@ -4,6 +4,7 @@
    Lattice from any machine. Static content; the live tester lives in the
    console's Agents & API tab. */
 
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { apiBase } from "@/lib/api";
 
@@ -145,13 +146,17 @@ const P = ({ children }) => (
 );
 
 export default function DocsPage() {
+  // apiBase() differs between SSR (Render URL) and a localhost browser -- resolve
+  // it after mount so the server and first client render agree (hydration).
+  const [base, setBase] = useState(RENDER_URL);
+  useEffect(() => { setBase(apiBase()); }, []);
   return (
     <div className="main" style={{ maxWidth: 1060, margin: "0 auto" }}>
       <div className="topbar">
         <h1>Lattice — API documentation</h1>
         <span className="topbar-sub">integrate from any machine · hosted on Render</span>
         <div className="top-right">
-          <a className="chip-btn" href={apiBase() + "/docs"} target="_blank" rel="noreferrer">OpenAPI / Swagger</a>
+          <a className="chip-btn" href={base + "/docs"} target="_blank" rel="noreferrer">OpenAPI / Swagger</a>
           <Link className="chip-btn dark" href="/dashboard">← Console</Link>
         </div>
       </div>
@@ -214,6 +219,17 @@ console       repoints via ?api=<url>&key=<key> in the URL bar`}</pre>
               <label>JavaScript</label>
               <pre style={mono}>{SNIP_JS}</pre>
             </div>
+          </div>
+          <div style={{ marginTop: 16 }}>
+            <label>Ready-made scripts — in the repo, stdlib only, nothing to install</label>
+            <pre style={mono}>{`./examples/createkey.sh [name] [api-url]   # mint a key, prints the export line
+python3 examples/usage.py                  # the three questions, end to end:
+                                           #   POST /parse    what does this address say?
+                                           #   POST /compare  are these two the same door?
+                                           #   POST /jobs/csv dedupe a whole file, async
+
+# both honour:  LATTICE_API  (base URL, default = production)
+#               LATTICE_KEY  (usage.py mints one for you if absent)`}</pre>
           </div>
         </Section>
 
