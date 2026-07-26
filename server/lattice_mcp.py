@@ -27,8 +27,18 @@ import json
 import os
 
 from mcp.server.fastmcp import FastMCP
+from mcp.server.transport_security import TransportSecuritySettings
 
 API = os.environ.get("LATTICE_API", "http://127.0.0.1:8077").rstrip("/")
+
+# The SDK's DNS-rebinding protection rejects any Host it doesn't know
+# (421 Invalid Host header). That default only lists localhost, which
+# breaks the deployed endpoint -- so allow localhost AND the public host.
+# Render sets RENDER_EXTERNAL_HOSTNAME; other deploys can set it too.
+_ALLOWED_HOSTS = ["127.0.0.1", "127.0.0.1:*", "localhost", "localhost:*"]
+_ext = os.environ.get("RENDER_EXTERNAL_HOSTNAME", "").strip()
+if _ext:
+    _ALLOWED_HOSTS += [_ext, f"{_ext}:*"]
 
 
 def _api_key() -> str:
@@ -54,6 +64,7 @@ mcp = FastMCP(
     # stateless_http: each request stands alone -- survives Render restarts.
     stateless_http=True,
     streamable_http_path="/mcp",
+    transport_security=TransportSecuritySettings(allowed_hosts=_ALLOWED_HOSTS),
     instructions=(
         "Indian address intelligence. Free-text Indian addresses are "
         "landmark-led, multi-script and non-canonical; these tools parse them "
