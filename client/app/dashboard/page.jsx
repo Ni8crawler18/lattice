@@ -1535,12 +1535,35 @@ function DocsView() {
 {usageCode}
             </pre>
             <div style={{ fontSize: 11.5, color: "var(--muted)", marginTop: 10 }}>
-              The curl request in Python. Edit{" "}
+              The curl request in Python. Set{" "}
               <span style={{ fontFamily: "var(--mono)" }}>URL</span>,{" "}
               <span style={{ fontFamily: "var(--mono)" }}>KEY</span> and{" "}
-              <span style={{ fontFamily: "var(--mono)" }}>ADDRESS</span> at the top, then{" "}
-              <span style={{ fontFamily: "var(--mono)" }}>python3 examples/usage.py</span> — prints
-              the full JSON response. An empty KEY mints a fresh one.
+              <span style={{ fontFamily: "var(--mono)" }}>ADDRESS</span> at the top, run{" "}
+              <span style={{ fontFamily: "var(--mono)" }}>python3 examples/usage.py</span> — it
+              prints the full JSON response.
+            </div>
+          </div>
+        </div>
+
+        <div className="block">
+          <div className="block-head">
+            <h3>3 · Speech → JSON</h3>
+            <span className="right">examples/stt.py · stdlib only, nothing to install</span>
+          </div>
+          <div className="block-body">
+            <pre style={{ margin: 0, fontFamily: "var(--mono)", fontSize: 10.5, lineHeight: 1.65,
+                          color: "var(--ink-2)", overflowX: "auto", maxHeight: 420, overflowY: "auto",
+                          background: "var(--canvas)", border: "1px solid var(--line)",
+                          borderRadius: 10, padding: "10px 13px" }}>
+{useExampleCode("stt.py")}
+            </pre>
+            <div style={{ fontSize: 11.5, color: "var(--muted)", marginTop: 10 }}>
+              The spoken version: set{" "}
+              <span style={{ fontFamily: "var(--mono)" }}>URL</span> and{" "}
+              <span style={{ fontFamily: "var(--mono)" }}>KEY</span> at the top; it asks for the
+              audio file path (wav/mp3/ogg/webm), posts the raw audio to{" "}
+              <span style={{ fontFamily: "var(--mono)" }}>/stt/parse</span>, and prints the full
+              JSON — transcript, spoken language, and the parsed address.
             </div>
           </div>
         </div>

@@ -8,9 +8,9 @@ plus multi-script examples.
 
 Ready-made scripts (stdlib only, nothing to install):
 [`examples/createkey.sh`](examples/createkey.sh) mints a key and prints the
-export line; [`examples/usage.py`](examples/usage.py) is the `/parse` curl in
-Python — edit `URL`, `KEY` and `ADDRESS` at the top, run it, and it prints
-the full JSON response (an empty `KEY` mints a fresh one).
+export line; [`examples/usage.py`](examples/usage.py) and [`examples/stt.py`](examples/stt.py)
+are the `/parse` and `/stt/parse` curls in Python — set `URL`, `KEY` and the
+address / audio file at the top, run, and they print the full JSON response.
 
 ## 1. Authentication — generate your own key
 
