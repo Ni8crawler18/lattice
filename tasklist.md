@@ -104,6 +104,24 @@ Argon does ONE production build as the last step before the demo, after code fre
   - Parse cache keyed on raw string (`server/raw_cache.json`), deduped parsing, background ThreadPoolExecutor; results use `cluster_blocked` so jobs scale past the `/batch` 40-cap.
   - `/batch` itself left untouched — Xenon is wiring golden records into it.
 
+- [x] **N3. Mentor-feedback fixes (Tamil address test)** — three user-reported bugs:
+  - `pincode.py`: native-script values no longer flag false conflicts — unreadable
+    scripts are UNVERIFIABLE (None), never False; `_NATIVE_PLACE` alias table actively
+    confirms common states/cities (தமிழ்நாடு→Tamil Nadu, மதுரை→Madurai). Latin
+    conflicts still fire (verified: Kerala vs 625001).
+  - `parser.py`: Tamil relation keywords (அருகில்/எதிரில்/பின்னால்/பக்கத்தில்…) +
+    prompt example for postposition landmarks + `_ensure_latin` (transliterates any
+    field the model left in native script — resolver/pincode/geocoder all assume Latin)
+    + `_landmarks_from_raw` deterministic fallback (model landmark recall is FLAKY:
+    1/3 on the Chennai Tamil seed; segments carrying a relation keyword are landmark
+    phrases — now 3/3). Guarded: word-boundary match, no fire on "Bypass"/relation-free.
+  - `app.py` /parse message: composed, actionable, non-alarmist ("valid at the X level…
+    pincode consistent with stated city and state; however… adding the house/flat/door
+    number would substantially improve deliverability"). `/docs` sample updated to match.
+  - Evals after prompt change: seed re-parsed (`--refresh`), F1 = 1.000 (one transient
+    "empty completion" on b2 during refresh was re-parsed and patched); real unchanged
+    at P=1.000/F1=0.769. Verified on the DEPLOYED Render instance too (auto-deploy
+    already picked the fixes up).
 - [x] **N-regression** — both eval scripts pass identically (seed P/R/F1 = 1.000/1.000/1.000; real = 1.000/0.625/0.769). `cluster_blocked` verified identical to `cluster` on seed (18/190 pairs compared) and real_sample (108/666).
 - [x] **N-docs** — CLAUDE.md Architecture bullets updated (matcher.py, jobs.py, new endpoints, app.py append convention).
 

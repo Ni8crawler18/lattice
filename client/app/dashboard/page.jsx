@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
-import { apiBase, apiKey, batchAddresses, compareAddresses, fetchReal, getJob, getJobResults, jobCsvUrl, listJobs, parseAddress, submitCsvJob } from "@/lib/api";
+import { apiBase, apiHeaders, apiKey, batchAddresses, compareAddresses, fetchReal, getJob, getJobResults, jobCsvUrl, listJobs, parseAddress, submitCsvJob } from "@/lib/api";
 import GroupByDigipin from "../map/GroupByDigipin";
 
 /* Real IFSC records (labelled MICR duplicate pairs + distinct branches) so a
@@ -975,64 +975,20 @@ const MCP_CONFIG = `{
   }
 }`;
 
-const SNIP_CREATEKEY = `#!/usr/bin/env bash
-# Mint a Lattice API key and print the export line.
-#   ./examples/createkey.sh [name] [api-url]
-set -euo pipefail
-
-NAME="\${1:-$(whoami)}"
-API="\${2:-\${LATTICE_API:-https://lattice-api-96cn.onrender.com}}"
-
-KEY=$(curl -sf -X POST "$API/keys" \\
-  -H 'Content-Type: application/json' \\
-  -d "{\\"name\\": \\"$NAME\\"}" \\
-  | python3 -c "import sys, json; print(json.load(sys.stdin)['api_key'])")
-
-echo "export LATTICE_KEY=$KEY"
-# shown once -- save it. Send as:  X-API-Key: $LATTICE_KEY`;
-
-const SNIP_USAGE = `#!/usr/bin/env python3
-"""Lattice API, stdlib only -- nothing to install.
-    python3 examples/usage.py            # runs against the deployed API
-    LATTICE_KEY=ltk_...                  # optional: mints one if absent
-"""
-import json, os, time, urllib.request
-
-API = os.environ.get("LATTICE_API", "https://lattice-api-96cn.onrender.com").rstrip("/")
-KEY = os.environ.get("LATTICE_KEY", "")
-
-def call(path, body=None, raw=None):
-    data = raw.encode() if raw is not None else (
-        json.dumps(body).encode() if body is not None else None)
-    req = urllib.request.Request(API + path, data=data)
-    req.add_header("X-API-Key", KEY)
-    if body is not None:
-        req.add_header("Content-Type", "application/json")
-    with urllib.request.urlopen(req) as r:
-        return json.load(r)
-
-if not KEY:   # self-service: mint a key on first run (shown once -- save it)
-    KEY = call("/keys", {"name": "usage-example"})["api_key"]
-    print("minted key (save it):  export LATTICE_KEY=" + KEY)
-
-# 1. one messy, multi-script address -> structured components + risk
-p = call("/parse", {"address": "गणेश मंदिराच्या मागे, निळा गेट, कोथरूड, पुणे ४११०३८"})
-print("locality:", p["locality"], "· pincode:", p["pincode"],
-      "· risk:", p["deliverability"]["band"])
-
-# 2. two strings, written nothing alike -- same door?
-r = call("/compare", {
-    "a": "Ganesh mandir ke peeche, blue gate wala ghar, Kothrud, Pune 411038",
-    "b": "Blue gate house, behind Ganesh Temple, Kothrood, Pune - 411 038",
-})["result"]
-print("verdict:", r["verdict"], "· score:", r["score"])
-
-# 3. a whole file: CSV in, poll, CSV/JSON out
-csv_text = 'order_id,address\\n1,"MADHAVLEELA COMPLEX, MASKASATH SQUARE, ITWARI"'
-job = call("/jobs/csv?label=example", raw=csv_text)
-while call("/jobs/" + job["id"])["status"] not in ("done", "failed"):
-    time.sleep(1)
-print(call("/jobs/" + job["id"] + "/results")["summary"])`;
+/* The docs must show EXACTLY the code in examples/ — so they fetch it from the
+   API (GET /examples/{name}, open, served verbatim from the repo) instead of
+   carrying a copy that goes stale. Fetched in useEffect (never during SSR —
+   see the hydration note in tasklist.md). */
+function useExampleCode(name) {
+  const [code, setCode] = useState(`# loading examples/${name} …`);
+  useEffect(() => {
+    fetch(`${apiBase()}/examples/${name}`)
+      .then((r) => (r.ok ? r.text() : Promise.reject(new Error(`HTTP ${r.status}`))))
+      .then(setCode)
+      .catch(() => setCode(`# could not load examples/${name} from the API —\n# the file lives at examples/${name} in the repo`));
+  }, [name]);
+  return code;
+}
 
 const API_SAMPLES = [
   ["Devanagari", { address: "गणेश मंदिराच्या मागे, निळा गेट, एसबीआय एटीएम समोर, कोथरूड, पुणे ४११०३८" }],
@@ -1396,7 +1352,7 @@ function KeysView() {
           )}
           <div style={{ display: "flex", gap: 10, alignItems: "center", flexWrap: "wrap" }}>
             <label style={{ margin: 0 }}>Name / team</label>
-            <input value={name} onChange={(e) => setName(e.target.value)} placeholder="priya-backend"
+            <input value={name} onChange={(e) => setName(e.target.value)} placeholder="checkout-service"
                    spellCheck={false}
                    style={{ ...mono, flex: 1, minWidth: 200, maxWidth: 340, padding: "9px 12px",
                             border: "1px solid var(--line-2)", background: "var(--canvas)", color: "var(--ink)" }} />
@@ -1529,6 +1485,8 @@ function McpView() {
 }
 
 function DocsView() {
+  const createkeyCode = useExampleCode("createkey.sh");
+  const usageCode = useExampleCode("usage.py");
   return (
     <div className="view">
       <div className="block statgrid three">
@@ -1560,7 +1518,7 @@ function DocsView() {
             <pre style={{ margin: 0, fontFamily: "var(--mono)", fontSize: 10.5, lineHeight: 1.65,
                           color: "var(--ink-2)", overflowX: "auto", background: "var(--canvas)",
                           border: "1px solid var(--line)", borderRadius: 10, padding: "10px 13px" }}>
-{SNIP_CREATEKEY}
+{createkeyCode}
             </pre>
             <div style={{ fontSize: 11.5, color: "var(--muted)", marginTop: 10 }}>
               Keys are self-service and shown once. No arguments needed — it defaults to the
@@ -1579,11 +1537,14 @@ function DocsView() {
                           color: "var(--ink-2)", overflowX: "auto", maxHeight: 420, overflowY: "auto",
                           background: "var(--canvas)", border: "1px solid var(--line)",
                           borderRadius: 10, padding: "10px 13px" }}>
-{SNIP_USAGE}
+{usageCode}
             </pre>
             <div style={{ fontSize: 11.5, color: "var(--muted)", marginTop: 10 }}>
-              Copy-paste runnable: parse → compare → async CSV job, against the deployed
-              API by default. Mints its own key if <span style={{ fontFamily: "var(--mono)" }}>LATTICE_KEY</span> is unset.
+              The complete file, served live from the repo — put your address in the{" "}
+              <span style={{ fontFamily: "var(--mono)" }}>MESSAGE</span> string and run. Covers the full
+              surface: parse → pincode → compare → batch + golden records → match → DIGIPIN
+              (from-address / encode / decode / neighbors / group) → async CSV job. Mints its own
+              key if <span style={{ fontFamily: "var(--mono)" }}>LATTICE_KEY</span> is unset.
             </div>
           </div>
         </div>

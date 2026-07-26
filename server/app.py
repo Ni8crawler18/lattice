@@ -85,7 +85,8 @@ def _save_keys() -> None:
 @app.middleware("http")
 async def _require_api_key(request: Request, call_next):
     if (_MASTER_KEY and request.method != "OPTIONS"
-            and request.url.path not in _OPEN_PATHS):
+            and request.url.path not in _OPEN_PATHS
+            and not request.url.path.startswith("/examples")):  # public quickstart code
         supplied = (request.headers.get("x-api-key")
                     or request.query_params.get("key", ""))
         if not _key_valid(supplied):
@@ -524,6 +525,36 @@ async def api_stt_parse(request: Request):
             "spoken_language": heard.get("language_code"),
             "language_probability": heard.get("language_probability"),
             **out}
+
+
+_EXAMPLES_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
+                             "examples")
+
+
+@app.get("/examples")
+def api_examples_list():
+    """Runnable quickstart scripts, served verbatim from the repo."""
+    try:
+        names = sorted(f for f in os.listdir(_EXAMPLES_DIR)
+                       if f.endswith((".py", ".sh")))
+    except OSError:
+        names = []
+    return {"examples": names, "fetch": "/examples/{name}  (plain text)"}
+
+
+@app.get("/examples/{name}")
+def api_example_file(name: str):
+    """One example file, plain text — the docs pages render this directly,
+    so the documentation is always the exact code in the repo."""
+    from fastapi.responses import PlainTextResponse
+    if "/" in name or ".." in name or not name.endswith((".py", ".sh")):
+        raise HTTPException(status_code=404, detail="no such example")
+    path = os.path.join(_EXAMPLES_DIR, name)
+    try:
+        with open(path, encoding="utf-8") as fh:
+            return PlainTextResponse(fh.read())
+    except OSError:
+        raise HTTPException(status_code=404, detail="no such example")
 
 
 @app.get("/pincode/{pin}")

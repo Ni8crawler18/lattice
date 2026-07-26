@@ -16,7 +16,7 @@ const mono = { fontFamily: "var(--mono)", fontSize: 11, lineHeight: 1.7, margin:
 
 const SNIP_MINT = `curl -s -X POST ${RENDER_URL}/keys \\
   -H 'Content-Type: application/json' \\
-  -d '{"name": "priya-backend"}'
+  -d '{"name": "checkout-service"}'
 # -> {"api_key": "ltk_…", "shown_once": true}
 
 export LATTICE_KEY=ltk_…            # store it — shown once, masked afterwards`;
@@ -37,10 +37,10 @@ const SNIP_INPUT = `{
 
 const SNIP_RESPONSE = `{
   "status": "partial",        // "ok" | "partial"
-  "message": "Not enough information for a confident result: the address located
-              only at locality-level; high delivery-failure risk. Every extractable
-              field is returned; the single most valuable addition would be:
-              House / flat / door number.",
+  "message": "The address is valid at the locality level but is not precise enough
+              for reliable delivery. The pincode is consistent with the stated city;
+              however, the house/flat/door number is missing. Adding the house /
+              flat / door number would substantially improve deliverability.",
 
   // ---- structured components (canonical Latin, whatever the input script) ----
   "house_number": null,  "floor": "1st Floor",  "building": null,
