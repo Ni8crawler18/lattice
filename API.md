@@ -8,9 +8,9 @@ plus multi-script examples.
 
 Ready-made scripts (stdlib only, nothing to install):
 [`examples/createkey.sh`](examples/createkey.sh) mints a key and prints the
-export line; [`examples/usage.py`](examples/usage.py) runs `/parse`,
-`/compare` and an async CSV dedupe job end to end. Both honour `LATTICE_API`
-(base URL) and `LATTICE_KEY` (usage.py mints one if absent).
+export line; [`examples/usage.py`](examples/usage.py) is the `/parse` curl in
+Python — edit `URL`, `KEY` and `ADDRESS` at the top, run it, and it prints
+the full JSON response (an empty `KEY` mints a fresh one).
 
 ## 1. Authentication — generate your own key
 

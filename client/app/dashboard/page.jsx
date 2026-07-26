@@ -4,6 +4,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { apiBase, apiHeaders, apiKey, batchAddresses, compareAddresses, fetchReal, getJob, getJobResults, jobCsvUrl, listJobs, parseAddress, submitCsvJob } from "@/lib/api";
 import GroupByDigipin from "../map/GroupByDigipin";
+import { EXAMPLE_SNIPPETS } from "@/lib/exampleSnippets";
 
 /* Real IFSC records (labelled MICR duplicate pairs + distinct branches) so a
    batch run visibly collapses duplicates. Nothing synthetic. */
@@ -975,19 +976,13 @@ const MCP_CONFIG = `{
   }
 }`;
 
-/* The docs must show EXACTLY the code in examples/ — so they fetch it from the
-   API (GET /examples/{name}, open, served verbatim from the repo) instead of
-   carrying a copy that goes stale. Fetched in useEffect (never during SSR —
-   see the hydration note in tasklist.md). */
+/* The docs render the static copies shipped with the build
+   (lib/exampleSnippets.js, generated from examples/*). Deliberately NOT
+   fetched live from GET /examples/{name}: the deployed API can lag the repo
+   and would overwrite these with stale code. Regenerate the module after
+   editing examples/ (see tasklist.md). */
 function useExampleCode(name) {
-  const [code, setCode] = useState(`# loading examples/${name} …`);
-  useEffect(() => {
-    fetch(`${apiBase()}/examples/${name}`)
-      .then((r) => (r.ok ? r.text() : Promise.reject(new Error(`HTTP ${r.status}`))))
-      .then(setCode)
-      .catch(() => setCode(`# could not load examples/${name} from the API —\n# the file lives at examples/${name} in the repo`));
-  }, [name]);
-  return code;
+  return EXAMPLE_SNIPPETS[name] || `# examples/${name}`;
 }
 
 const API_SAMPLES = [
@@ -1540,11 +1535,12 @@ function DocsView() {
 {usageCode}
             </pre>
             <div style={{ fontSize: 11.5, color: "var(--muted)", marginTop: 10 }}>
-              The complete file, served live from the repo — put your address in the{" "}
-              <span style={{ fontFamily: "var(--mono)" }}>MESSAGE</span> string and run. Covers the full
-              surface: parse → pincode → compare → batch + golden records → match → DIGIPIN
-              (from-address / encode / decode / neighbors / group) → async CSV job. Mints its own
-              key if <span style={{ fontFamily: "var(--mono)" }}>LATTICE_KEY</span> is unset.
+              The curl request in Python. Edit{" "}
+              <span style={{ fontFamily: "var(--mono)" }}>URL</span>,{" "}
+              <span style={{ fontFamily: "var(--mono)" }}>KEY</span> and{" "}
+              <span style={{ fontFamily: "var(--mono)" }}>ADDRESS</span> at the top, then{" "}
+              <span style={{ fontFamily: "var(--mono)" }}>python3 examples/usage.py</span> — prints
+              the full JSON response. An empty KEY mints a fresh one.
             </div>
           </div>
         </div>
