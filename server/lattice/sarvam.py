@@ -68,12 +68,15 @@ def transcribe(audio: bytes, content_type: str = "audio/webm") -> dict:
     spoken in Hinglish/Hindi/Tamil, so no language is assumed."""
     import httpx
 
-    ext = (content_type.split("/")[-1] or "webm").split(";")[0]
+    # Browsers send "audio/webm;codecs=opus"; Sarvam whitelists EXACT mime
+    # types, so parameters after ";" must be stripped or it 400s.
+    mime = (content_type or "audio/webm").split(";")[0].strip() or "audio/webm"
+    ext = mime.split("/")[-1] or "webm"
     r = httpx.post(
         STT_URL,
         headers={"api-subscription-key": _key()},
         data={"model": STT_MODEL, "language_code": "unknown"},
-        files={"file": (f"audio.{ext}", audio, content_type)},
+        files={"file": (f"audio.{ext}", audio, mime)},
         timeout=60.0,
     )
     if 400 <= r.status_code < 500:
