@@ -971,7 +971,8 @@ const MCP_CONFIG = `{
       "type": "stdio",
       "command": "python",
       "args": ["-m", "server.lattice_mcp"],
-      "env": { "LATTICE_API": "https://your-lattice-api" }
+      "env": { "LATTICE_API": "https://your-lattice-api",
+               "LATTICE_KEY": "ltk_your-key" }
     }
   }
 }`;
@@ -1441,6 +1442,7 @@ function McpView() {
                             color: "var(--ink-2)", overflowX: "auto" }}>
 {`claude mcp add lattice \
   --env LATTICE_API=<api-url> \
+  --env LATTICE_KEY=<ltk_key> \
   -- python -m server.lattice_mcp`}
               </pre>
               <div style={{ fontSize: 11.5, color: "var(--muted)", marginTop: 10 }}>

@@ -8,7 +8,12 @@ Run:
     LATTICE_API=http://127.0.0.1:8077 python -m server.lattice_mcp
 
 Register (Claude Code):
-    claude mcp add lattice -- <venv>/bin/python -m server.lattice_mcp
+    claude mcp add lattice \
+      --env LATTICE_API=<api-url> --env LATTICE_KEY=<ltk_key> \
+      -- <venv>/bin/python -m server.lattice_mcp
+
+Auth: requests carry X-API-Key from LATTICE_KEY (or, when run inside this
+repo, the .env master key) -- mint one via POST /keys.
 
 Design notes:
 - stdlib urllib only; the single dependency is the `mcp` SDK.
@@ -27,6 +32,23 @@ from mcp.server.fastmcp import FastMCP
 
 API = os.environ.get("LATTICE_API", "http://127.0.0.1:8077").rstrip("/")
 
+
+def _api_key() -> str:
+    """LATTICE_KEY env, falling back to the repo's .env master key so the
+    local server Just Works without pasting secrets into .mcp.json."""
+    key = os.environ.get("LATTICE_KEY", "").strip()
+    if key:
+        return key
+    try:
+        with open(os.path.join(os.path.dirname(os.path.dirname(
+                os.path.abspath(__file__))), ".env")) as fh:
+            for line in fh:
+                if line.strip().startswith("LATTICE_API_KEY"):
+                    return line.split("=", 1)[1].strip().strip('"').strip("'")
+    except OSError:
+        pass
+    return ""
+
 mcp = FastMCP(
     "lattice",
     instructions=(
@@ -43,7 +65,7 @@ def _call(method: str, path: str, body: dict | None = None) -> dict:
     req = urllib.request.Request(
         API + path,
         data=json.dumps(body).encode() if body is not None else None,
-        headers={"Content-Type": "application/json"},
+        headers={"Content-Type": "application/json", "X-API-Key": _api_key()},
         method=method,
     )
     try:
