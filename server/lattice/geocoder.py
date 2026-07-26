@@ -14,6 +14,7 @@ until something resolves, and report which query actually matched.
 from __future__ import annotations
 
 import re
+import time
 
 import httpx
 
@@ -58,16 +59,24 @@ def _verified_precision(base: str, matched_query: str, display_name: str) -> tup
 
 
 def _query(q: str) -> dict | None:
-    r = httpx.get(
-        NOMINATIM,
-        params={"q": q, "format": "jsonv2", "limit": 1,
-                "countrycodes": "in", "addressdetails": 1},
-        headers={"User-Agent": USER_AGENT},
-        timeout=TIMEOUT,
-    )
-    r.raise_for_status()
-    hits = r.json()
-    return hits[0] if hits else None
+    # One backoff retry on throttle/5xx: a burst of parses (a demo!) trips
+    # Nominatim's 1 req/s policy, and without the retry every candidate
+    # errors and a perfectly geocodable address falls to the district
+    # centroid fallback.
+    for attempt in (0, 1):
+        r = httpx.get(
+            NOMINATIM,
+            params={"q": q, "format": "jsonv2", "limit": 1,
+                    "countrycodes": "in", "addressdetails": 1},
+            headers={"User-Agent": USER_AGENT},
+            timeout=TIMEOUT,
+        )
+        if (r.status_code == 429 or r.status_code >= 500) and attempt == 0:
+            time.sleep(2.5)
+            continue
+        r.raise_for_status()
+        hits = r.json()
+        return hits[0] if hits else None
 
 
 def _candidates(text: str) -> list[str]:
