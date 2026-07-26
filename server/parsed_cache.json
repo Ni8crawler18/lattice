@@ -184,24 +184,29 @@
     "language_code": "en-IN",
     "script_code": "Latn",
     "occupant": null,
-    "house_number": null,
+    "house_number": "#12",
     "floor": null,
     "building": null,
     "visual_descriptor": null,
-    "street": null,
-    "landmarks": [],
-    "landmark": null,
-    "landmark_relation": null,
-    "sublocality": null,
-    "locality": null,
+    "street": "4th Main Road, 2nd Cross",
+    "landmarks": [
+      {
+        "name": "Ayyappa Temple",
+        "relation": "opposite"
+      }
+    ],
+    "landmark": "Ayyappa Temple",
+    "landmark_relation": "opposite",
+    "sublocality": "2nd Stage",
+    "locality": "BTM Layout",
     "post_office": null,
-    "city": null,
+    "city": "Bengaluru",
     "district": null,
     "state": null,
-    "pincode": null,
-    "completeness": 0.0,
+    "pincode": "560076",
+    "completeness": 0.88,
     "missing": [],
-    "error": "ValueError: empty completion"
+    "error": null
   },
   "b3": {
     "raw": "4th main 2nd cross btm 2nd stage bangalore near ayyappa temple reliance fresh backside",

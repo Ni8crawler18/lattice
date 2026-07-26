@@ -1153,6 +1153,37 @@ function RestApiView({ go }) {
 
 /* ------------------------------ speech → json ------------------------------ */
 
+const STT_CURL = `# request — raw audio bytes in the body, format in Content-Type
+curl -s -X POST {api}/stt/parse \\
+  -H 'Content-Type: audio/mpeg' \\
+  -H "X-API-Key: $LATTICE_KEY" \\
+  --data-binary @spoken_address.mp3
+
+# accepted: mp3, wav, m4a, ogg, webm/opus (live mic) · max 10 MB
+# language is auto-detected — Hindi, Marathi, Tamil, Bengali, English…`;
+
+const STT_RESP = `{
+  // ---- what was heard ----
+  "transcript": "गणेश मंदिराच्या मागे, निळा गेट, कोथरूड, पुणे ४११०३८",
+  "spoken_language": "mr-IN",
+  "language_probability": 0.98,
+
+  // ---- then the standard /parse contract, unchanged ----
+  "status": "partial",
+  "message": "The address is valid at the locality level but …",
+  "locality": "Kothrud",  "city": "Pune",  "pincode": "411038",
+  "landmarks": [ { "name": "Ganesh Mandir", "relation": "behind" } ],
+  "deliverability": { "risk": 0.55, "band": "medium", "ask_for": { … } },
+  "location": { "latitude": 18.5072, "longitude": 73.8056,
+                "precision": "street-level", "source": "osm-nominatim" },
+  "digipin": "4FP-4CK-5L65",
+  "digipin_at_precision": "4FP-4CK-5L"
+}
+
+// nothing intelligible in the audio -> no guessing:
+{ "status": "error", "transcript": "",
+  "message": "Could not hear an address in the audio -- it came back empty. …" }`;
+
 function SttView() {
   const [rec, setRec] = useState(false);
   const [busy, setBusy] = useState(false);
@@ -1251,6 +1282,43 @@ function SttView() {
               {err && <div className="error">{err}</div>}
             </div>
           </div>
+          <div style={{ fontSize: 11.5, color: "var(--muted)", marginTop: 12 }}>
+            Requests are authenticated with this console's key — same auth as every endpoint.
+            Engineers integrate with their own key from the <b>API keys</b> page.
+          </div>
+        </div>
+      </div>
+
+      <div className="duo">
+        <div className="block">
+          <div className="block-head">
+            <h3>Request</h3>
+            <span className="right">POST /stt/parse · raw audio body · X-API-Key</span>
+          </div>
+          <div className="block-body">
+            <pre style={{ ...mono, fontSize: 10.5, margin: 0, padding: "12px 14px", overflowX: "auto",
+                          background: "var(--canvas)", border: "1px solid var(--line)", color: "var(--ink-2)" }}>
+{STT_CURL.replace("{api}", apiBase())}
+            </pre>
+            <div style={{ fontSize: 11.5, color: "var(--muted)", marginTop: 12, lineHeight: 1.7 }}>
+              No multipart, no form fields — the audio bytes <i>are</i> the body, which keeps
+              every HTTP client trivial. <span style={{ fontFamily: "var(--mono)" }}>POST /stt</span> is
+              also available when you want the transcript only.
+            </div>
+          </div>
+        </div>
+        <div className="block">
+          <div className="block-head">
+            <h3>Response</h3>
+            <span className="right">transcript + the standard /parse contract</span>
+          </div>
+          <div className="block-body">
+            <pre style={{ ...mono, fontSize: 10.5, margin: 0, padding: "12px 14px", overflowX: "auto",
+                          maxHeight: 380, overflowY: "auto",
+                          background: "var(--canvas)", border: "1px solid var(--line)", color: "var(--ink-2)" }}>
+{STT_RESP}
+            </pre>
+          </div>
         </div>
       </div>
 
@@ -1258,7 +1326,8 @@ function SttView() {
         <b>Why voice.</b> The next hundred million users speak their address — they don't
         drop pins or type in Latin script. <span style={{ fontFamily: "var(--mono)" }}>POST /stt/parse</span> accepts
         mp3, wav or a live mic recording as the raw request body and returns the standard
-        /parse contract plus the transcript and detected language.
+        /parse contract plus the transcript and detected language — one call from speech
+        to a structured, geocoded, DIGIPIN-coded record.
       </div>
     </div>
   );

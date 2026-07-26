@@ -106,6 +106,19 @@ async function latticeParse(record) {
 const rec = await latticeParse({ address: "opp railway station, near big bazaar, Kanpur" });
 console.log(rec.status, rec.digipin_at_precision, rec.message);`;
 
+const SNIP_STT = `# spoken address -> structured JSON, one call. Raw audio bytes are the
+# body; format goes in Content-Type. mp3, wav, m4a, ogg, webm/opus · max 10 MB.
+curl -s -X POST ${RENDER_URL}/stt/parse \\
+  -H 'Content-Type: audio/mpeg' \\
+  -H "X-API-Key: $LATTICE_KEY" \\
+  --data-binary @spoken_address.mp3
+
+# response = { transcript, spoken_language, language_probability }
+#            + the full /parse contract (components, deliverability,
+#              location, digipin, status, message)
+# unintelligible audio -> { "status": "error", "transcript": "", "message": … }
+# transcript only, no parsing: POST /stt (same body, same auth)`;
+
 const SNIP_BATCH = `# up to 40 addresses — parse + dedupe + golden records, synchronous
 curl -s -X POST ${RENDER_URL}/batch \\
   -H 'Content-Type: application/json' -H "X-API-Key: $LATTICE_KEY" \\
@@ -205,11 +218,22 @@ console       repoints via ?api=<url>&key=<key> in the URL bar`}</pre>
           </P>
         </Section>
 
-        <Section title="4 · Batches and whole databases">
+        <Section title="4 · Speech → JSON — POST /stt/parse" right="spoken address, any language → the same contract">
+          <P>
+            The next users speak their address — Hindi, Marathi, Tamil, Bengali or English.
+            Send the audio bytes as the raw request body (an mp3 upload or a live mic
+            recording); language is auto-detected, and the transcript runs through the
+            identical pipeline as typed input, so downstream code needs no second contract.
+            Try it live in the console under <b>Speech → JSON</b>.
+          </P>
+          <pre style={mono}>{SNIP_STT}</pre>
+        </Section>
+
+        <Section title="5 · Batches and whole databases">
           <pre style={mono}>{SNIP_BATCH}</pre>
         </Section>
 
-        <Section title="5 · Client code">
+        <Section title="6 · Client code">
           <div className="two" style={{ alignItems: "start" }}>
             <div>
               <label>Python</label>
@@ -233,7 +257,7 @@ python3 examples/usage.py                  # the three questions, end to end:
           </div>
         </Section>
 
-        <Section title="6 · Endpoint reference" right={`interactive spec at {api}/docs`}>
+        <Section title="7 · Endpoint reference" right={`interactive spec at {api}/docs`}>
           <table>
             <thead><tr><th>Endpoint</th><th>What it does</th><th>Auth</th></tr></thead>
             <tbody>
@@ -248,7 +272,7 @@ python3 examples/usage.py                  # the three questions, end to end:
           </table>
         </Section>
 
-        <Section title="7 · Deploy / operate">
+        <Section title="8 · Deploy / operate">
           <P>
             The API runs anywhere Python 3.11 does. Render deploys from <code>render.yaml</code>; set two
             environment variables in the dashboard: <code>SARVAM_API_KEY</code> (LLM parsing + STT) and

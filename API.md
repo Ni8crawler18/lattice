@@ -140,7 +140,36 @@ jq -c '.records[]' data/sample_input.json | while read -r rec; do
 done
 ```
 
-## 4. Other endpoints (same auth)
+## 4. Speech → JSON — spoken address in, same contract out
+
+**`POST /stt/parse`** — raw audio bytes as the request body (no multipart);
+put the format in `Content-Type`. Accepts mp3, wav, m4a, ogg, webm/opus
+(live mic recordings), max 10 MB. Language is auto-detected — Hindi,
+Marathi, Tamil, Bengali, English and more.
+
+```bash
+curl -s -X POST https://lattice-api-96cn.onrender.com/stt/parse \
+  -H 'Content-Type: audio/mpeg' \
+  -H "X-API-Key: $LATTICE_KEY" \
+  --data-binary @spoken_address.mp3
+```
+
+Response = what was heard + the **standard `/parse` contract**, unchanged,
+so downstream code needs no second schema:
+
+```json
+{ "transcript": "गणेश मंदिराच्या मागे, निळा गेट, कोथरूड, पुणे ४११०३८",
+  "spoken_language": "mr-IN", "language_probability": 0.98,
+  "status": "partial", "message": "…",
+  "locality": "Kothrud", "city": "Pune", "pincode": "411038",
+  "location": { "latitude": 18.5072, "longitude": 73.8056, "precision": "street-level" },
+  "digipin": "4FP-4CK-5L65", "digipin_at_precision": "4FP-4CK-5L" }
+```
+
+Unintelligible audio returns `{"status": "error", "transcript": "", "message": …}` —
+no guessing. Want the transcript only? `POST /stt`, same body, same auth.
+
+## 5. Other endpoints (same auth)
 
 | Endpoint | In → Out |
 |---|---|
