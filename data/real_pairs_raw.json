@@ -1,0 +1,2463 @@
+[
+ {
+  "micr": "147229002",
+  "a": {
+   "id": "ICIC0000162",
+   "raw": "ICICI BANK LTD., 2829, PREM HEIGHTS, AJIT NAGAR, NEAR LEELA BHAVAN, PATIALA.",
+   "bank": "ICICI Bank",
+   "parsed": {
+    "raw": "ICICI BANK LTD., 2829, PREM HEIGHTS, AJIT NAGAR, NEAR LEELA BHAVAN, PATIALA.",
+    "language_code": "en-IN",
+    "script_code": "Latn",
+    "occupant": "ICICI Bank Ltd",
+    "house_number": "2829",
+    "floor": null,
+    "building": "Prem Heights",
+    "visual_descriptor": null,
+    "street": null,
+    "landmarks": [
+     {
+      "name": "Leela Bhavan",
+      "relation": "near"
+     }
+    ],
+    "landmark": "Leela Bhavan",
+    "landmark_relation": "near",
+    "sublocality": null,
+    "locality": "Ajit Nagar",
+    "city": "Patiala",
+    "state": "Punjab",
+    "pincode": null,
+    "completeness": 0.72,
+    "missing": [
+     "street",
+     "pincode"
+    ],
+    "error": null
+   }
+  },
+  "b": {
+   "id": "ICIC0000790",
+   "raw": "ICICI BANK LTD., SCO 121, URBAN ESTATE, PHASE 2, NR. SPENCERS STORE, PATIALA.",
+   "bank": "ICICI Bank",
+   "parsed": {
+    "raw": "ICICI BANK LTD., SCO 121, URBAN ESTATE, PHASE 2, NR. SPENCERS STORE, PATIALA.",
+    "language_code": "en-IN",
+    "script_code": "Latn",
+    "occupant": "ICICI Bank Ltd",
+    "house_number": "121",
+    "floor": null,
+    "building": "Urban Estate",
+    "visual_descriptor": null,
+    "street": null,
+    "landmarks": [
+     {
+      "name": "Spencer's Store",
+      "relation": "near"
+     }
+    ],
+    "landmark": "Spencer's Store",
+    "landmark_relation": "near",
+    "sublocality": "Phase 2",
+    "locality": null,
+    "city": "Patiala",
+    "state": "Punjab",
+    "pincode": null,
+    "completeness": 0.62,
+    "missing": [
+     "street",
+     "locality",
+     "pincode"
+    ],
+    "error": null
+   }
+  },
+  "kind": "micr_same_branch"
+ },
+ {
+  "micr": "226185257",
+  "a": {
+   "id": "YESB0ZSBL06",
+   "raw": "B-1-61/D, LDA COLONY, KANPUR ROAD, LUCKNOW",
+   "bank": "Zila Sahakari Bank Lucknow",
+   "parsed": {
+    "raw": "B-1-61/D, LDA COLONY, KANPUR ROAD, LUCKNOW",
+    "language_code": "ml-IN",
+    "script_code": "Latn",
+    "occupant": null,
+    "house_number": "B-1-61/D",
+    "floor": null,
+    "building": null,
+    "visual_descriptor": null,
+    "street": "Kanpur Road",
+    "landmarks": [],
+    "landmark": null,
+    "landmark_relation": null,
+    "sublocality": null,
+    "locality": "LDA Colony",
+    "city": "Lucknow",
+    "state": "Uttar Pradesh",
+    "pincode": null,
+    "completeness": 0.62,
+    "missing": [
+     "pincode"
+    ],
+    "error": null
+   }
+  },
+  "b": {
+   "id": "YESB0ZSBL23",
+   "raw": "H NO 551 KA/180 KHA, ST BANK RD, BHILLAWAN, CHANDARNAGAR, ALAMBAGH, LUCKNOW",
+   "bank": "Zila Sahakari Bank Lucknow",
+   "parsed": {
+    "raw": "H NO 551 KA/180 KHA, ST BANK RD, BHILLAWAN, CHANDARNAGAR, ALAMBAGH, LUCKNOW",
+    "language_code": "en-IN",
+    "script_code": "Latn",
+    "occupant": null,
+    "house_number": "551 KA/180 KHA",
+    "floor": null,
+    "building": null,
+    "visual_descriptor": null,
+    "street": "State Bank Road",
+    "landmarks": [],
+    "landmark": null,
+    "landmark_relation": null,
+    "sublocality": "Bhillaawan, Chandarnagar",
+    "locality": "Alambagh",
+    "city": "Lucknow",
+    "state": "Uttar Pradesh",
+    "pincode": null,
+    "completeness": 0.68,
+    "missing": [
+     "pincode"
+    ],
+    "error": null
+   }
+  },
+  "kind": "micr_same_branch"
+ },
+ {
+  "micr": "440803003",
+  "a": {
+   "id": "HDFC0CJUCBI",
+   "raw": "MADHAVLEELA COMPLEX, 1ST FLOOR, MASKASATH SQUARE, ITWARI",
+   "bank": "Jansewa Urban Co-operative Bank",
+   "parsed": {
+    "raw": "MADHAVLEELA COMPLEX, 1ST FLOOR, MASKASATH SQUARE, ITWARI",
+    "language_code": "en-IN",
+    "script_code": "Latn",
+    "occupant": "Madhavleela Complex",
+    "house_number": null,
+    "floor": "1st Floor",
+    "building": null,
+    "visual_descriptor": null,
+    "street": "Maskasath Square",
+    "landmarks": [],
+    "landmark": null,
+    "landmark_relation": null,
+    "sublocality": null,
+    "locality": "Itwari",
+    "city": null,
+    "state": null,
+    "pincode": null,
+    "completeness": 0.32,
+    "missing": [
+     "house_number",
+     "city",
+     "pincode"
+    ],
+    "error": null
+   }
+  },
+  "b": {
+   "id": "UTIB0SJUCB1",
+   "raw": "1ST FLOOR, MADHAVLEELA COMPLEX, MASKASATH SQUARE, ITWARI NAGPUR",
+   "bank": "Axis Bank",
+   "parsed": {
+    "raw": "1ST FLOOR, MADHAVLEELA COMPLEX, MASKASATH SQUARE, ITWARI NAGPUR",
+    "language_code": "ml-IN",
+    "script_code": "Latn",
+    "occupant": null,
+    "house_number": null,
+    "floor": "1st Floor",
+    "building": "Madhavleela Complex",
+    "visual_descriptor": null,
+    "street": null,
+    "landmarks": [
+     {
+      "name": "Maskasath Square",
+      "relation": null
+     }
+    ],
+    "landmark": "Maskasath Square",
+    "landmark_relation": null,
+    "sublocality": null,
+    "locality": "Itwari",
+    "city": "Nagpur",
+    "state": "Maharashtra",
+    "pincode": null,
+    "completeness": 0.5,
+    "missing": [
+     "house_number",
+     "street",
+     "pincode"
+    ],
+    "error": null
+   }
+  },
+  "kind": "micr_same_branch"
+ },
+ {
+  "micr": "500222006",
+  "a": {
+   "id": "HDFC0CVB006",
+   "raw": "PT NO.7 AND 7A , MYSARI CHAMBERS, SARAWATHI COLONY, LOTHUKUNTA HYDERABAD-PIN",
+   "bank": "HDFC Bank",
+   "parsed": {
+    "raw": "PT NO.7 AND 7A , MYSARI CHAMBERS, SARAWATHI COLONY, LOTHUKUNTA HYDERABAD-PIN",
+    "language_code": "en-IN",
+    "script_code": "Latn",
+    "occupant": null,
+    "house_number": "PT NO.7 AND 7A",
+    "floor": null,
+    "building": "Mysari Chambers",
+    "visual_descriptor": null,
+    "street": null,
+    "landmarks": [],
+    "landmark": null,
+    "landmark_relation": null,
+    "sublocality": "Lothukunta",
+    "locality": "Sarawati Colony",
+    "city": "Hyderabad",
+    "state": null,
+    "pincode": null,
+    "completeness": 0.64,
+    "missing": [
+     "street",
+     "pincode"
+    ],
+    "error": null
+   }
+  },
+  "b": {
+   "id": "YESB0CVB006",
+   "raw": "PLOT NO 7&7A, MYSARI CHAMBERS, SARASWATHI COLONY, LOTHUKUNTA",
+   "bank": "Yes Bank",
+   "parsed": {
+    "raw": "PLOT NO 7&7A, MYSARI CHAMBERS, SARASWATHI COLONY, LOTHUKUNTA",
+    "language_code": "ta-IN",
+    "script_code": "Latn",
+    "occupant": null,
+    "house_number": "7&7A",
+    "floor": null,
+    "building": "Mysari Chambers",
+    "visual_descriptor": null,
+    "street": null,
+    "landmarks": [],
+    "landmark": null,
+    "landmark_relation": null,
+    "sublocality": "Saraswathi Colony",
+    "locality": null,
+    "city": "Lothukunta",
+    "state": "Telangana",
+    "pincode": null,
+    "completeness": 0.48,
+    "missing": [
+     "street",
+     "locality",
+     "pincode"
+    ],
+    "error": null
+   }
+  },
+  "kind": "micr_same_branch"
+ },
+ {
+  "micr": "370801001",
+  "a": {
+   "id": "GSCB0UGMCBL",
+   "raw": "THE GANDHIDHAM MERCANTILE COOP BANK LTD., GMCB BHAVAN, PLOT NO.12, SECTOR NO.9, GANDHIDHAM - 370 201 DIST.KACHCHH",
+   "bank": "Gujarat State Co-operative Bank",
+   "parsed": {
+    "raw": "THE GANDHIDHAM MERCANTILE COOP BANK LTD., GMCB BHAVAN, PLOT NO.12, SECTOR NO.9, GANDHIDHAM - 370 201 DIST.KACHCHH",
+    "language_code": "gu-IN",
+    "script_code": "Latn",
+    "occupant": "The Gandhidham Mercantile Co-op Bank Ltd",
+    "house_number": "12",
+    "floor": null,
+    "building": "GMCB Bhavan",
+    "visual_descriptor": null,
+    "street": null,
+    "landmarks": [],
+    "landmark": null,
+    "landmark_relation": null,
+    "sublocality": "9",
+    "locality": "Gandhidham",
+    "city": "Gandhidham",
+    "state": "Gujarat",
+    "pincode": "370201",
+    "completeness": 0.7,
+    "missing": [
+     "street"
+    ],
+    "error": null
+   }
+  },
+  "b": {
+   "id": "INDB0GMCB01",
+   "raw": "GMCB BHAVAN, PLOT NO 12, SECTOR NO 9, BANKING CIRCLE, GANDHIDHAM KUTCH 370 201",
+   "bank": "Indusind Bank",
+   "parsed": {
+    "raw": "GMCB BHAVAN, PLOT NO 12, SECTOR NO 9, BANKING CIRCLE, GANDHIDHAM KUTCH 370 201",
+    "language_code": "en-IN",
+    "script_code": "Latn",
+    "occupant": "GMCB Bhavan",
+    "house_number": "PLOT NO 12",
+    "floor": null,
+    "building": null,
+    "visual_descriptor": null,
+    "street": "BANKING CIRCLE",
+    "landmarks": [],
+    "landmark": null,
+    "landmark_relation": null,
+    "sublocality": "SECTOR NO 9",
+    "locality": "Gandhidham",
+    "city": "Gandhidham",
+    "state": "Gujarat",
+    "pincode": "370201",
+    "completeness": 0.74,
+    "missing": [],
+    "error": null
+   }
+  },
+  "kind": "micr_same_branch"
+ },
+ {
+  "micr": "440532004",
+  "a": {
+   "id": "YESB0000540",
+   "raw": "PART GROUND FLOOR, SAHYOG, , PLOT NO 33, OPP.TELEPHONE EXCHANGE, TELEPHONE SQUARE CHOWK, NAGPUR, MAHARASHTRA",
+   "bank": "Yes Bank",
+   "parsed": {
+    "raw": "PART GROUND FLOOR, SAHYOG, , PLOT NO 33, OPP.TELEPHONE EXCHANGE, TELEPHONE SQUARE CHOWK, NAGPUR, MAHARASHTRA",
+    "language_code": "en-IN",
+    "script_code": "Latn",
+    "occupant": null,
+    "house_number": "PLOT NO 33",
+    "floor": "Ground Floor",
+    "building": "Sahyog",
+    "visual_descriptor": null,
+    "street": null,
+    "landmarks": [
+     {
+      "name": "Telephone Exchange",
+      "relation": "opposite"
+     },
+     {
+      "name": "Telephone Square Chowk",
+      "relation": "opposite"
+     }
+    ],
+    "landmark": "Telephone Exchange",
+    "landmark_relation": "opposite",
+    "sublocality": null,
+    "locality": null,
+    "city": "Nagpur",
+    "state": "Maharashtra",
+    "pincode": null,
+    "completeness": 0.56,
+    "missing": [
+     "street",
+     "locality",
+     "pincode"
+    ],
+    "error": null
+   }
+  },
+  "b": {
+   "id": "YESB0000933",
+   "raw": "GR FLR, SHREEJI HOUS, PLOT NO.39 KOTWAL NAGAR, KHAMLA SQUARE, RING ROAD, NAGPUR, MAHARASHTRA",
+   "bank": "Yes Bank",
+   "parsed": {
+    "raw": "GR FLR, SHREEJI HOUS, PLOT NO.39 KOTWAL NAGAR, KHAMLA SQUARE, RING ROAD, NAGPUR, MAHARASHTRA",
+    "language_code": "en-IN",
+    "script_code": "Latn",
+    "occupant": null,
+    "house_number": "Plot No. 39",
+    "floor": "Ground Floor",
+    "building": "Shreeji Hous",
+    "visual_descriptor": null,
+    "street": "Khamla Square, Ring Road",
+    "landmarks": [],
+    "landmark": null,
+    "landmark_relation": null,
+    "sublocality": null,
+    "locality": "Kotwal Nagar",
+    "city": "Nagpur",
+    "state": "Maharashtra",
+    "pincode": null,
+    "completeness": 0.74,
+    "missing": [
+     "pincode"
+    ],
+    "error": null
+   }
+  },
+  "kind": "micr_same_branch"
+ },
+ {
+  "micr": "500222009",
+  "a": {
+   "id": "HDFC0CVB009",
+   "raw": "3-116, 1ST FLOOR, HANUMANNAGAR COLONY CHAITANYAPURI, DILSUKHNAGAR, HYDERABAD-PIN",
+   "bank": "HDFC Bank",
+   "parsed": {
+    "raw": "3-116, 1ST FLOOR, HANUMANNAGAR COLONY CHAITANYAPURI, DILSUKHNAGAR, HYDERABAD-PIN",
+    "language_code": "te-IN",
+    "script_code": "Latn",
+    "occupant": null,
+    "house_number": "3-116",
+    "floor": "1st Floor",
+    "building": null,
+    "visual_descriptor": null,
+    "street": null,
+    "landmarks": [],
+    "landmark": null,
+    "landmark_relation": null,
+    "sublocality": "Hanuman Nagar Colony Chaitanyapuri",
+    "locality": "Dilsukhnagar",
+    "city": "Hyderabad",
+    "state": "Telangana",
+    "pincode": null,
+    "completeness": 0.52,
+    "missing": [
+     "street",
+     "pincode"
+    ],
+    "error": null
+   }
+  },
+  "b": {
+   "id": "YESB0CVB009",
+   "raw": "DOOR NO.3-116, FIRST FLOOR, HANUMAN NAGAR COLONY, CHAITANYAPURI, DILSUKNAGAR",
+   "bank": "Yes Bank",
+   "parsed": {
+    "raw": "DOOR NO.3-116, FIRST FLOOR, HANUMAN NAGAR COLONY, CHAITANYAPURI, DILSUKNAGAR",
+    "language_code": "en-IN",
+    "script_code": "Latn",
+    "occupant": null,
+    "house_number": "3-116",
+    "floor": "First Floor",
+    "building": null,
+    "visual_descriptor": null,
+    "street": null,
+    "landmarks": [],
+    "landmark": null,
+    "landmark_relation": null,
+    "sublocality": "Hanuman Nagar Colony",
+    "locality": "Chaitanyapuri",
+    "city": "Hyderabad",
+    "state": "Telangana",
+    "pincode": null,
+    "completeness": 0.52,
+    "missing": [
+     "street",
+     "pincode"
+    ],
+    "error": null
+   }
+  },
+  "kind": "micr_same_branch"
+ },
+ {
+  "micr": "422510002",
+  "a": {
+   "id": "YESB0JCBL01",
+   "raw": "AT SUKHMANI, SUPER MARKET, BEHIND SONE SHOPPING CENTER, GANJMAL, NASHIK",
+   "bank": "Janaseva Co-operative Bank (Nashik)",
+   "parsed": {
+    "raw": "AT SUKHMANI, SUPER MARKET, BEHIND SONE SHOPPING CENTER, GANJMAL, NASHIK",
+    "language_code": "en-IN",
+    "script_code": "Latn",
+    "occupant": "Sukhmani Super Market",
+    "house_number": null,
+    "floor": null,
+    "building": null,
+    "visual_descriptor": null,
+    "street": null,
+    "landmarks": [
+     {
+      "name": "Sone Shopping Center",
+      "relation": "behind"
+     }
+    ],
+    "landmark": "Sone Shopping Center",
+    "landmark_relation": "behind",
+    "sublocality": null,
+    "locality": "Ganajam",
+    "city": "Nashik",
+    "state": null,
+    "pincode": null,
+    "completeness": 0.38,
+    "missing": [
+     "house_number",
+     "street",
+     "pincode"
+    ],
+    "error": null
+   }
+  },
+  "b": {
+   "id": "YESB0JCBL02",
+   "raw": "SHOP NO 6/7, BALAJI SHANKUL, NEAR KUNAL HOTEL, AMRUTDHAM, NASHIK",
+   "bank": "Yes Bank",
+   "parsed": {
+    "raw": "SHOP NO 6/7, BALAJI SHANKUL, NEAR KUNAL HOTEL, AMRUTDHAM, NASHIK",
+    "language_code": "en-IN",
+    "script_code": "Latn",
+    "occupant": null,
+    "house_number": "6/7",
+    "floor": null,
+    "building": "Balaji Shankul",
+    "visual_descriptor": null,
+    "street": null,
+    "landmarks": [
+     {
+      "name": "Kunal Hotel",
+      "relation": "near"
+     }
+    ],
+    "landmark": "Kunal Hotel",
+    "landmark_relation": "near",
+    "sublocality": null,
+    "locality": "Amrutham",
+    "city": "Nashik",
+    "state": "Maharashtra",
+    "pincode": null,
+    "completeness": 0.72,
+    "missing": [
+     "street",
+     "pincode"
+    ],
+    "error": null
+   }
+  },
+  "kind": "micr_same_branch"
+ },
+ {
+  "micr": "452240251",
+  "a": {
+   "id": "HDFC0CACOBL",
+   "raw": "ABHAY PRASHAL, 10, RACE COURSE ROAD, INDORE",
+   "bank": "HDFC Bank",
+   "parsed": {
+    "raw": "ABHAY PRASHAL, 10, RACE COURSE ROAD, INDORE",
+    "language_code": "en-IN",
+    "script_code": "Latn",
+    "occupant": "Abhay Prashal",
+    "house_number": "10",
+    "floor": null,
+    "building": null,
+    "visual_descriptor": null,
+    "street": "Race Course Road",
+    "landmarks": [],
+    "landmark": null,
+    "landmark_relation": null,
+    "sublocality": null,
+    "locality": null,
+    "city": "Indore",
+    "state": "Madhya Pradesh",
+    "pincode": null,
+    "completeness": 0.46,
+    "missing": [
+     "locality",
+     "pincode"
+    ],
+    "error": null
+   }
+  },
+  "b": {
+   "id": "YESB0ARUCB1",
+   "raw": "RACECOURSE ROAD, 10, ABHAY PRASHAL, INDORE",
+   "bank": "Yes Bank",
+   "parsed": {
+    "raw": "RACECOURSE ROAD, 10, ABHAY PRASHAL, INDORE",
+    "language_code": "en-IN",
+    "script_code": "Latn",
+    "occupant": null,
+    "house_number": "10",
+    "floor": null,
+    "building": "Abhay Prashal",
+    "visual_descriptor": null,
+    "street": "Racecourse Road",
+    "landmarks": [],
+    "landmark": null,
+    "landmark_relation": null,
+    "sublocality": null,
+    "locality": null,
+    "city": "Indore",
+    "state": "Madhya Pradesh",
+    "pincode": null,
+    "completeness": 0.58,
+    "missing": [
+     "locality",
+     "pincode"
+    ],
+    "error": null
+   }
+  },
+  "kind": "micr_same_branch"
+ },
+ {
+  "micr": "362807111",
+  "a": {
+   "id": "GSCB0UUNABK",
+   "raw": "THE UNA POEPLES COOP BANK LTD OPP.K.V.SCHOOL, DHRUV COMPLEX, UNA-362 560, DIST.GIR-SOMNATH",
+   "bank": "Gujarat State Co-operative Bank",
+   "parsed": {
+    "raw": "THE UNA POEPLES COOP BANK LTD OPP.K.V.SCHOOL, DHRUV COMPLEX, UNA-362 560, DIST.GIR-SOMNATH",
+    "language_code": "en-IN",
+    "script_code": "Latn",
+    "occupant": "The Una Peoples Co-op Bank Ltd",
+    "house_number": null,
+    "floor": null,
+    "building": "Dhrub Complex",
+    "visual_descriptor": null,
+    "street": null,
+    "landmarks": [
+     {
+      "name": "K.V. School",
+      "relation": "opposite"
+     }
+    ],
+    "landmark": "K.V. School",
+    "landmark_relation": "opposite",
+    "sublocality": null,
+    "locality": null,
+    "city": "Una",
+    "state": "Gujarat",
+    "pincode": "362560",
+    "completeness": 0.4,
+    "missing": [
+     "house_number",
+     "street",
+     "locality"
+    ],
+    "error": null
+   }
+  },
+  "b": {
+   "id": "HDFC0CUPCBA",
+   "raw": "SWASTIK, OPP. K V SCHOOL, B/H DHRUV COMPLEX, UNA",
+   "bank": "Una Peoples Co-operative Bank",
+   "parsed": {
+    "raw": "SWASTIK, OPP. K V SCHOOL, B/H DHRUV COMPLEX, UNA",
+    "language_code": "en-IN",
+    "script_code": "Latn",
+    "occupant": "SWASTIK",
+    "house_number": null,
+    "floor": null,
+    "building": null,
+    "visual_descriptor": null,
+    "street": null,
+    "landmarks": [
+     {
+      "name": "K V School",
+      "relation": "opposite"
+     },
+     {
+      "name": "Dhrub Complex",
+      "relation": "behind"
+     }
+    ],
+    "landmark": "K V School",
+    "landmark_relation": "opposite",
+    "sublocality": null,
+    "locality": null,
+    "city": "Una",
+    "state": "Gujarat",
+    "pincode": null,
+    "completeness": 0.22,
+    "missing": [
+     "house_number",
+     "street",
+     "locality",
+     "pincode"
+    ],
+    "error": null
+   }
+  },
+  "kind": "micr_same_branch"
+ },
+ {
+  "micr": "442810152",
+  "a": {
+   "id": "IBKL0041Y35",
+   "raw": "SHARMA BUILDING, OLD POST OFFICE ROAD, NEHRU WARD, HINGANGHAT",
+   "bank": "IDBI",
+   "parsed": {
+    "raw": "SHARMA BUILDING, OLD POST OFFICE ROAD, NEHRU WARD, HINGANGHAT",
+    "language_code": "en-IN",
+    "script_code": "Latn",
+    "occupant": null,
+    "house_number": null,
+    "floor": null,
+    "building": "Sharma Building",
+    "visual_descriptor": null,
+    "street": "Old Post Office Road",
+    "landmarks": [],
+    "landmark": null,
+    "landmark_relation": null,
+    "sublocality": "Nehru Ward",
+    "locality": null,
+    "city": "Hinganghat",
+    "state": "Maharashtra",
+    "pincode": null,
+    "completeness": 0.42,
+    "missing": [
+     "house_number",
+     "locality",
+     "pincode"
+    ],
+    "error": null
+   }
+  },
+  "b": {
+   "id": "YESB0YUCB35",
+   "raw": "SHARMA BUILDING, OLD POST OFFICE ROAD, NEHARU WARD, KARANJA CHOWK, HINGANGHAT - 442 301",
+   "bank": "Yes Bank",
+   "parsed": {
+    "raw": "SHARMA BUILDING, OLD POST OFFICE ROAD, NEHARU WARD, KARANJA CHOWK, HINGANGHAT - 442 301",
+    "language_code": "en-IN",
+    "script_code": "Latn",
+    "occupant": null,
+    "house_number": null,
+    "floor": null,
+    "building": "Sharma Building",
+    "visual_descriptor": null,
+    "street": "Old Post Office Road",
+    "landmarks": [],
+    "landmark": null,
+    "landmark_relation": null,
+    "sublocality": "Nehru Ward",
+    "locality": "Karanja Chowk",
+    "city": "Hinganghat",
+    "state": "Maharashtra",
+    "pincode": "442301",
+    "completeness": 0.64,
+    "missing": [
+     "house_number"
+    ],
+    "error": null
+   }
+  },
+  "kind": "micr_same_branch"
+ },
+ {
+  "micr": "580052302",
+  "a": {
+   "id": "KARB0000183",
+   "raw": "I ST FLOOR, ACHYUT ARCADE NEAR JUBILEE CIRCLEP.B.ROAD, DHARWAD, PIN",
+   "bank": "Karnataka Bank",
+   "parsed": {
+    "raw": "I ST FLOOR, ACHYUT ARCADE NEAR JUBILEE CIRCLEP.B.ROAD, DHARWAD, PIN",
+    "language_code": "en-IN",
+    "script_code": "Latn",
+    "occupant": null,
+    "house_number": null,
+    "floor": "1st Floor",
+    "building": "Achyut Arcade",
+    "visual_descriptor": null,
+    "street": "P.B. Road",
+    "landmarks": [
+     {
+      "name": "Jubilee Circle",
+      "relation": "near"
+     }
+    ],
+    "landmark": "Jubilee Circle",
+    "landmark_relation": "near",
+    "sublocality": null,
+    "locality": null,
+    "city": "Dharwad",
+    "state": "Karnataka",
+    "pincode": null,
+    "completeness": 0.5,
+    "missing": [
+     "house_number",
+     "locality",
+     "pincode"
+    ],
+    "error": null
+   }
+  },
+  "b": {
+   "id": "KARB0000195",
+   "raw": "S.D.M.COLLEGE OF ENG & TECHNOLOGY CAMPUS, VIJAYA ROAD, DHARWAD, PIN - .",
+   "bank": "Karnataka Bank",
+   "parsed": {
+    "raw": "S.D.M.COLLEGE OF ENG & TECHNOLOGY CAMPUS, VIJAYA ROAD, DHARWAD, PIN - .",
+    "language_code": "en-IN",
+    "script_code": "Latn",
+    "occupant": "S.D.M. College of Engineering & Technology Campus",
+    "house_number": null,
+    "floor": null,
+    "building": null,
+    "visual_descriptor": null,
+    "street": "Vijaya Road",
+    "landmarks": [],
+    "landmark": null,
+    "landmark_relation": null,
+    "sublocality": null,
+    "locality": null,
+    "city": "Dharwad",
+    "state": "Karnataka",
+    "pincode": null,
+    "completeness": 0.24,
+    "missing": [
+     "house_number",
+     "locality",
+     "pincode"
+    ],
+    "error": null
+   }
+  },
+  "kind": "micr_same_branch"
+ },
+ {
+  "micr": "301002074",
+  "a": {
+   "id": "SBIN0004627",
+   "raw": "M.I.A. ALWAR, DIST ALWAR, RAJASTHAN, PIN",
+   "bank": "State Bank of India",
+   "parsed": {
+    "raw": "M.I.A. ALWAR, DIST ALWAR, RAJASTHAN, PIN",
+    "language_code": "en-IN",
+    "script_code": "Latn",
+    "occupant": "M.I.A. ALWAR",
+    "house_number": null,
+    "floor": null,
+    "building": null,
+    "visual_descriptor": null,
+    "street": null,
+    "landmarks": [],
+    "landmark": null,
+    "landmark_relation": null,
+    "sublocality": null,
+    "locality": null,
+    "city": null,
+    "state": "Rajasthan",
+    "pincode": null,
+    "completeness": 0,
+    "missing": [
+     "house_number",
+     "street",
+     "locality",
+     "city",
+     "pincode"
+    ],
+    "error": null
+   }
+  },
+  "b": {
+   "id": "SBIN0062409",
+   "raw": "GOL MARKET, RAJGARH, DIST ALWAR, STATE RAJASTHAN PIN",
+   "bank": "State Bank of India",
+   "parsed": {
+    "raw": "GOL MARKET, RAJGARH, DIST ALWAR, STATE RAJASTHAN PIN",
+    "language_code": "hi-IN",
+    "script_code": "Latn",
+    "occupant": "GOL MARKET",
+    "house_number": null,
+    "floor": null,
+    "building": null,
+    "visual_descriptor": null,
+    "street": null,
+    "landmarks": [],
+    "landmark": null,
+    "landmark_relation": null,
+    "sublocality": null,
+    "locality": "RAJGARH",
+    "city": null,
+    "state": "RAJASTHAN",
+    "pincode": null,
+    "completeness": 0.16,
+    "missing": [
+     "house_number",
+     "street",
+     "city",
+     "pincode"
+    ],
+    "error": null
+   }
+  },
+  "kind": "micr_same_branch"
+ },
+ {
+  "micr": "110024252",
+  "a": {
+   "id": "UTIB0SGCB06",
+   "raw": "B.O. FARRUKH NAGAR, BRANCH MANAGER, THE GURGAON CENTRAL COOPERATIVE BANK LTD, FARUKHNAGAR , GURGAON HARYANA",
+   "bank": "Axis Bank",
+   "parsed": {
+    "raw": "B.O. FARRUKH NAGAR, BRANCH MANAGER, THE GURGAON CENTRAL COOPERATIVE BANK LTD, FARUKHNAGAR , GURGAON HARYANA",
+    "language_code": "ml-IN",
+    "script_code": "Latn",
+    "occupant": "THE GURGAON CENTRAL COOPERATIVE BANK LTD",
+    "house_number": null,
+    "floor": null,
+    "building": null,
+    "visual_descriptor": null,
+    "street": null,
+    "landmarks": [],
+    "landmark": null,
+    "landmark_relation": null,
+    "sublocality": null,
+    "locality": "FARUKHNAGAR",
+    "city": "Gurgaon",
+    "state": "Haryana",
+    "pincode": null,
+    "completeness": 0.24,
+    "missing": [
+     "house_number",
+     "street",
+     "pincode"
+    ],
+    "error": null
+   }
+  },
+  "b": {
+   "id": "UTIB0SGCB07",
+   "raw": "B.O. S.P. MAJRI, BRANCH MANAGER, THE GURGAON CENTRAL COOPERATIVE BANK LTD, SP MAJRI, TEH FARUKNAGARGURGAON",
+   "bank": "Axis Bank",
+   "parsed": {
+    "raw": "B.O. S.P. MAJRI, BRANCH MANAGER, THE GURGAON CENTRAL COOPERATIVE BANK LTD, SP MAJRI, TEH FARUKNAGARGURGAON",
+    "language_code": "pa-IN",
+    "script_code": "Latn",
+    "occupant": null,
+    "house_number": null,
+    "floor": null,
+    "building": null,
+    "visual_descriptor": null,
+    "street": null,
+    "landmarks": [],
+    "landmark": null,
+    "landmark_relation": null,
+    "sublocality": null,
+    "locality": null,
+    "city": null,
+    "state": null,
+    "pincode": null,
+    "completeness": 0.0,
+    "missing": [],
+    "error": "ValueError: empty completion"
+   }
+  },
+  "kind": "micr_same_branch"
+ },
+ {
+  "micr": "505846102",
+  "a": {
+   "id": "HDFC0CTGCUB",
+   "raw": "7-1-72, 73, 74, GAYATRI TOWERS, TAHASIL CHOWRASTA, JAGTIAL",
+   "bank": "Gayatri Co-operative Urban Bank",
+   "parsed": {
+    "raw": "7-1-72, 73, 74, GAYATRI TOWERS, TAHASIL CHOWRASTA, JAGTIAL",
+    "language_code": "hi-IN",
+    "script_code": "Latn",
+    "occupant": null,
+    "house_number": "7-1-72, 73, 74",
+    "floor": null,
+    "building": "Gayatri Towers",
+    "visual_descriptor": null,
+    "street": "Tahasil Chowrastha",
+    "landmarks": [],
+    "landmark": null,
+    "landmark_relation": null,
+    "sublocality": null,
+    "locality": null,
+    "city": "Jagtial",
+    "state": "Telangana",
+    "pincode": null,
+    "completeness": 0.58,
+    "missing": [
+     "locality",
+     "pincode"
+    ],
+    "error": null
+   }
+  },
+  "b": {
+   "id": "ICIC00GAYAT",
+   "raw": "H. NO 7 1 72/73/74 GAYATHRI TOWERS, THAHASIL CHOWRASTA, JAGTIAL , DIST KARIM NAGAR, A.P.",
+   "bank": "ICICI Bank",
+   "parsed": {
+    "raw": "H. NO 7 1 72/73/74 GAYATHRI TOWERS, THAHASIL CHOWRASTA, JAGTIAL , DIST KARIM NAGAR, A.P.",
+    "language_code": "en-IN",
+    "script_code": "Latn",
+    "occupant": null,
+    "house_number": "7/1/72-73/74",
+    "floor": null,
+    "building": "Gayathri Towers",
+    "visual_descriptor": null,
+    "street": "Thahasil Chowk",
+    "landmarks": [],
+    "landmark": null,
+    "landmark_relation": null,
+    "sublocality": null,
+    "locality": "Jagtiyal",
+    "city": "Jagtiyal",
+    "state": "Andhra Pradesh",
+    "pincode": null,
+    "completeness": 0.74,
+    "missing": [
+     "pincode"
+    ],
+    "error": null
+   }
+  },
+  "kind": "micr_same_branch"
+ },
+ {
+  "micr": "682259006",
+  "a": {
+   "id": "IBKL0000968",
+   "raw": "IDBI BANK LTD , CURRENCY CHEST, IDBI BUILDING GROUND FLOOR, PANAMPILLY NAGAR, KOCHI, KERALA 682 036",
+   "bank": "IDBI",
+   "parsed": {
+    "raw": "IDBI BANK LTD , CURRENCY CHEST, IDBI BUILDING GROUND FLOOR, PANAMPILLY NAGAR, KOCHI, KERALA 682 036",
+    "language_code": "en-IN",
+    "script_code": "Latn",
+    "occupant": "IDBI Bank Ltd",
+    "house_number": null,
+    "floor": "Ground Floor",
+    "building": "IDBI Building",
+    "visual_descriptor": null,
+    "street": null,
+    "landmarks": [],
+    "landmark": null,
+    "landmark_relation": null,
+    "sublocality": null,
+    "locality": "Panampilly Nagar",
+    "city": "Kochi",
+    "state": "Kerala",
+    "pincode": "682036",
+    "completeness": 0.42,
+    "missing": [
+     "house_number",
+     "street"
+    ],
+    "error": null
+   }
+  },
+  "b": {
+   "id": "IBKL0001058",
+   "raw": "SEA QUEEN BLDG NH47, NEAR CHANAMPUZHA PARK, EDAPALLY, KOCHI",
+   "bank": "IDBI",
+   "parsed": {
+    "raw": "SEA QUEEN BLDG NH47, NEAR CHANAMPUZHA PARK, EDAPALLY, KOCHI",
+    "language_code": "en-IN",
+    "script_code": "Latn",
+    "occupant": null,
+    "house_number": null,
+    "floor": null,
+    "building": "Sea Queen Bldg",
+    "visual_descriptor": null,
+    "street": "NH47",
+    "landmarks": [
+     {
+      "name": "Chanamuzha Park",
+      "relation": "near"
+     }
+    ],
+    "landmark": "Chanamuzha Park",
+    "landmark_relation": "near",
+    "sublocality": null,
+    "locality": "Edapally",
+    "city": "Kochi",
+    "state": "Kerala",
+    "pincode": null,
+    "completeness": 0.66,
+    "missing": [
+     "house_number",
+     "pincode"
+    ],
+    "error": null
+   }
+  },
+  "kind": "micr_same_branch"
+ },
+ {
+  "micr": "249240201",
+  "a": {
+   "id": "HDFC0000725",
+   "raw": "M.C. NO.53, M J MALL, RAILWAY ROAD, RISHIKESH.",
+   "bank": "HDFC Bank",
+   "parsed": {
+    "raw": "M.C. NO.53, M J MALL, RAILWAY ROAD, RISHIKESH.",
+    "language_code": "en-IN",
+    "script_code": "Latn",
+    "occupant": null,
+    "house_number": "M.C. NO.53",
+    "floor": null,
+    "building": "M J MALL",
+    "visual_descriptor": null,
+    "street": "Railway Road",
+    "landmarks": [],
+    "landmark": null,
+    "landmark_relation": null,
+    "sublocality": null,
+    "locality": null,
+    "city": "Rishikesh",
+    "state": "Uttarakhand",
+    "pincode": null,
+    "completeness": 0.58,
+    "missing": [
+     "locality",
+     "pincode"
+    ],
+    "error": null
+   }
+  },
+  "b": {
+   "id": "HDFC0CUCOBL",
+   "raw": "637 , LAXMAN JHOOLA ROAD , RISHIKESH -, UTTARAKHAND",
+   "bank": "Uttrakhand Co-operative Bank",
+   "parsed": {
+    "raw": "637 , LAXMAN JHOOLA ROAD , RISHIKESH -, UTTARAKHAND",
+    "language_code": "hi-IN",
+    "script_code": "Latn",
+    "occupant": null,
+    "house_number": "637",
+    "floor": null,
+    "building": null,
+    "visual_descriptor": null,
+    "street": "Laxman Jhoola Road",
+    "landmarks": [],
+    "landmark": null,
+    "landmark_relation": null,
+    "sublocality": null,
+    "locality": "Rishikesh",
+    "city": "Rishikesh",
+    "state": "Uttarakhand",
+    "pincode": null,
+    "completeness": 0.62,
+    "missing": [
+     "pincode"
+    ],
+    "error": null
+   }
+  },
+  "kind": "micr_same_branch"
+ },
+ {
+  "micr": "686047003",
+  "a": {
+   "id": "CSBK0000047",
+   "raw": "KUMARANALLOOR, PERUBAIKOD PO, KOTTAYAM DT, KERALA",
+   "bank": "Catholic Syrian Bank",
+   "parsed": {
+    "raw": "KUMARANALLOOR, PERUBAIKOD PO, KOTTAYAM DT, KERALA",
+    "language_code": "ml-IN",
+    "script_code": "Latn",
+    "occupant": null,
+    "house_number": null,
+    "floor": null,
+    "building": null,
+    "visual_descriptor": null,
+    "street": null,
+    "landmarks": [],
+    "landmark": null,
+    "landmark_relation": null,
+    "sublocality": "Perubaikod PO",
+    "locality": "Kumaranalloor",
+    "city": null,
+    "state": "Kerala",
+    "pincode": null,
+    "completeness": 0.22,
+    "missing": [
+     "house_number",
+     "street",
+     "city",
+     "pincode"
+    ],
+    "error": null
+   }
+  },
+  "b": {
+   "id": "CSBK0000308",
+   "raw": "NOYAPLAZA, KALATHIPADY, VADAVATHOOR PO, , KOTTAYAM DT, KERALA, INDIA",
+   "bank": "Catholic Syrian Bank",
+   "parsed": {
+    "raw": "NOYAPLAZA, KALATHIPADY, VADAVATHOOR PO, , KOTTAYAM DT, KERALA, INDIA",
+    "language_code": "en-IN",
+    "script_code": "Latn",
+    "occupant": "NOYAPLAZA",
+    "house_number": null,
+    "floor": null,
+    "building": null,
+    "visual_descriptor": null,
+    "street": "KALATHIPADY",
+    "landmarks": [],
+    "landmark": null,
+    "landmark_relation": null,
+    "sublocality": null,
+    "locality": "VADAVATHOOR",
+    "city": "KOTTAYAM",
+    "state": "KERALA",
+    "pincode": null,
+    "completeness": 0.4,
+    "missing": [
+     "house_number",
+     "pincode"
+    ],
+    "error": null
+   }
+  },
+  "kind": "micr_same_branch"
+ },
+ {
+  "a": {
+   "id": "FDRL0001591",
+   "raw": "37, CHIPPI TANK, BEGUM BRIDGE ROAD, MEERUT, UTTAR PRADESH",
+   "bank": "Federal Bank",
+   "parsed": {
+    "raw": "37, CHIPPI TANK, BEGUM BRIDGE ROAD, MEERUT, UTTAR PRADESH",
+    "language_code": "en-IN",
+    "script_code": "Latn",
+    "occupant": null,
+    "house_number": "37",
+    "floor": null,
+    "building": null,
+    "visual_descriptor": null,
+    "street": "BEGUM BRIDGE ROAD",
+    "landmarks": [
+     {
+      "name": "CHIPPI TANK",
+      "relation": null
+     }
+    ],
+    "landmark": "CHIPPI TANK",
+    "landmark_relation": null,
+    "sublocality": null,
+    "locality": null,
+    "city": "MEERUT",
+    "state": "UTTAR PRADESH",
+    "pincode": null,
+    "completeness": 0.6,
+    "missing": [
+     "locality",
+     "pincode"
+    ],
+    "error": null
+   }
+  },
+  "b": {
+   "id": "UBIN0550558",
+   "raw": "UNION BANK OF INDIA, R.G. COLLEGE - MEERUT, R.G.OPP. GOVT. INTER COLLEGE, WESTERN KACHHARI, DIST. MEERUT, UTTAR PRADESH, , BEGUM BRIDGE, PIN - 250 001.",
+   "bank": "Union Bank of India",
+   "parsed": {
+    "raw": "UNION BANK OF INDIA, R.G. COLLEGE - MEERUT, R.G.OPP. GOVT. INTER COLLEGE, WESTERN KACHHARI, DIST. MEERUT, UTTAR PRADESH, , BEGUM BRIDGE, PIN - 250 001.",
+    "language_code": "en-IN",
+    "script_code": "Latn",
+    "occupant": "UNION BANK OF INDIA",
+    "house_number": null,
+    "floor": null,
+    "building": null,
+    "visual_descriptor": null,
+    "street": null,
+    "landmarks": [
+     {
+      "name": "Government Inter College",
+      "relation": "opposite"
+     },
+     {
+      "name": "Western Kachari",
+      "relation": "opposite"
+     },
+     {
+      "name": "Begum Bridge",
+      "relation": "opposite"
+     }
+    ],
+    "landmark": "Government Inter College",
+    "landmark_relation": "opposite",
+    "sublocality": null,
+    "locality": null,
+    "city": "Meerut",
+    "state": "Uttar Pradesh",
+    "pincode": "250001",
+    "completeness": 0.28,
+    "missing": [
+     "house_number",
+     "street",
+     "locality"
+    ],
+    "error": null
+   }
+  },
+  "kind": "same_district_diff_branch"
+ },
+ {
+  "a": {
+   "id": "ICIC0003894",
+   "raw": "ICICI BANK LTD., PREMISES OF GOVT. SSD GIRLS HIGH SCHOOL, CHANDRAGIRI, MOHANA BLOCK, DIST. GAJAPATI, ODISHA.",
+   "bank": "ICICI Bank",
+   "parsed": {
+    "raw": "ICICI BANK LTD., PREMISES OF GOVT. SSD GIRLS HIGH SCHOOL, CHANDRAGIRI, MOHANA BLOCK, DIST. GAJAPATI, ODISHA.",
+    "language_code": "en-IN",
+    "script_code": "Latn",
+    "occupant": "ICICI Bank Ltd",
+    "house_number": null,
+    "floor": null,
+    "building": "Govt. SSD Girls High School",
+    "visual_descriptor": null,
+    "street": null,
+    "landmarks": [],
+    "landmark": null,
+    "landmark_relation": null,
+    "sublocality": "Mohana Block",
+    "locality": "Chandragiri",
+    "city": null,
+    "state": "Odisha",
+    "pincode": null,
+    "completeness": 0.34,
+    "missing": [
+     "house_number",
+     "street",
+     "city",
+     "pincode"
+    ],
+    "error": null
+   }
+  },
+  "b": {
+   "id": "CNRB0000284",
+   "raw": "MAIN ROAD, CHANDRAGIRI , DIST GAJAPATI, (ORISSA)",
+   "bank": "Canara Bank",
+   "parsed": {
+    "raw": "MAIN ROAD, CHANDRAGIRI , DIST GAJAPATI, (ORISSA)",
+    "language_code": "mr-IN",
+    "script_code": "Latn",
+    "occupant": null,
+    "house_number": null,
+    "floor": null,
+    "building": null,
+    "visual_descriptor": null,
+    "street": "Main Road",
+    "landmarks": [],
+    "landmark": null,
+    "landmark_relation": null,
+    "sublocality": null,
+    "locality": "Chandragiri",
+    "city": null,
+    "state": "Orissa",
+    "pincode": null,
+    "completeness": 0.32,
+    "missing": [
+     "house_number",
+     "city",
+     "pincode"
+    ],
+    "error": null
+   }
+  },
+  "kind": "same_district_diff_branch"
+ },
+ {
+  "a": {
+   "id": "UTIB0002515",
+   "raw": "KATARIYASAR, JASNATHPURA, BAMBLU, JAIPUR ROAD, BIKANER, RAJASTHAN",
+   "bank": "Axis Bank",
+   "parsed": {
+    "raw": "KATARIYASAR, JASNATHPURA, BAMBLU, JAIPUR ROAD, BIKANER, RAJASTHAN",
+    "language_code": "en-IN",
+    "script_code": "Latn",
+    "occupant": null,
+    "house_number": null,
+    "floor": null,
+    "building": null,
+    "visual_descriptor": null,
+    "street": null,
+    "landmarks": [],
+    "landmark": null,
+    "landmark_relation": null,
+    "sublocality": null,
+    "locality": null,
+    "city": null,
+    "state": null,
+    "pincode": null,
+    "completeness": 0.0,
+    "missing": [],
+    "error": "ValueError: empty completion"
+   }
+  },
+  "b": {
+   "id": "UTIB0003669",
+   "raw": "GR FLR, SHOP NOS. 1 3 5 PART, AKSHAY HOTEL, SAMTA NAGAR, GANGA NAGAR ROAD, OPP BUS STAND, BIKANER, RAJASTHAN",
+   "bank": "Axis Bank",
+   "parsed": {
+    "raw": "GR FLR, SHOP NOS. 1 3 5 PART, AKSHAY HOTEL, SAMTA NAGAR, GANGA NAGAR ROAD, OPP BUS STAND, BIKANER, RAJASTHAN",
+    "language_code": "en-IN",
+    "script_code": "Latn",
+    "occupant": null,
+    "house_number": "SHOP NOS. 1 3 5 PART",
+    "floor": "Ground Floor",
+    "building": "AKSHAY HOTEL",
+    "visual_descriptor": null,
+    "street": "GANGA NAGAR ROAD",
+    "landmarks": [
+     {
+      "name": "BUS STAND",
+      "relation": "opposite"
+     }
+    ],
+    "landmark": "BUS STAND",
+    "landmark_relation": "opposite",
+    "sublocality": null,
+    "locality": "SAMTA NAGAR",
+    "city": "BIKANER",
+    "state": "RAJASTHAN",
+    "pincode": null,
+    "completeness": 0.88,
+    "missing": [
+     "pincode"
+    ],
+    "error": null
+   }
+  },
+  "kind": "same_district_diff_branch"
+ },
+ {
+  "a": {
+   "id": "UBIN0555134",
+   "raw": "DOOR NO. 5-45, PUDIMADAKA ROAD, POST ATCHUTAPURAM, DIST. VISAKHAPATNAM, ANDHRA PRADESH - 531 011.",
+   "bank": "Union Bank of India",
+   "parsed": {
+    "raw": "DOOR NO. 5-45, PUDIMADAKA ROAD, POST ATCHUTAPURAM, DIST. VISAKHAPATNAM, ANDHRA PRADESH - 531 011.",
+    "language_code": "en-IN",
+    "script_code": "Latn",
+    "occupant": null,
+    "house_number": "5-45",
+    "floor": null,
+    "building": null,
+    "visual_descriptor": null,
+    "street": "Pudimadaka Road",
+    "landmarks": [],
+    "landmark": null,
+    "landmark_relation": null,
+    "sublocality": "Atchutapuram",
+    "locality": null,
+    "city": "Visakhapatnam",
+    "state": "Andhra Pradesh",
+    "pincode": "531011",
+    "completeness": 0.58,
+    "missing": [
+     "locality"
+    ],
+    "error": null
+   }
+  },
+  "b": {
+   "id": "KVBL0004927",
+   "raw": "D NO 3-60, NEAR POLICE STATION ROAD, ANAKAPALLE DISTRICT, ANAKAPALLE, ANDHRA PRADESH",
+   "bank": "Karur Vysya Bank",
+   "parsed": {
+    "raw": "D NO 3-60, NEAR POLICE STATION ROAD, ANAKAPALLE DISTRICT, ANAKAPALLE, ANDHRA PRADESH",
+    "language_code": "en-IN",
+    "script_code": "Latn",
+    "occupant": null,
+    "house_number": "3-60",
+    "floor": null,
+    "building": null,
+    "visual_descriptor": null,
+    "street": "Police Station Road",
+    "landmarks": [
+     {
+      "name": "Police Station",
+      "relation": "near"
+     }
+    ],
+    "landmark": "Police Station",
+    "landmark_relation": "near",
+    "sublocality": null,
+    "locality": null,
+    "city": "Anakapalle",
+    "state": "Andhra Pradesh",
+    "pincode": null,
+    "completeness": 0.6,
+    "missing": [
+     "locality",
+     "pincode"
+    ],
+    "error": null
+   }
+  },
+  "kind": "same_district_diff_branch"
+ },
+ {
+  "a": {
+   "id": "ICIC0001473",
+   "raw": "ICICI BANK LTD., SHOP NO.14, 15, 16, 25, 26, 27, RACHANA BAZAR, ST STAND, INDAPUR PUNE DIST., MAHARASHTRA.",
+   "bank": "ICICI Bank",
+   "parsed": {
+    "raw": "ICICI BANK LTD., SHOP NO.14, 15, 16, 25, 26, 27, RACHANA BAZAR, ST STAND, INDAPUR PUNE DIST., MAHARASHTRA.",
+    "language_code": "en-IN",
+    "script_code": "Latn",
+    "occupant": "ICICI BANK LTD",
+    "house_number": "14, 15, 16, 25, 26, 27",
+    "floor": null,
+    "building": null,
+    "visual_descriptor": null,
+    "street": "RACHANA BAZAR",
+    "landmarks": [
+     {
+      "name": "ST Stand",
+      "relation": null
+     }
+    ],
+    "landmark": "ST Stand",
+    "landmark_relation": null,
+    "sublocality": "INDAPUR",
+    "locality": "Pune",
+    "city": "Pune",
+    "state": "Maharashtra",
+    "pincode": null,
+    "completeness": 0.82,
+    "missing": [
+     "pincode"
+    ],
+    "error": null
+   }
+  },
+  "b": {
+   "id": "BARA0000002",
+   "raw": "NEAR BHARGAVRAM UDYNA (TALYA SHEJARI), NEW KACHERI ROAD, INDAPUR, DIST-PUNE",
+   "bank": "Baramati Sahakari Bank",
+   "parsed": {
+    "raw": "NEAR BHARGAVRAM UDYNA (TALYA SHEJARI), NEW KACHERI ROAD, INDAPUR, DIST-PUNE",
+    "language_code": "en-IN",
+    "script_code": "Latn",
+    "occupant": null,
+    "house_number": null,
+    "floor": null,
+    "building": null,
+    "visual_descriptor": null,
+    "street": "New Kacheri Road",
+    "landmarks": [
+     {
+      "name": "Bhargavram Udyana (Talya Shejari)",
+      "relation": "near"
+     }
+    ],
+    "landmark": "Bhargavram Udyana (Talya Shejari)",
+    "landmark_relation": "near",
+    "sublocality": null,
+    "locality": "Indapur",
+    "city": "Pune",
+    "state": "Maharashtra",
+    "pincode": null,
+    "completeness": 0.54,
+    "missing": [
+     "house_number",
+     "pincode"
+    ],
+    "error": null
+   }
+  },
+  "kind": "same_district_diff_branch"
+ },
+ {
+  "a": {
+   "id": "BARB0GHODBA",
+   "raw": "GREEN ACRES PH-1, SHOP NO 13-18, NEAR VIJAYNAGARI WAGHBIL ROAD, THANE (WEST), MUMBAI",
+   "bank": "Bank of Baroda",
+   "parsed": {
+    "raw": "GREEN ACRES PH-1, SHOP NO 13-18, NEAR VIJAYNAGARI WAGHBIL ROAD, THANE (WEST), MUMBAI",
+    "language_code": "en-IN",
+    "script_code": "Latn",
+    "occupant": null,
+    "house_number": "13-18",
+    "floor": null,
+    "building": "GREEN ACRES PH-1",
+    "visual_descriptor": null,
+    "street": null,
+    "landmarks": [
+     {
+      "name": "VIJAYNAGARI WAGHBIL ROAD",
+      "relation": "near"
+     }
+    ],
+    "landmark": "VIJAYNAGARI WAGHBIL ROAD",
+    "landmark_relation": "near",
+    "sublocality": "WEST",
+    "locality": "THANE",
+    "city": "MUMBAI",
+    "state": "Maharashtra",
+    "pincode": null,
+    "completeness": 0.78,
+    "missing": [
+     "street",
+     "pincode"
+    ],
+    "error": null
+   }
+  },
+  "b": {
+   "id": "ICIC0001491",
+   "raw": "ICICI BANK LTD., SURAJ HOUSE BUILDING, GODBUNDER BUNDER, VILLAGE PATLIPADA, WAGHBIL, MANPADA THANE DIST., MAHARASHTRA.",
+   "bank": "ICICI Bank",
+   "parsed": {
+    "raw": "ICICI BANK LTD., SURAJ HOUSE BUILDING, GODBUNDER BUNDER, VILLAGE PATLIPADA, WAGHBIL, MANPADA THANE DIST., MAHARASHTRA.",
+    "language_code": "en-IN",
+    "script_code": "Latn",
+    "occupant": "ICICI BANK LTD",
+    "house_number": null,
+    "floor": null,
+    "building": "SURAJ HOUSE BUILDING",
+    "visual_descriptor": null,
+    "street": "GODBUNDER BUNDER",
+    "landmarks": [],
+    "landmark": null,
+    "landmark_relation": null,
+    "sublocality": "PATLIPADA",
+    "locality": "WAGHBIL",
+    "city": "Thane",
+    "state": "MAHARASHTRA",
+    "pincode": null,
+    "completeness": 0.58,
+    "missing": [
+     "house_number",
+     "pincode"
+    ],
+    "error": null
+   }
+  },
+  "kind": "same_district_diff_branch"
+ },
+ {
+  "a": {
+   "id": "SBIN0000756",
+   "raw": "432 BY 4 BY 104, MELA VANIAR STREET, P.B.NO.1, PARAMAGUDI",
+   "bank": "State Bank of India",
+   "parsed": {
+    "raw": "432 BY 4 BY 104, MELA VANIAR STREET, P.B.NO.1, PARAMAGUDI",
+    "language_code": "en-IN",
+    "script_code": "Latn",
+    "occupant": null,
+    "house_number": "432 BY 4 BY 104",
+    "floor": null,
+    "building": null,
+    "visual_descriptor": null,
+    "street": "Mela Vaniar Street",
+    "landmarks": [],
+    "landmark": null,
+    "landmark_relation": null,
+    "sublocality": null,
+    "locality": "Paramagudi",
+    "city": null,
+    "state": null,
+    "pincode": null,
+    "completeness": 0.54,
+    "missing": [
+     "city",
+     "pincode"
+    ],
+    "error": null
+   }
+  },
+  "b": {
+   "id": "ICIC0006107",
+   "raw": "ICICI BANK LTD., 8/294, VAISYAR STREET, PARAMAKUDI RAMNAD DIST.",
+   "bank": "ICICI Bank",
+   "parsed": {
+    "raw": "ICICI BANK LTD., 8/294, VAISYAR STREET, PARAMAKUDI RAMNAD DIST.",
+    "language_code": "en-IN",
+    "script_code": "Latn",
+    "occupant": "ICICI Bank Ltd",
+    "house_number": "8/294",
+    "floor": null,
+    "building": null,
+    "visual_descriptor": null,
+    "street": "Vaisyar Street",
+    "landmarks": [],
+    "landmark": null,
+    "landmark_relation": null,
+    "sublocality": null,
+    "locality": "Paramakudi",
+    "city": "Paramakudi",
+    "state": "Tamil Nadu",
+    "pincode": null,
+    "completeness": 0.62,
+    "missing": [
+     "pincode"
+    ],
+    "error": null
+   }
+  },
+  "kind": "same_district_diff_branch"
+ },
+ {
+  "a": {
+   "id": "CBIN0284138",
+   "raw": "CBI, JATKAULI BRANCH, GAJ KHARAHARA ROAD, JATKAULI, PO DHARAMPUR, JATKAULI, DIST VAISHALI, BIHAR",
+   "bank": "Central Bank of India",
+   "parsed": {
+    "raw": "CBI, JATKAULI BRANCH, GAJ KHARAHARA ROAD, JATKAULI, PO DHARAMPUR, JATKAULI, DIST VAISHALI, BIHAR",
+    "language_code": "en-IN",
+    "script_code": "Latn",
+    "occupant": "CBI, JATKAULI BRANCH",
+    "house_number": null,
+    "floor": null,
+    "building": null,
+    "visual_descriptor": null,
+    "street": "Gaj Kharahara Road",
+    "landmarks": [],
+    "landmark": null,
+    "landmark_relation": null,
+    "sublocality": "Dharampur",
+    "locality": "Jatkauli",
+    "city": null,
+    "state": "Bihar",
+    "pincode": null,
+    "completeness": 0.38,
+    "missing": [
+     "house_number",
+     "city",
+     "pincode"
+    ],
+    "error": null
+   }
+  },
+  "b": {
+   "id": "UTKS0001232",
+   "raw": "MAUZA - SINGHARAI, PARAGANA - BISARA, P.S - MAHUA, MUZAFFARPUR ROAD, DISTRACT - VAISHALI, STATE - BIHAR, PIN CODE",
+   "bank": "Utkarsh Small Finance Bank",
+   "parsed": {
+    "raw": "MAUZA - SINGHARAI, PARAGANA - BISARA, P.S - MAHUA, MUZAFFARPUR ROAD, DISTRACT - VAISHALI, STATE - BIHAR, PIN CODE",
+    "language_code": "hi-IN",
+    "script_code": "Latn",
+    "occupant": null,
+    "house_number": null,
+    "floor": null,
+    "building": null,
+    "visual_descriptor": null,
+    "street": null,
+    "landmarks": [],
+    "landmark": null,
+    "landmark_relation": null,
+    "sublocality": null,
+    "locality": null,
+    "city": null,
+    "state": "Bihar",
+    "pincode": null,
+    "completeness": 0,
+    "missing": [
+     "house_number",
+     "street",
+     "locality",
+     "city",
+     "pincode"
+    ],
+    "error": null
+   }
+  },
+  "kind": "same_district_diff_branch"
+ },
+ {
+  "a": {
+   "id": "ICIC0007666",
+   "raw": "ICICI BANK LTD., WARD NO. 1.BAGDUR, TAH. CHHUIKHADAN, DISTRICT. RAJNANDGAON, CHHATTISGARH.",
+   "bank": "ICICI Bank",
+   "parsed": {
+    "raw": "ICICI BANK LTD., WARD NO. 1.BAGDUR, TAH. CHHUIKHADAN, DISTRICT. RAJNANDGAON, CHHATTISGARH.",
+    "language_code": "en-IN",
+    "script_code": "Latn",
+    "occupant": null,
+    "house_number": null,
+    "floor": null,
+    "building": null,
+    "visual_descriptor": null,
+    "street": null,
+    "landmarks": [],
+    "landmark": null,
+    "landmark_relation": null,
+    "sublocality": null,
+    "locality": null,
+    "city": null,
+    "state": null,
+    "pincode": null,
+    "completeness": 0.0,
+    "missing": [],
+    "error": "ValueError: empty completion"
+   }
+  },
+  "b": {
+   "id": "ICIC0007667",
+   "raw": "ICICI BANK LTD., LALPUR, TAH. CHHUIKHADAN, DISTRICT. RAJNANDGAON, CHHATTISGARH.",
+   "bank": "ICICI Bank",
+   "parsed": {
+    "raw": "ICICI BANK LTD., LALPUR, TAH. CHHUIKHADAN, DISTRICT. RAJNANDGAON, CHHATTISGARH.",
+    "language_code": "hi-IN",
+    "script_code": "Latn",
+    "occupant": "ICICI BANK LTD",
+    "house_number": null,
+    "floor": null,
+    "building": null,
+    "visual_descriptor": null,
+    "street": null,
+    "landmarks": [],
+    "landmark": null,
+    "landmark_relation": null,
+    "sublocality": null,
+    "locality": "LALPUR",
+    "city": "RAJNANDGAON",
+    "state": "CHHATTISGARH",
+    "pincode": null,
+    "completeness": 0.24,
+    "missing": [
+     "house_number",
+     "street",
+     "pincode"
+    ],
+    "error": null
+   }
+  },
+  "kind": "same_district_diff_branch"
+ },
+ {
+  "a": {
+   "id": "CSBK0000077",
+   "raw": "DOOR NO VII 274A, NATIONAL HIGHWAY, PATTIKAD , THRISSUR DISTRICT, KERALA",
+   "bank": "Catholic Syrian Bank",
+   "parsed": {
+    "raw": "DOOR NO VII 274A, NATIONAL HIGHWAY, PATTIKAD , THRISSUR DISTRICT, KERALA",
+    "language_code": "en-IN",
+    "script_code": "Latn",
+    "occupant": null,
+    "house_number": "VII 274A",
+    "floor": null,
+    "building": null,
+    "visual_descriptor": null,
+    "street": "National Highway",
+    "landmarks": [],
+    "landmark": null,
+    "landmark_relation": null,
+    "sublocality": null,
+    "locality": "Pattikad",
+    "city": "Thrissur",
+    "state": "Kerala",
+    "pincode": null,
+    "completeness": 0.62,
+    "missing": [
+     "pincode"
+    ],
+    "error": null
+   }
+  },
+  "b": {
+   "id": "CSBK0000414",
+   "raw": "GR FLOOR, PLACKAL COMPLEX, MULAYAM, PIN",
+   "bank": "Catholic Syrian Bank",
+   "parsed": {
+    "raw": "GR FLOOR, PLACKAL COMPLEX, MULAYAM, PIN",
+    "language_code": "en-IN",
+    "script_code": "Latn",
+    "occupant": null,
+    "house_number": null,
+    "floor": "Ground",
+    "building": "Plackal Complex",
+    "visual_descriptor": null,
+    "street": null,
+    "landmarks": [],
+    "landmark": null,
+    "landmark_relation": null,
+    "sublocality": null,
+    "locality": "Mulayam",
+    "city": null,
+    "state": null,
+    "pincode": null,
+    "completeness": 0.28,
+    "missing": [
+     "house_number",
+     "street",
+     "city",
+     "pincode"
+    ],
+    "error": null
+   }
+  },
+  "kind": "same_district_diff_branch"
+ },
+ {
+  "a": {
+   "id": "ICIC0000764",
+   "raw": "ICICI BANK LTD., ITWARA BAZAR CHURAHA, KANDELI, NARSIMHAPUR MP.",
+   "bank": "ICICI Bank",
+   "parsed": {
+    "raw": "ICICI BANK LTD., ITWARA BAZAR CHURAHA, KANDELI, NARSIMHAPUR MP.",
+    "language_code": "hi-IN",
+    "script_code": "Latn",
+    "occupant": "ICICI Bank Ltd",
+    "house_number": null,
+    "floor": null,
+    "building": null,
+    "visual_descriptor": null,
+    "street": null,
+    "landmarks": [
+     {
+      "name": "Itwara Bazaar Chauraha",
+      "relation": null
+     }
+    ],
+    "landmark": "Itwara Bazaar Chauraha",
+    "landmark_relation": null,
+    "sublocality": "Kandeli",
+    "locality": null,
+    "city": "Narsimhpura",
+    "state": "Madhya Pradesh",
+    "pincode": null,
+    "completeness": 0.28,
+    "missing": [
+     "house_number",
+     "street",
+     "locality",
+     "pincode"
+    ],
+    "error": null
+   }
+  },
+  "b": {
+   "id": "ICIC0003016",
+   "raw": "ICICI BANK LTD., MUKAM POST KHURPA, DISTT NARSINGPUR, MADHYA PRADESH.",
+   "bank": "ICICI Bank",
+   "parsed": {
+    "raw": "ICICI BANK LTD., MUKAM POST KHURPA, DISTT NARSINGPUR, MADHYA PRADESH.",
+    "language_code": "en-IN",
+    "script_code": "Latn",
+    "occupant": "ICICI BANK LTD",
+    "house_number": null,
+    "floor": null,
+    "building": null,
+    "visual_descriptor": null,
+    "street": null,
+    "landmarks": [],
+    "landmark": null,
+    "landmark_relation": null,
+    "sublocality": "Mukam Post",
+    "locality": "Khurpa",
+    "city": null,
+    "state": "Madhya Pradesh",
+    "pincode": null,
+    "completeness": 0.22,
+    "missing": [
+     "house_number",
+     "street",
+     "city",
+     "pincode"
+    ],
+    "error": null
+   }
+  },
+  "kind": "same_district_diff_branch"
+ },
+ {
+  "a": {
+   "id": "SBIN0014045",
+   "raw": "MATHARANGI, BARRACKPOREBARASAT ROAD, P.O. NILGANJ BAZAR, DIST. 24 PARGANAS NORTH , WEST BENGAL",
+   "bank": "State Bank of India",
+   "parsed": {
+    "raw": "MATHARANGI, BARRACKPOREBARASAT ROAD, P.O. NILGANJ BAZAR, DIST. 24 PARGANAS NORTH , WEST BENGAL",
+    "language_code": "hi-IN",
+    "script_code": "Latn",
+    "occupant": null,
+    "house_number": null,
+    "floor": null,
+    "building": null,
+    "visual_descriptor": null,
+    "street": null,
+    "landmarks": [],
+    "landmark": null,
+    "landmark_relation": null,
+    "sublocality": null,
+    "locality": null,
+    "city": null,
+    "state": null,
+    "pincode": null,
+    "completeness": 0.0,
+    "missing": [],
+    "error": "ValueError: empty completion"
+   }
+  },
+  "b": {
+   "id": "SBIN0064076",
+   "raw": "RACPC BARRACKPORE, STATE BANK OF INDIA, NORTH 24 PARGANAS WEST BENGAL, PIN",
+   "bank": "State Bank of India",
+   "parsed": {
+    "raw": "RACPC BARRACKPORE, STATE BANK OF INDIA, NORTH 24 PARGANAS WEST BENGAL, PIN",
+    "language_code": "en-IN",
+    "script_code": "Latn",
+    "occupant": "RACPC BARRACKPORE",
+    "house_number": null,
+    "floor": null,
+    "building": null,
+    "visual_descriptor": null,
+    "street": null,
+    "landmarks": [],
+    "landmark": null,
+    "landmark_relation": null,
+    "sublocality": null,
+    "locality": null,
+    "city": null,
+    "state": "West Bengal",
+    "pincode": null,
+    "completeness": 0,
+    "missing": [
+     "house_number",
+     "street",
+     "locality",
+     "city",
+     "pincode"
+    ],
+    "error": null
+   }
+  },
+  "kind": "same_district_diff_branch"
+ },
+ {
+  "a": {
+   "id": "UTIB0005567",
+   "raw": "GROUND FLOOR, RS NO 802, AMB COMPLEX, ELURU ROAD, CHINTALAPUDI",
+   "bank": "Axis Bank",
+   "parsed": {
+    "raw": "GROUND FLOOR, RS NO 802, AMB COMPLEX, ELURU ROAD, CHINTALAPUDI",
+    "language_code": "te-IN",
+    "script_code": "Latn",
+    "occupant": null,
+    "house_number": "802",
+    "floor": "Ground Floor",
+    "building": "Amb Complex",
+    "visual_descriptor": null,
+    "street": "Eluru Road",
+    "landmarks": [],
+    "landmark": null,
+    "landmark_relation": null,
+    "sublocality": null,
+    "locality": "Chintalapudi",
+    "city": null,
+    "state": null,
+    "pincode": null,
+    "completeness": 0.66,
+    "missing": [
+     "city",
+     "pincode"
+    ],
+    "error": null
+   }
+  },
+  "b": {
+   "id": "CNRB0006310",
+   "raw": "CANARA BANK 101-102, GF, RATNA SHOPPING MALL, CHINTALAPUDI, WEST GODAVARI DIST CHINTALAPUDI ANDHRA PRADESH",
+   "bank": "Canara Bank",
+   "parsed": {
+    "raw": "CANARA BANK 101-102, GF, RATNA SHOPPING MALL, CHINTALAPUDI, WEST GODAVARI DIST CHINTALAPUDI ANDHRA PRADESH",
+    "language_code": "te-IN",
+    "script_code": "Latn",
+    "occupant": "CANARA BANK",
+    "house_number": "101-102",
+    "floor": "GF",
+    "building": "RATNA SHOPPING MALL",
+    "visual_descriptor": null,
+    "street": null,
+    "landmarks": [],
+    "landmark": null,
+    "landmark_relation": null,
+    "sublocality": null,
+    "locality": "CHINTALAPUDI",
+    "city": null,
+    "state": "ANDHRA PRADESH",
+    "pincode": null,
+    "completeness": 0.5,
+    "missing": [
+     "street",
+     "city",
+     "pincode"
+    ],
+    "error": null
+   }
+  },
+  "kind": "same_district_diff_branch"
+ },
+ {
+  "a": {
+   "id": "ESMF0001941",
+   "raw": "NO 00052, SITARGUNJ ROADKHATIMA P O, UDAM SINGH NAGAR, UTTARAKHAND-262 308",
+   "bank": "Esaf Small Finance Bank",
+   "parsed": {
+    "raw": "NO 00052, SITARGUNJ ROADKHATIMA P O, UDAM SINGH NAGAR, UTTARAKHAND-262 308",
+    "language_code": "en-IN",
+    "script_code": "Latn",
+    "occupant": null,
+    "house_number": "00052",
+    "floor": null,
+    "building": null,
+    "visual_descriptor": null,
+    "street": "Sitargunj Roadkhatima",
+    "landmarks": [
+     {
+      "name": "Post Office",
+      "relation": "near"
+     }
+    ],
+    "landmark": "Post Office",
+    "landmark_relation": "near",
+    "sublocality": null,
+    "locality": null,
+    "city": "Udhamsingh Nagar",
+    "state": "Uttarakhand",
+    "pincode": "262308",
+    "completeness": 0.66,
+    "missing": [
+     "locality"
+    ],
+    "error": null
+   }
+  },
+  "b": {
+   "id": "ESMF0001914",
+   "raw": "NO 20/736, OPPOSITE SANJIVINI HOSPITAL, UDAM SINGH NAGAR, P OUDAM SINGH NAGAR, UTTARAKHAND",
+   "bank": "Esaf Small Finance Bank",
+   "parsed": {
+    "raw": "NO 20/736, OPPOSITE SANJIVINI HOSPITAL, UDAM SINGH NAGAR, P OUDAM SINGH NAGAR, UTTARAKHAND",
+    "language_code": "en-IN",
+    "script_code": "Latn",
+    "occupant": null,
+    "house_number": "20/736",
+    "floor": null,
+    "building": null,
+    "visual_descriptor": null,
+    "street": null,
+    "landmarks": [
+     {
+      "name": "Sanjivini Hospital",
+      "relation": "opposite"
+     }
+    ],
+    "landmark": "Sanjivini Hospital",
+    "landmark_relation": "opposite",
+    "sublocality": null,
+    "locality": "Udam Singh Nagar",
+    "city": null,
+    "state": "Uttarakhand",
+    "pincode": null,
+    "completeness": 0.52,
+    "missing": [
+     "street",
+     "city",
+     "pincode"
+    ],
+    "error": null
+   }
+  },
+  "kind": "same_district_diff_branch"
+ },
+ {
+  "a": {
+   "id": "ICIC0002938",
+   "raw": "ICICI BANK LTD., SURVEY NO 89/2, DR. PAWAR HOSPITAL, BHIMANAGAR CHOWK, VILLAGE RANJANI, TALUKA MADHA, DISTRICT SOLAPUR, MAHARASHTRA.",
+   "bank": "ICICI Bank",
+   "parsed": {
+    "raw": "ICICI BANK LTD., SURVEY NO 89/2, DR. PAWAR HOSPITAL, BHIMANAGAR CHOWK, VILLAGE RANJANI, TALUKA MADHA, DISTRICT SOLAPUR, MAHARASHTRA.",
+    "language_code": "en-IN",
+    "script_code": "Latn",
+    "occupant": "ICICI BANK LIMITED",
+    "house_number": "SURVEY NO 89/2",
+    "floor": null,
+    "building": null,
+    "visual_descriptor": null,
+    "street": null,
+    "landmarks": [
+     {
+      "name": "DR PAWAR HOSPITAL",
+      "relation": null
+     },
+     {
+      "name": "BHIMANAGAR CHOWK",
+      "relation": null
+     }
+    ],
+    "landmark": "DR PAWAR HOSPITAL",
+    "landmark_relation": null,
+    "sublocality": "TALUKA MADHA",
+    "locality": "VILLAGE RANJANI",
+    "city": "DISTRICT SOLAPUR",
+    "state": "MAHARASHTRA",
+    "pincode": null,
+    "completeness": 0.66,
+    "missing": [
+     "street",
+     "pincode"
+    ],
+    "error": null
+   }
+  },
+  "b": {
+   "id": "UBIN0547093",
+   "raw": "SUKRAWAR PETH, MADHA, DIST. SOLAPUR, PIN - 413 209.",
+   "bank": "Union Bank of India",
+   "parsed": {
+    "raw": "SUKRAWAR PETH, MADHA, DIST. SOLAPUR, PIN - 413 209.",
+    "language_code": "en-IN",
+    "script_code": "Latn",
+    "occupant": null,
+    "house_number": null,
+    "floor": null,
+    "building": null,
+    "visual_descriptor": null,
+    "street": null,
+    "landmarks": [],
+    "landmark": null,
+    "landmark_relation": null,
+    "sublocality": null,
+    "locality": "Sukrawar Peth",
+    "city": "Madha",
+    "state": "Maharashtra",
+    "pincode": "413209",
+    "completeness": 0.3,
+    "missing": [
+     "house_number",
+     "street"
+    ],
+    "error": null
+   }
+  },
+  "kind": "same_district_diff_branch"
+ },
+ {
+  "a": {
+   "id": "INDB0000147",
+   "raw": "GROUND FLOOR, OPP. ANIMESH STEEL, DEENDAYAL UPADHYAYA CHOWK, SRIKANT VERMA MARG, NEAR MANGNETO MALL, BILASPUR",
+   "bank": "Indusind Bank",
+   "parsed": {
+    "raw": "GROUND FLOOR, OPP. ANIMESH STEEL, DEENDAYAL UPADHYAYA CHOWK, SRIKANT VERMA MARG, NEAR MANGNETO MALL, BILASPUR",
+    "language_code": "en-IN",
+    "script_code": "Latn",
+    "occupant": null,
+    "house_number": null,
+    "floor": "Ground Floor",
+    "building": null,
+    "visual_descriptor": null,
+    "street": "Srikant Verma Marg",
+    "landmarks": [
+     {
+      "name": "Animesh Steel",
+      "relation": "opposite"
+     },
+     {
+      "name": "Deendayal Upadhyay Chowk",
+      "relation": "near"
+     },
+     {
+      "name": "Mangneto Mall",
+      "relation": "near"
+     }
+    ],
+    "landmark": "Animesh Steel",
+    "landmark_relation": "opposite",
+    "sublocality": null,
+    "locality": null,
+    "city": "Bilaspur",
+    "state": null,
+    "pincode": null,
+    "completeness": 0.38,
+    "missing": [
+     "house_number",
+     "locality",
+     "pincode"
+    ],
+    "error": null
+   }
+  },
+  "b": {
+   "id": "SBIN0018521",
+   "raw": "BESIDES HOTEL INTER CITY, NEAR JAGMAL CHOWK, TORWA BILASPUR, DIST.BILASPUR, CHHATTISGARH",
+   "bank": "State Bank of India",
+   "parsed": {
+    "raw": "BESIDES HOTEL INTER CITY, NEAR JAGMAL CHOWK, TORWA BILASPUR, DIST.BILASPUR, CHHATTISGARH",
+    "language_code": "en-IN",
+    "script_code": "Latn",
+    "occupant": null,
+    "house_number": null,
+    "floor": null,
+    "building": null,
+    "visual_descriptor": null,
+    "street": null,
+    "landmarks": [
+     {
+      "name": "Hotel Inter City",
+      "relation": "beside"
+     },
+     {
+      "name": "Jagmal Chowk",
+      "relation": "near"
+     }
+    ],
+    "landmark": "Hotel Inter City",
+    "landmark_relation": "beside",
+    "sublocality": "Torwa",
+    "locality": "Bilaspur",
+    "city": "Bilaspur",
+    "state": "Chhattisgarh",
+    "pincode": null,
+    "completeness": 0.44,
+    "missing": [
+     "house_number",
+     "street",
+     "pincode"
+    ],
+    "error": null
+   }
+  },
+  "kind": "same_district_diff_branch"
+ },
+ {
+  "a": {
+   "id": "BARB0VJTKUN",
+   "raw": "PLOT NO.5 , R T C COLONY , THUMKUNTA, RANGAREDDY DIST. , HYDERABAD",
+   "bank": "Bank of Baroda",
+   "parsed": {
+    "raw": "PLOT NO.5 , R T C COLONY , THUMKUNTA, RANGAREDDY DIST. , HYDERABAD",
+    "language_code": "en-IN",
+    "script_code": "Latn",
+    "occupant": null,
+    "house_number": "PLOT NO.5",
+    "floor": null,
+    "building": null,
+    "visual_descriptor": null,
+    "street": null,
+    "landmarks": [],
+    "landmark": null,
+    "landmark_relation": null,
+    "sublocality": "RTC Colony",
+    "locality": "Thumkunta",
+    "city": "Hyderabad",
+    "state": null,
+    "pincode": null,
+    "completeness": 0.52,
+    "missing": [
+     "street",
+     "pincode"
+    ],
+    "error": null
+   }
+  },
+  "b": {
+   "id": "SBIN0032674",
+   "raw": "VILLAGE BOMMARASPET, SHAMIRPET MANDAL, NEAR GOVT. HIGH SCHOOL. DISTRICT -K.V.RANGA REDDY -, TELANGANA",
+   "bank": "State Bank of India",
+   "parsed": {
+    "raw": "VILLAGE BOMMARASPET, SHAMIRPET MANDAL, NEAR GOVT. HIGH SCHOOL. DISTRICT -K.V.RANGA REDDY -, TELANGANA",
+    "language_code": "en-IN",
+    "script_code": "Latn",
+    "occupant": null,
+    "house_number": null,
+    "floor": null,
+    "building": null,
+    "visual_descriptor": null,
+    "street": null,
+    "landmarks": [
+     {
+      "name": "Government High School",
+      "relation": "near"
+     }
+    ],
+    "landmark": "Government High School",
+    "landmark_relation": "near",
+    "sublocality": "Shamirpet Mandal",
+    "locality": "Bommaraspet",
+    "city": null,
+    "state": "Telangana",
+    "pincode": null,
+    "completeness": 0.36,
+    "missing": [
+     "house_number",
+     "street",
+     "city",
+     "pincode"
+    ],
+    "error": null
+   }
+  },
+  "kind": "same_district_diff_branch"
+ },
+ {
+  "a": {
+   "id": "CBIN0281226",
+   "raw": "AT GURUBATHAN, P.O. FAGU, DIST-DARJEELING, WEST BENGAL",
+   "bank": "Central Bank of India",
+   "parsed": {
+    "raw": "AT GURUBATHAN, P.O. FAGU, DIST-DARJEELING, WEST BENGAL",
+    "language_code": "en-IN",
+    "script_code": "Latn",
+    "occupant": null,
+    "house_number": null,
+    "floor": null,
+    "building": null,
+    "visual_descriptor": null,
+    "street": null,
+    "landmarks": [
+     {
+      "name": "Fagu Post Office",
+      "relation": "near"
+     }
+    ],
+    "landmark": "Fagu Post Office",
+    "landmark_relation": "near",
+    "sublocality": "Darjeeling",
+    "locality": "Gurubathan",
+    "city": null,
+    "state": "West Bengal",
+    "pincode": null,
+    "completeness": 0.36,
+    "missing": [
+     "house_number",
+     "street",
+     "city",
+     "pincode"
+    ],
+    "error": null
+   }
+  },
+  "b": {
+   "id": "WBSC0DJCB03",
+   "raw": "SOMBARAY BAZAR, P.O. FAGU, GORUBATHAN, DT. DARJEELING, PIN",
+   "bank": "Darjeeling District Central Co-operative Bank",
+   "parsed": {
+    "raw": "SOMBARAY BAZAR, P.O. FAGU, GORUBATHAN, DT. DARJEELING, PIN",
+    "language_code": "en-IN",
+    "script_code": "Latn",
+    "occupant": null,
+    "house_number": null,
+    "floor": null,
+    "building": null,
+    "visual_descriptor": null,
+    "street": "SOMBARAY BAZAR",
+    "landmarks": [],
+    "landmark": null,
+    "landmark_relation": null,
+    "sublocality": "Fagu",
+    "locality": "GORUBATHAN",
+    "city": "Darjeeling",
+    "state": null,
+    "pincode": null,
+    "completeness": 0.46,
+    "missing": [
+     "house_number",
+     "pincode"
+    ],
+    "error": null
+   }
+  },
+  "kind": "same_district_diff_branch"
+ }
+]

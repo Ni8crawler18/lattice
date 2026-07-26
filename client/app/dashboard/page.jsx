@@ -1,0 +1,1295 @@
+"use client";
+
+import { useCallback, useEffect, useMemo, useState } from "react";
+import Link from "next/link";
+import { apiBase, apiKey, batchAddresses, compareAddresses, fetchReal, getJob, getJobResults, jobCsvUrl, listJobs, parseAddress, submitCsvJob } from "@/lib/api";
+import GroupByDigipin from "../map/GroupByDigipin";
+
+/* Real IFSC records (labelled MICR duplicate pairs + distinct branches) so a
+   batch run visibly collapses duplicates. Nothing synthetic. */
+const REAL_BATCH = [
+  "MADHAVLEELA COMPLEX, 1ST FLOOR, MASKASATH SQUARE, ITWARI",
+  "1ST FLOOR, MADHAVLEELA COMPLEX, MASKASATH SQUARE, ITWARI NAGPUR",
+  "PLOT NO 7&7A, MYSARI CHAMBERS, SARASWATHI COLONY, LOTHUKUNTA",
+  "PT NO.7 AND 7A , MYSARI CHAMBERS, SARAWATHI COLONY, LOTHUKUNTA HYDERABAD-PIN",
+  "THE GANDHIDHAM MERCANTILE COOP BANK LTD., GMCB BHAVAN, PLOT NO.12, SECTOR NO.9, GANDHIDHAM - 370 201",
+  "GMCB BHAVAN, PLOT NO 12, SECTOR NO 9, BANKING CIRCLE, GANDHIDHAM KUTCH 370 201",
+  "3-116, 1ST FLOOR, HANUMANNAGAR COLONY CHAITANYAPURI, DILSUKHNAGAR, HYDERABAD-PIN",
+  "DOOR NO.3-116, FIRST FLOOR, HANUMAN NAGAR COLONY, CHAITANYAPURI, DILSUKNAGAR",
+  "ICICI BANK LTD., 19B BROAD STREET, KOLKATA, WEST BENGAL.",
+  "239-A, NAMDEO PRASAD BUILDING, TAMIL SANGAM ROAD, SION(EAST), MUMBAI, PIN",
+];
+
+const Mark = ({ s = 20 }) => (
+  <svg width={s} height={s} viewBox="0 0 22 22" aria-hidden>
+    <rect x="1.4" y="1.4" width="8" height="8" rx="2.2" fill="none" stroke="var(--navy)" strokeWidth="1.7" />
+    <rect x="12.6" y="1.4" width="8" height="8" rx="2.2" fill="var(--blue)" />
+    <rect x="1.4" y="12.6" width="8" height="8" rx="2.2" fill="none" stroke="var(--navy)" strokeWidth="1.7" />
+    <rect x="12.6" y="12.6" width="8" height="8" rx="2.2" fill="none" stroke="var(--navy)" strokeWidth="1.7" />
+  </svg>
+);
+
+/* ---------- examples: real IFSC records except the marked demo ---------- */
+const EXAMPLES = [
+  {
+    key: "spacing", tile: "t1", chip: "real",
+    name: "Spacing variance", sub: "IFSC dataset · same branch",
+    hint: "Real records. HANUMANNAGAR/HANUMAN NAGAR, DILSUKHNAGAR/DILSUKNAGAR.",
+    a: "3-116, 1ST FLOOR, HANUMANNAGAR COLONY CHAITANYAPURI, DILSUKHNAGAR, HYDERABAD-PIN",
+    b: "DOOR NO.3-116, FIRST FLOOR, HANUMAN NAGAR COLONY, CHAITANYAPURI, DILSUKNAGAR",
+  },
+  {
+    key: "reorder", tile: "t2", chip: "real",
+    name: "A miss, on purpose", sub: "Scores 0.73 — below our cut",
+    hint: "Real. Same branch, reversed order — lands under the 0.75 threshold. A known miss.",
+    a: "ABHAY PRASHAL, 10, RACE COURSE ROAD, INDORE",
+    b: "RACECOURSE ROAD, 10, ABHAY PRASHAL, INDORE",
+  },
+  {
+    key: "trap", tile: "t3", chip: "real",
+    name: "Near-miss trap", sub: "Shared MICR, different doors",
+    hint: "Real, and NOT the same place — both share a MICR code in the dataset.",
+    a: "M.C. NO.53, M J MALL, RAILWAY ROAD, RISHIKESH.",
+    b: "637 , LAXMAN JHOOLA ROAD , RISHIKESH -, UTTARAKHAND",
+  },
+  {
+    key: "script", tile: "t4", chip: "demo",
+    name: "Multi-script", sub: "Constructed — IFSC is Latin-only",
+    hint: "Illustrative, not from the dataset. Devanagari vs Hinglish, same house.",
+    a: "Ganesh mandir ke peeche, blue gate wala ghar, opp SBI ATM, Kothrud, Pune 411038",
+    b: "गणेश मंदिराच्या मागे, निळा गेट, एसबीआय एटीएम समोर, कोथरूड, पुणे ४११०३८",
+  },
+];
+
+const FIELD_KEYS = [
+  "house_number", "floor", "building", "street", "sublocality",
+  "locality", "post_office", "city", "district", "state", "pincode",
+];
+
+const SCRIPT_NAMES = { Latn: "Latin", Deva: "Devanagari", Taml: "Tamil",
+  Beng: "Bengali", Gujr: "Gujarati", Knda: "Kannada", Telu: "Telugu",
+  Mlym: "Malayalam", Guru: "Gurmukhi", Orya: "Odia", Arab: "Perso-Arabic" };
+const scriptName = (c) => SCRIPT_NAMES[c] || c;
+
+const BENCH = [
+  { m: "Lattice (Sarvam parse + coarse/fine resolution)", p: "1.000", r: "0.625", f: "0.769", win: true },
+  { m: "Raw string similarity @ 0.55", p: "0.462", r: "0.750", f: "0.571" },
+  { m: "Raw string similarity @ 0.65", p: "0.625", r: "0.625", f: "0.625" },
+  { m: "Raw string similarity @ 0.75", p: "0.667", r: "0.500", f: "0.571" },
+  { m: "Raw string similarity @ 0.85", p: "0.000", r: "0.000", f: "0.000" },
+];
+
+function CountUp({ value, decimals = 2, duration = 650 }) {
+  const [n, setN] = useState(0);
+  useEffect(() => {
+    let raf, t0;
+    const step = (t) => {
+      if (!t0) t0 = t;
+      const k = Math.min(1, (t - t0) / duration);
+      setN(value * (1 - Math.pow(1 - k, 3)));
+      if (k < 1) raf = requestAnimationFrame(step);
+    };
+    raf = requestAnimationFrame(step);
+    return () => cancelAnimationFrame(raf);
+  }, [value, duration]);
+  return <>{n.toFixed(decimals)}</>;
+}
+
+/* ------------------------------- icons ------------------------------- */
+const I = {
+  overview: <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.6"><path d="M2 8.5 8 3l6 5.5M4 7.5V13h8V7.5" strokeLinecap="round" strokeLinejoin="round"/></svg>,
+  resolve: <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.6"><circle cx="5" cy="8" r="2.6"/><circle cx="11" cy="8" r="2.6"/></svg>,
+  deliver: <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.6"><path d="M8 14s-4.5-3.6-4.5-7A4.5 4.5 0 0 1 8 2.5 4.5 4.5 0 0 1 12.5 7c0 3.4-4.5 7-4.5 7Z"/><circle cx="8" cy="7" r="1.4"/></svg>,
+  evidence: <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.6"><path d="M3 13V8M8 13V3M13 13v-3" strokeLinecap="round"/></svg>,
+  batch: <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.6"><path d="M2.5 5 8 2.5 13.5 5 8 7.5 2.5 5ZM2.5 8 8 10.5 13.5 8M2.5 11 8 13.5l5.5-2.5" strokeLinecap="round" strokeLinejoin="round"/></svg>,
+  parse: <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.6"><path d="M5.5 2.5c-1.6 0-1.6 1.5-1.6 2.6S3.6 7.6 2.5 8c1.1.4 1.4 1.8 1.4 2.9s0 2.6 1.6 2.6M10.5 2.5c1.6 0 1.6 1.5 1.6 2.6s.3 2.5 1.4 2.9c-1.1.4-1.4 1.8-1.4 2.9s0 2.6-1.6 2.6" strokeLinecap="round"/></svg>,
+  digipin: <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.6"><path d="M2.5 2.5h11v11h-11zM2.5 8h11M8 2.5v11" strokeLinecap="round"/></svg>,
+};
+
+/* ---------------------------- shared visuals ---------------------------- */
+
+const FLOW = [
+  { name: "Address", sub: "free text, any script" },
+  { name: "LLM parse", sub: "sarvam-105b extraction" },
+  { name: "Normalise", sub: "canonical Latin record" },
+  { name: "PIN check", sub: "19,238-pin directory" },
+  { name: "DIGIPIN", sub: "grid cell · needs coordinates" },
+  { name: "Similarity", sub: "coarse gates, fine scores" },
+  { name: "Confidence", sub: "verdict + call risk" },
+];
+
+function FlowStrip() {
+  return (
+    <div className="block flow">
+      {FLOW.map((f, i) => (
+        <div key={f.name} className={`fstep${i === 4 ? " dim" : ""}`}>
+          <span className="fnum">{i + 1}</span>
+          <div className="fname">{f.name}</div>
+          <div className="fsub">{f.sub}</div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function RiskHistogram({ records }) {
+  const bins = Array.from({ length: 10 }, () => 0);
+  records.forEach((r) => bins[Math.min(9, Math.floor(r.score.risk * 10))]++);
+  const max = Math.max(...bins, 1);
+  const color = (i) => (i < 2.8 ? "var(--green)" : i < 5.5 ? "var(--amber)" : "var(--magenta)");
+  const W = 700, H = 190, bw = W / 10;
+  return (
+    <svg viewBox={`0 0 ${W} ${H + 30}`} style={{ width: "100%" }} role="img"
+         aria-label="Distribution of deliverability risk across records">
+      {bins.map((v, i) => {
+        const h = (v / max) * (H - 24);
+        return (
+          <g key={i}>
+            <rect x={i * bw + 5} y={H - h} width={bw - 10} height={Math.max(h, v ? 3 : 0)}
+                  fill={color(i)} opacity="0.85" />
+            {v > 0 && (
+              <text x={i * bw + bw / 2} y={H - h - 7} textAnchor="middle"
+                    fontSize="12" fill="var(--muted)">{v}</text>
+            )}
+          </g>
+        );
+      })}
+      <line x1="0" y1={H + 1} x2={W} y2={H + 1} stroke="var(--line-2)" />
+      <text x="2" y={H + 20} fontSize="11.5" fill="var(--muted)">0.0 — routes clean</text>
+      <text x={W - 2} y={H + 20} fontSize="11.5" fill="var(--muted)" textAnchor="end">1.0 — undeliverable</text>
+    </svg>
+  );
+}
+
+/* ------------------------------ overview ------------------------------ */
+
+function Overview({ real, go }) {
+  const stats = useMemo(() => {
+    const recs = real?.records || [];
+    const bands = { low: 0, medium: 0, high: 0 };
+    recs.forEach((r) => bands[r.score.band]++);
+    const calls = recs.filter((r) => r.score.will_likely_need_call).length;
+    return { n: recs.length, bands, calls };
+  }, [real]);
+
+  const pct = (x) => (stats.n ? Math.round((100 * x) / stats.n) : 0);
+
+  const drivers = useMemo(() => {
+    const recs = real?.records || [];
+    const buckets = [
+      ["No house or flat number", /house or flat number/i],
+      ["Nothing below locality level", /street nor building/i],
+      ["No locality identified", /No locality/i],
+      ["No pincode on record", /No pincode/i],
+      ["Rural / administrative addressing", /Rural\/administrative/i],
+      ["Landmark-only address", /Landmark-only/i],
+    ];
+    const out = buckets.map(([label, rx]) => ({
+      label,
+      n: recs.filter((r) => r.score.reasons.some((x) => rx.test(x))).length,
+    })).filter((d) => d.n > 0).sort((a, b) => b.n - a.n);
+    const max = out[0]?.n || 1;
+    return { out, max };
+  }, [real]);
+
+  return (
+    <div className="view">
+      <FlowStrip />
+
+      <div className="block statgrid">
+        <div className="scell">
+          <div className="k">Dedupe precision — real pairs</div>
+          <div className="v" style={{ color: "var(--blue)" }}><CountUp value={1.0} decimals={3} /></div>
+          <div className="d"><span className="delta up">▲ 0 false merges</span> on 36 labelled IFSC pairs</div>
+        </div>
+        <div className="scell">
+          <div className="k">F1 vs best baseline</div>
+          <div className="v">0.769</div>
+          <div className="d"><span className="delta up">▲ +0.144</span> vs raw string matching (0.625)</div>
+        </div>
+        <div className="scell">
+          <div className="k">Records analysed</div>
+          <div className="v">{stats.n || "—"}</div>
+          <div className="d">sampled from 182,758 branch addresses</div>
+        </div>
+        <div className="scell">
+          <div className="k">Will likely need a rider call</div>
+          <div className="v" style={{ color: "var(--magenta)" }}>{pct(stats.calls)}%</div>
+          <div className="d"><span className="delta down">▼ flagged pre-dispatch</span> {stats.calls} of {stats.n} records</div>
+        </div>
+      </div>
+
+      <div className="block">
+        <div className="block-head">
+          <h3>Deliverability risk, by band</h3>
+          <span className="right">Razorpay open IFSC dataset · unmodified</span>
+        </div>
+        {["high", "medium", "low"].map((band) => (
+          <div key={band} className={`brow ${band.slice(0, 2)}`}>
+            <div className="name" style={{ textTransform: "capitalize" }}>
+              {band}
+              <small>{band === "high" ? "rider call likely" : band === "medium" ? "friction expected" : "routes clean"}</small>
+            </div>
+            <div className="track"><i style={{ width: `${pct(stats.bands[band])}%` }} /></div>
+            <div className="val">{stats.bands[band]} · {pct(stats.bands[band])}%</div>
+          </div>
+        ))}
+      </div>
+
+      <div className="duo">
+        <div className="block">
+          <div className="block-head">
+            <h3>Risk distribution</h3>
+            <span className="right">{stats.n} records, binned by score</span>
+          </div>
+          <div className="block-body">
+            <RiskHistogram records={real?.records || []} />
+          </div>
+        </div>
+        <div className="block">
+          <div className="block-head"><h3>Dataset & provenance</h3></div>
+          <div className="block-body prov">
+            <div><b>Source</b><span>Razorpay open IFSC dataset — 182,758 Indian bank branch addresses, used unmodified</span></div>
+            <div><b>Sample</b><span>{stats.n || "—"} records, one per district, spread across states</span></div>
+            <div><b>Ground truth</b><span>36 pairs labelled by inspection — MICR codes proved unreliable (8 true of 18 shared)</span></div>
+            <div><b>Method</b><span>LLM parse (sarvam-105b) → deterministic coarse/fine resolution → rule-based scoring</span></div>
+            <div><b>Scripts</b><span>Latin, Devanagari, Tamil and Bengali inputs resolve to one canonical Latin record</span></div>
+            <div><b>Known limits</b><span>8 positive pairs; weights tuned post-hoc. Full caveats in Evidence.</span></div>
+          </div>
+        </div>
+      </div>
+
+      <div className="block">
+        <div className="block-head">
+          <h3>Top risk drivers</h3>
+          <span className="right">why addresses fail, ranked — computed from this sample</span>
+        </div>
+        {drivers.out.map((d) => (
+          <div key={d.label} className="brow">
+            <div className="name" style={{ gridColumn: "1 / 2" }}>{d.label}</div>
+            <div className="track"><i style={{ width: `${Math.round((100 * d.n) / drivers.max)}%` }} /></div>
+            <div className="val">{d.n} records</div>
+          </div>
+        ))}
+      </div>
+
+      <div className="block statgrid three">
+        <button className="scell act" onClick={() => go("resolve")}>
+          <div className="k">Layer 1</div>
+          <div className="qtitle">Resolve two addresses →</div>
+          <div className="d">Same door, or different door? Live, via Sarvam.</div>
+        </button>
+        <button className="scell act" onClick={() => go("batch")}>
+          <div className="k">Batch</div>
+          <div className="qtitle">Deduplicate a file →</div>
+          <div className="d">Real records in, unique doors and golden records out.</div>
+        </button>
+        <button className="scell act" onClick={() => go("evidence")}>
+          <div className="k">Evaluation</div>
+          <div className="qtitle">See the evidence →</div>
+          <div className="d">Benchmarks, provenance, and the honest caveats.</div>
+        </button>
+      </div>
+    </div>
+  );
+}
+
+/* -------------------------------- parse --------------------------------- */
+
+const PARSE_EXAMPLES = [
+  { key: "landmark", tile: "t1", chip: "real", name: "Landmark-led",
+    sub: "temple as the reference point",
+    text: "GROUND FLOOR, SUDHAMA BUILDING, DAULAT BHAI ROAD, NEAR JAGANATH, TEMPLE, NANICHHIPWAD, VALSAD" },
+  { key: "khasra", tile: "t2", chip: "real", name: "Revenue-record address",
+    sub: "khasra / khewat + a metro pillar",
+    text: "KHEWAT NO. 50 4, KHATA NO.55, KHASRA NO 397, OPP. METRO PILLAR NO 908, SANKHOL, BAHADURGARH" },
+  { key: "rural", tile: "t3", chip: "real", name: "Village chain",
+    sub: "village → post office → district",
+    text: "VILLAGE DHANORA, PO HANODA, DIST DURG, CHATTISGARH" },
+  { key: "script", tile: "t4", chip: "demo", name: "Multi-script",
+    sub: "constructed — Devanagari input",
+    text: "गणेश मंदिराच्या मागे, निळा गेट, एसबीआय एटीएम समोर, कोथरूड, पुणे ४११०३८" },
+];
+
+function ParseView() {
+  const [text, setText] = useState(PARSE_EXAMPLES[0].text);
+  const [active, setActive] = useState("landmark");
+  const [busy, setBusy] = useState(false);
+  const [err, setErr] = useState("");
+  const [res, setRes] = useState(null);
+
+  const run = async () => {
+    if (text.trim().length < 3) return;
+    setBusy(true); setErr("");
+    try {
+      setRes(await parseAddress(text.trim()));
+    } catch (e) {
+      setErr(`Request failed: ${e.message}. Is the API reachable?`);
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const d = res?.deliverability;
+  const pc = res?.pincode_check;
+  const riskColor = d
+    ? d.band === "high" ? "var(--magenta)" : d.band === "medium" ? "var(--amber)" : "var(--green)"
+    : "var(--ink)";
+
+  return (
+    <div className="view play">
+      <div>
+        <div className="block" style={{ padding: 22 }}>
+          <label htmlFor="parse-in">One address — any script, any structure</label>
+          <textarea id="parse-in" value={text}
+                    onChange={(e) => { setText(e.target.value); setActive(null); }} />
+          <div className="controls">
+            <button className="btn" onClick={run} disabled={busy}>
+              {busy ? "Parsing via Sarvam…" : "Parse"}
+            </button>
+            {busy && <span className="hint"><span className="spin" />language ID + structured extraction</span>}
+          </div>
+          {err && <div className="error">{err}</div>}
+
+          {res && (
+            <div className="verdict">
+              <div className="vhead">
+                <div className="vscore" style={{ color: riskColor }}>
+                  {d ? d.risk.toFixed(2) : "—"}
+                </div>
+                {d && <span className={`stamp ${d.band === "high" ? "different" : d.band === "medium" ? "likely" : "same"}`}>
+                  {d.band} risk
+                </span>}
+                <div className="vsum">
+                  {d?.will_likely_need_call
+                    ? "This address will likely cost a rider phone call."
+                    : "This address routes without intervention."}
+                  {res.script_code ? ` Input script: ${scriptName(res.script_code)}${
+                    res.language_code ? ` · language guess: ${res.language_code}` : ""}.` : ""}
+                </div>
+              </div>
+              <div className="vbody">
+                <label>Structured components</label>
+                <div className="fields">
+                  {FIELD_KEYS.map((k) => (
+                    <div key={k} className={`f${res[k] ? "" : " empty"}`}>
+                      <div className="k">{k.replace(/_/g, " ")}</div>
+                      <div className="v">{res[k] || "—"}</div>
+                    </div>
+                  ))}
+                </div>
+                <div>
+                  {(res.landmarks || []).map((l, i) => (
+                    <span key={i} className="lm-pill"><i>{l.relation || "near"}</i>{l.name}</span>
+                  ))}
+                </div>
+
+                {pc?.exists != null && (
+                  <div className="chips" style={{ marginTop: 14 }}>
+                    <span className={`chip${pc.exists ? " hit" : " miss"}`}>
+                      PIN {res.pincode}: {pc.exists ? "exists in postal directory" : "not in postal directory"}
+                    </span>
+                    {pc.exists && pc.state_consistent === false &&
+                      <span className="chip miss">state conflicts with pincode</span>}
+                    {pc.exists && pc.city_consistent === false &&
+                      <span className="chip miss">city conflicts with pincode</span>}
+                  </div>
+                )}
+
+                {d?.reasons?.length > 0 && (
+                  <div style={{ marginTop: 16 }}>
+                    <label>Why</label>
+                    {d.reasons.slice(0, 4).map((x, i) => (
+                      <div key={i} style={{ fontSize: 12.5, color: "var(--ink-2)", padding: "5px 0 5px 12px",
+                                            borderLeft: "2px solid var(--line-2)", marginBottom: 4 }}>{x}</div>
+                    ))}
+                  </div>
+                )}
+                {d?.ask_for && (
+                  <div style={{ marginTop: 12, fontSize: 12.5, color: "var(--sage)" }}>
+                    <span className="lm-pill"><i>ask for</i>{d.ask_for.label}</span>
+                    −{d.ask_for.risk_reduction} risk if answered
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+
+      <div className="rail">
+        <label style={{ margin: "4px 0 2px" }}>Real address patterns</label>
+        {PARSE_EXAMPLES.map((ex) => (
+          <button key={ex.key} className={`ex${active === ex.key ? " on" : ""}`}
+            onClick={() => { setText(ex.text); setActive(ex.key); setRes(null); }}>
+            <span className={`ex-tile ${ex.tile}`} aria-hidden />
+            <span>
+              <span className="ex-name">{ex.name}</span><br />
+              <span className="ex-sub">{ex.sub}</span>
+            </span>
+            <span className={`ex-chip ${ex.chip}`}>{ex.chip}</span>
+          </button>
+        ))}
+        <div className="note" style={{ marginTop: 8 }}>
+          The landmark is not noise to strip — in India it <b>is</b> the address.
+          Lattice extracts every reference point with its spatial relation, and
+          keeps a separate slot for the property&apos;s own visual identity.
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ------------------------------ resolve ------------------------------ */
+
+function Resolve() {
+  const [a, setA] = useState(EXAMPLES[0].a);
+  const [b, setB] = useState(EXAMPLES[0].b);
+  const [active, setActive] = useState("spacing");
+  const [hint, setHint] = useState(EXAMPLES[0].hint);
+  const [busy, setBusy] = useState(false);
+  const [err, setErr] = useState("");
+  const [res, setRes] = useState(null);
+
+  const run = useCallback(async () => {
+    if (a.trim().length < 3 || b.trim().length < 3) return;
+    setBusy(true); setErr("");
+    try {
+      setRes(await compareAddresses(a.trim(), b.trim()));
+    } catch (e) {
+      setErr(`Request failed: ${e.message}. Is the API reachable?`);
+    } finally {
+      setBusy(false);
+    }
+  }, [a, b]);
+
+  const r = res?.result;
+  const summary = r && {
+    same: "These two strings describe the same physical door.",
+    likely: "Probably the same door — needs a human look.",
+    different: "Different doors.",
+  }[r.verdict];
+
+  return (
+    <div className="view play">
+      <div>
+        <div className="block" style={{ padding: 22 }}>
+          <div className="two">
+            <div>
+              <label htmlFor="addr-a">Address A</label>
+              <textarea id="addr-a" value={a} onChange={(e) => { setA(e.target.value); setActive(null); }} />
+            </div>
+            <div>
+              <label htmlFor="addr-b">Address B</label>
+              <textarea id="addr-b" value={b} onChange={(e) => { setB(e.target.value); setActive(null); }} />
+            </div>
+          </div>
+          <div className="controls">
+            <button className="btn" onClick={run} disabled={busy}>
+              {busy ? "Parsing via Sarvam…" : "Resolve"}
+            </button>
+            <span className="hint">{busy ? <><span className="spin" />two parses + resolution</> : hint}</span>
+          </div>
+          {err && <div className="error">{err}</div>}
+
+          {r && (
+            <div className="verdict">
+              <div className="vhead">
+                <div className="vscore" style={{
+                  color: r.verdict === "same" ? "var(--green)"
+                       : r.verdict === "likely" ? "var(--amber)" : "var(--magenta)",
+                }}>
+                  <CountUp value={r.score} />
+                </div>
+                <span className={`stamp ${r.verdict}`}>{r.verdict === "same" ? "same door" : r.verdict}</span>
+                <div className="vsum">{summary}</div>
+              </div>
+              <div className="vbody">
+                <div className="gauges">
+                  <div className="gauge">
+                    <div className="gt">Coarse — same neighbourhood?</div>
+                    <div className="gv">{r.coarse == null ? "—" : r.coarse.toFixed(2)}</div>
+                    <div className="track"><div className="fill" style={{ width: `${Math.round((r.coarse || 0) * 100)}%` }} /></div>
+                    <div className="gd">pincode · city · locality · sublocality</div>
+                  </div>
+                  <div className="gauge fine">
+                    <div className="gt">Fine — same door?</div>
+                    <div className="gv">{r.fine == null ? "none" : r.fine.toFixed(2)}</div>
+                    <div className="track">
+                      <div className="fill" style={{ width: `${Math.round((r.fine || 0) * 100)}%` }} />
+                      <div className="tick" style={{ left: "75%" }} title="decision threshold 0.75" />
+                    </div>
+                    <div className="gd">house no · building · landmarks · street</div>
+                  </div>
+                </div>
+                <div className="chips">
+                  {Object.entries(r.signals)
+                    .filter(([k]) => r.observed.includes(k))
+                    .map(([k, v]) => (
+                      <span key={k} className={`chip${v >= 0.85 ? " hit" : v < 0.4 ? " miss" : ""}`}>
+                        {k.replace(/_/g, " ")} <b>{v.toFixed(2)}</b>
+                      </span>
+                    ))}
+                </div>
+                {r.matched_landmarks?.length > 0 && (
+                  <div className="lmmatch"><b>Landmarks agreed:</b> {r.matched_landmarks.join(", ")}</div>
+                )}
+                {r.veto && <div className="veto">Veto — {r.veto}</div>}
+
+                <div className="two" style={{ marginTop: 22 }}>
+                  {[["A", res.a], ["B", res.b]].map(([tag, p]) => (
+                    <div key={tag}>
+                      <label>{tag} — parsed{p.script_code ? ` · ${p.script_code}` : ""}</label>
+                      <div className="fields">
+                        {FIELD_KEYS.map((k) => (
+                          <div key={k} className={`f${p?.[k] ? "" : " empty"}`}>
+                            <div className="k">{k.replace(/_/g, " ")}</div>
+                            <div className="v">{p?.[k] || "—"}</div>
+                          </div>
+                        ))}
+                      </div>
+                      <div>
+                        {(p?.landmarks || []).map((l, i) => (
+                          <span key={i} className="lm-pill"><i>{l.relation || "near"}</i>{l.name}</span>
+                        ))}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+
+      <div className="rail">
+        <label style={{ margin: "4px 0 2px" }}>Examples</label>
+        {EXAMPLES.map((ex) => (
+          <button key={ex.key} className={`ex${active === ex.key ? " on" : ""}`}
+            onClick={() => { setA(ex.a); setB(ex.b); setHint(ex.hint); setActive(ex.key); setRes(null); }}>
+            <span className={`ex-tile ${ex.tile}`} aria-hidden />
+            <span>
+              <span className="ex-name">{ex.name}</span><br />
+              <span className="ex-sub">{ex.sub}</span>
+            </span>
+            <span className={`ex-chip ${ex.chip}`}>{ex.chip}</span>
+          </button>
+        ))}
+        <div className="note" style={{ marginTop: 8 }}>
+          Validation APIs check one address in isolation. Resolution answers the
+          operational question: <b>are these two records one door?</b> That is what
+          collapses duplicate CRM rows — and what surfaces six loan applications
+          filed from one house.
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ---------------------------- deliverability ---------------------------- */
+
+function Deliver({ real }) {
+  const [showAll, setShowAll] = useState(false);
+  const records = real?.records || [];
+  const visible = showAll ? records : records.slice(0, 10);
+
+  return (
+    <div className="view">
+      <div className="block">
+        <div className="block-head">
+          <h3>Deliverability — scored before dispatch</h3>
+          <span className="right">{records.length} records · Razorpay open IFSC dataset</span>
+        </div>
+        <div style={{ overflowX: "auto" }}>
+          <table>
+            <thead>
+              <tr><th>Address (as written)</th><th>Band</th><th>Risk</th><th>Ask the customer for</th></tr>
+            </thead>
+            <tbody>
+              {visible.map((rec) => {
+                const s = rec.score;
+                return (
+                  <tr key={rec.id}>
+                    <td style={{ maxWidth: 420 }}>
+                      <span className="mono">{rec.raw}</span>
+                      {s.reasons[0] && (
+                        <div style={{ fontSize: 11.5, color: "var(--muted)", marginTop: 4 }}>{s.reasons[0]}</div>
+                      )}
+                    </td>
+                    <td><span className={`band ${s.band}`}>{s.band}</span></td>
+                    <td>
+                      <div className={`riskbar ${s.band}`}>
+                        <div className="track"><i style={{ width: `${Math.round(s.risk * 100)}%` }} /></div>
+                        <b>{s.risk.toFixed(2)}</b>
+                      </div>
+                    </td>
+                    <td style={{ fontSize: 12.5 }}>
+                      {s.ask_for ? (
+                        <>
+                          <b style={{ fontWeight: 600 }}>{s.ask_for.label}</b>
+                          <div style={{ fontSize: 11, color: "var(--muted)" }}>−{s.ask_for.risk_reduction} risk</div>
+                        </>
+                      ) : (
+                        <span style={{ color: "var(--muted)" }}>—</span>
+                      )}
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+        {records.length > 10 && (
+          <button className="expand" onClick={() => setShowAll(!showAll)}>
+            {showAll ? "Show fewer" : `Show all ${records.length} records`}
+          </button>
+        )}
+      </div>
+      <div className="note">
+        Rule-based on purpose — an ops team can&apos;t action a black-box number.
+        Every score names the missing field, and <b>ask-for</b> is computed by
+        re-scoring with that field filled in: the one question that most reduces risk.
+      </div>
+    </div>
+  );
+}
+
+/* -------------------------------- batch --------------------------------- */
+
+function BatchView() {
+  const [text, setText] = useState(REAL_BATCH.join("\n"));
+  const [busy, setBusy] = useState(false);
+  const [err, setErr] = useState("");
+  const [res, setRes] = useState(null);
+  const [job, setJob] = useState(null);        // {id,status,total,parsed_done}
+  const [jobRows, setJobRows] = useState(null);
+  const [jobErr, setJobErr] = useState("");
+  const [history, setHistory] = useState([]);
+
+  const refreshHistory = useCallback(() => {
+    listJobs().then((js) => setHistory(js.sort((a, b) => b.created - a.created))).catch(() => {});
+  }, []);
+  useEffect(() => { refreshHistory(); }, [refreshHistory]);
+
+  const openJob = async (j) => {
+    setJob(j); setJobRows(null); setJobErr("");
+    if (j.status === "done") {
+      try { setJobRows((await getJobResults(j.id)).result?.records || []); }
+      catch (e) { setJobErr(e.message); }
+    }
+  };
+
+  const importCsv = async (file) => {
+    setJobErr(""); setJobRows(null);
+    try {
+      const txt = await file.text();
+      const j = await submitCsvJob(txt, file.name);
+      setJob(j); refreshHistory();
+      const tick = async () => {
+        try {
+          const cur = await getJob(j.id);
+          setJob(cur);
+          if (cur.status === "done") {
+            const r = await getJobResults(j.id);
+            setJobRows(r.result?.records || []);
+            refreshHistory();
+          } else if (cur.status === "error") {
+            setJobErr(cur.error || "job failed");
+          } else {
+            setTimeout(tick, 1500);
+          }
+        } catch (e) { setJobErr(e.message); }
+      };
+      setTimeout(tick, 1200);
+    } catch (e) { setJobErr(`Import failed: ${e.message}`); }
+  };
+
+  const lines = text.split("\n").map((s) => s.trim()).filter((s) => s.length >= 3);
+
+  const run = async () => {
+    if (!lines.length || lines.length > 40) return;
+    setBusy(true); setErr(""); setRes(null);
+    try {
+      setRes(await batchAddresses(lines));
+    } catch (e) {
+      setErr(`Request failed: ${e.message}. Is the API reachable?`);
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const groups = useMemo(() => {
+    if (!res) return [];
+    const g = {};
+    res.parsed.forEach((p, i) => {
+      (g[p.cluster] = g[p.cluster] || []).push({ ...p, idx: i });
+    });
+    return Object.entries(g)
+      .map(([cid, members]) => {
+        const golden =
+          res.golden_records?.find((x) => String(x.cluster) === String(cid)) ||
+          members.find((m) => m.golden)?.golden || null;
+        return { cid, members, golden };
+      })
+      .sort((a, b) => b.members.length - a.members.length);
+  }, [res]);
+
+  return (
+    <div className="view">
+      <div className="block" style={{ padding: 22 }}>
+        <label htmlFor="batch-in">
+          Addresses — one per line, up to 40 · prefilled with real IFSC records containing duplicates
+        </label>
+        <textarea id="batch-in" style={{ minHeight: 190 }} value={text}
+                  onChange={(e) => setText(e.target.value)} />
+        <div className="controls">
+          <button className="btn" onClick={run} disabled={busy || !lines.length || lines.length > 40}>
+            {busy ? "Deduplicating…" : `Run dedupe on ${lines.length} addresses`}
+          </button>
+          <button className="btn ghost" onClick={() => { setText(REAL_BATCH.join("\n")); setRes(null); }} disabled={busy}>
+            Reset to sample
+          </button>
+          <label htmlFor="csvfile" className="btn ghost" style={{ cursor: "pointer" }}>
+            Import CSV…
+          </label>
+          <input id="csvfile" type="file" accept=".csv,text/csv" style={{ display: "none" }}
+                 onChange={(e) => e.target.files?.[0] && importCsv(e.target.files[0])} />
+          <span className="hint">
+            {busy
+              ? <><span className="spin" />parsing {lines.length} addresses via Sarvam — roughly 2s each</>
+              : lines.length > 40 ? "40 max here — CSV import handles up to 5,000" : "CSV: one address per row, up to 5,000"}
+          </span>
+        </div>
+        {err && <div className="error">{err}</div>}
+        {jobErr && <div className="error">{jobErr}</div>}
+
+        {job && (
+          <div className="verdict" style={{ marginTop: 18 }}>
+            <div className="vhead">
+              <div className="vscore" style={{ fontSize: 30, color: job.status === "done" ? "var(--green)" : "var(--blue)" }}>
+                {job.status === "done" ? "done" : <><span className="spin" />{job.parsed_done}/{job.total}</>}
+              </div>
+              <div className="vsum">
+                Job <span style={{ fontFamily: "var(--mono)" }}>{job.id}</span> · {job.label || "csv import"}
+                {job.cache_hits > 0 ? ` · ${job.cache_hits} cache hits` : ""}
+              </div>
+              {job.status === "done" && (
+                <a className="btn ghost" href={jobCsvUrl(job.id)} target="_blank" rel="noreferrer"
+                   style={{ textDecoration: "none" }}>Download results CSV</a>
+              )}
+            </div>
+            {jobRows && (
+              <div style={{ overflowX: "auto" }}>
+                <table>
+                  <thead><tr><th>Address (as written)</th><th>Cluster</th><th>Locality / City</th><th>Risk</th><th>Ask for</th></tr></thead>
+                  <tbody>
+                    {jobRows.slice(0, 50).map((r, i) => {
+                      const dl = r.deliverability || {};
+                      return (
+                        <tr key={i}>
+                          <td style={{ maxWidth: 380 }}><span className="mono">{r.raw}</span></td>
+                          <td className="num">{r.cluster}</td>
+                          <td style={{ fontSize: 12.5 }}>{[...new Set([r.locality, r.city].filter(Boolean))].join(", ") || "—"}</td>
+                          <td>
+                            <div className={`riskbar ${dl.band || "low"}`}>
+                              <div className="track"><i style={{ width: `${Math.round((dl.risk || 0) * 100)}%` }} /></div>
+                              <b>{dl.risk != null ? dl.risk.toFixed(2) : "—"}</b>
+                            </div>
+                          </td>
+                          <td style={{ fontSize: 12 }}>{dl.ask_for?.label || "—"}</td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+                {jobRows.length > 50 && (
+                  <div style={{ padding: "10px 22px", fontSize: 12, color: "var(--muted)" }}>
+                    Showing 50 of {jobRows.length} — full set in the CSV download.
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+
+      {history.length > 0 && (
+        <div className="block">
+          <div className="block-head">
+            <h3>Job history</h3>
+            <span className="right">in-memory store — survives until the API restarts</span>
+          </div>
+          <div style={{ overflowX: "auto" }}>
+            <table>
+              <thead><tr><th>Job</th><th>Label</th><th>Status</th><th>Progress</th><th>Cache hits</th><th></th></tr></thead>
+              <tbody>
+                {history.slice(0, 8).map((j) => (
+                  <tr key={j.id} style={{ cursor: j.status === "done" ? "pointer" : "default" }}
+                      onClick={() => j.status === "done" && openJob(j)}>
+                    <td className="num">{j.id.slice(0, 8)}</td>
+                    <td style={{ fontSize: 12.5 }}>{j.label || "—"}</td>
+                    <td><span className={`band ${j.status === "done" ? "low" : j.status === "error" ? "high" : "medium"}`}>{j.status}</span></td>
+                    <td className="num">{j.parsed_done}/{j.total}</td>
+                    <td className="num">{j.cache_hits}</td>
+                    <td style={{ fontSize: 12 }}>
+                      {j.status === "done" && (
+                        <a href={jobCsvUrl(j.id)} target="_blank" rel="noreferrer"
+                           onClick={(e) => e.stopPropagation()}
+                           style={{ color: "var(--blue)", fontWeight: 600 }}>CSV ↓</a>
+                      )}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
+
+      {res && (
+        <>
+          <div className="block statgrid">
+            <div className="scell"><div className="k">Records in</div><div className="v">{res.parsed.length}</div></div>
+            <div className="scell"><div className="k">Unique locations</div><div className="v" style={{ color: "var(--blue)" }}>{res.unique_locations}</div></div>
+            <div className="scell">
+              <div className="k">Duplicates collapsed</div>
+              <div className="v" style={{ color: "var(--green)" }}>{res.duplicates_collapsed}</div>
+              <div className="d">same door, written differently</div>
+            </div>
+            <div className="scell">
+              <div className="k">Mean call risk</div>
+              <div className="v">{res.deliverability?.mean_risk?.toFixed(2) ?? "—"}</div>
+              <div className="d">{res.deliverability ? `${res.deliverability.flagged_pct}% high-risk` : ""}</div>
+            </div>
+          </div>
+
+          <div className="clusters-grid">
+            {groups.map(({ cid, members, golden }) => (
+              <div key={cid} className={`clus${members.length > 1 ? " multi" : ""}`}>
+                <div className="clus-head">
+                  <span className="clus-n">
+                    {members.length > 1 ? `${members.length} records → 1 door` : "1 record"}
+                  </span>
+                  <span className="clus-loc">
+                    {[...new Set([members[0].locality, members[0].city].filter(Boolean))].join(", ") || "unresolved area"}
+                  </span>
+                </div>
+                {members.map((m) => (
+                  <div key={m.idx} className="clus-raw">
+                    <i className={`banddot ${m.deliverability?.band || "low"}`} aria-hidden />
+                    {m.raw}
+                  </div>
+                ))}
+                {golden && (
+                  <div className="golden">
+                    <span>
+                      golden record · agreed from {golden.member_count ?? members.length} records
+                      {golden.contested_fields?.length
+                        ? ` · contested: ${golden.contested_fields.join(", ")}` : ""}
+                    </span>
+                    {golden.canonical_text || golden.formatted ||
+                      JSON.stringify(golden.components || golden)}
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        </>
+      )}
+    </div>
+  );
+}
+
+/* ------------------------------- evidence ------------------------------- */
+
+function Evidence() {
+  return (
+    <div className="view">
+      <div className="block">
+        <div className="block-head">
+          <h3>Entity resolution vs the incumbent</h3>
+          <span className="right">36 real pairs · 8 same-building · labels by inspection</span>
+        </div>
+        <div style={{ overflowX: "auto" }}>
+          <table>
+            <thead><tr><th>Method</th><th>Precision</th><th>Recall</th><th>F1</th></tr></thead>
+            <tbody>
+              {BENCH.map((row) => (
+                <tr key={row.m} className={row.win ? "win" : ""}>
+                  <td>{row.m}</td>
+                  <td className="num">{row.p}</td>
+                  <td className="num">{row.r}</td>
+                  <td className="num">{row.f}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div className="note">
+        <b>Provenance.</b> Addresses are real and unmodified — Razorpay&apos;s open
+        IFSC dataset, 182,758 bank branches. Labels are ours, assigned by reading
+        each pair, because MICR codes are <i>not</i> reliable ground truth: of 18
+        records sharing a MICR, only 8 were actually the same building. Stale
+        duplicates inside a production banking dataset — the exact problem this
+        product exists to solve.
+      </div>
+      <div className="note">
+        <b>Limits.</b> 36 pairs, 8 positives — small. Signal weights were adjusted
+        after seeing these results, so treat the margin as indicative, not
+        validated. The number that matters for enterprise use is{" "}
+        <b>precision 1.000</b>: Lattice merged nothing it shouldn&apos;t have,
+        while raw matching produced 2–7 false merges depending on threshold. In
+        dedupe, a false merge means two customers silently become one record.
+      </div>
+    </div>
+  );
+}
+
+/* ------------------------------ agents / mcp ----------------------------- */
+
+const MCP_TOOLS = [
+  ["parse_address", "One messy address, any script → structured components + risk + pincode check."],
+  ["compare_addresses", "Two strings → same door or not, with per-signal evidence and vetoes."],
+  ["dedupe_batch", "Up to 40 addresses → clusters, golden records, per-address risk."],
+  ["match_address", "Incoming address vs the reference corpus — seen before, under any spelling?"],
+  ["check_pincode", "6-digit PIN → exists, state, district, served areas. Offline directory."],
+  ["digipin_encode", "Coordinates → DIGIPIN code on India Post's official grid."],
+  ["digipin_decode", "DIGIPIN code → cell centre and bounds."],
+];
+
+const MCP_CONFIG = `{
+  "mcpServers": {
+    "lattice": {
+      "type": "stdio",
+      "command": "python",
+      "args": ["-m", "server.lattice_mcp"],
+      "env": { "LATTICE_API": "https://your-lattice-api" }
+    }
+  }
+}`;
+
+const API_SAMPLES = [
+  ["Devanagari", { address: "गणेश मंदिराच्या मागे, निळा गेट, एसबीआय एटीएम समोर, कोथरूड, पुणे ४११०३८" }],
+  ["Hinglish", { address: "Ganesh mandir ke peeche, blue gate wala ghar, opp SBI ATM, Kothrud, Pune 411038" }],
+  ["IFSC + hints", { id: "rec-01", address: "MADHAVLEELA COMPLEX, 1ST FLOOR, MASKASATH SQUARE, ITWARI", city: "Nagpur" }],
+];
+
+const maskKey = (k) => (k ? k.slice(0, 9) + "*".repeat(Math.max(4, k.length - 9)) : "");
+
+function ApiTester() {
+  const [key, setKey] = useState("");
+  const [showOnce, setShowOnce] = useState(null);   // full key, visible until copied
+  const [editing, setEditing] = useState(false);
+  const [draft, setDraft] = useState("");
+  const [copied, setCopied] = useState(false);
+  const [minting, setMinting] = useState(false);
+  const [body, setBody] = useState(JSON.stringify(API_SAMPLES[0][1], null, 2));
+  const [resp, setResp] = useState(null);
+  const [busy, setBusy] = useState(false);
+  const [err, setErr] = useState("");
+  useEffect(() => { setKey(apiKey()); }, []);
+
+  const mint = async () => {
+    setMinting(true); setErr("");
+    try {
+      const r = await fetch(apiBase() + "/keys", {
+        method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name: "console-tester" }),
+      });
+      if (!r.ok) throw new Error(`HTTP ${r.status}`);
+      const k = (await r.json()).api_key;
+      setKey(k); setShowOnce(k); setCopied(false);
+    } catch (e) { setErr(`Key mint failed: ${e.message}`); }
+    finally { setMinting(false); }
+  };
+
+  const copyOnce = async () => {
+    try { await navigator.clipboard.writeText(showOnce); } catch { /* http context */ }
+    setCopied(true);
+    setTimeout(() => setShowOnce(null), 900);   // copied -> key disappears, mask remains
+  };
+
+  const send = async () => {
+    setBusy(true); setErr(""); setResp(null);
+    try {
+      const r = await fetch(apiBase() + "/parse", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "X-API-Key": key },
+        body,
+      });
+      setResp({ status: r.status, data: await r.json() });
+    } catch (e) { setErr(`Request failed: ${e.message}`); }
+    finally { setBusy(false); }
+  };
+
+  const curl = `curl -s -X POST ${apiBase()}/parse \\
+  -H 'Content-Type: application/json' \\
+  -H "X-API-Key: $LATTICE_KEY" \\
+  -d '${body.replace(/\n\s*/g, " ")}'`;
+
+  const mono = { fontFamily: "var(--mono)", fontSize: 11.5, lineHeight: 1.65 };
+  return (
+    <div className="block">
+      <div className="block-head">
+        <h3>Test it — one record, live</h3>
+        <span className="right">POST /parse · unstructured in, structured + DIGIPIN + lat/lon out</span>
+      </div>
+      <div className="block-body">
+        {showOnce && (
+          <div style={{ display: "flex", gap: 12, alignItems: "center", flexWrap: "wrap",
+                        background: "var(--amber-soft)", border: "1px solid #eddbb6",
+                        padding: "11px 14px", marginBottom: 14 }}>
+            <span style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.07em",
+                           textTransform: "uppercase", color: "var(--amber)" }}>shown once</span>
+            <code style={{ ...mono, fontSize: 12.5, color: "var(--ink)" }}>{showOnce}</code>
+            <button className="chip-btn" style={{ marginLeft: "auto" }} onClick={copyOnce}>
+              {copied ? "Copied ✓" : "Copy key"}
+            </button>
+          </div>
+        )}
+        <div style={{ display: "flex", gap: 10, alignItems: "center", flexWrap: "wrap", marginBottom: 14 }}>
+          <label style={{ margin: 0 }}>API key</label>
+          {editing ? (
+            <>
+              <input value={draft} onChange={(e) => setDraft(e.target.value)} spellCheck={false}
+                     placeholder="paste your ltk_… key" autoFocus
+                     style={{ ...mono, flex: 1, minWidth: 240, padding: "9px 12px",
+                              border: "1px solid var(--line-2)", background: "var(--canvas)", color: "var(--ink)" }} />
+              <button className="chip-btn" onClick={() => { if (draft.trim()) setKey(draft.trim()); setEditing(false); setDraft(""); }}>Save</button>
+              <button className="chip-btn" onClick={() => { setEditing(false); setDraft(""); }}>Cancel</button>
+            </>
+          ) : (
+            <>
+              <code style={{ ...mono, flex: 1, minWidth: 240, padding: "9px 12px",
+                             border: "1px solid var(--line-2)", background: "var(--canvas)",
+                             color: "var(--ink-2)", letterSpacing: "0.04em" }}>
+                {maskKey(key) || "no key set"}
+              </code>
+              <button className="chip-btn" onClick={mint} disabled={minting}>
+                {minting ? "Minting…" : "Mint new key"}
+              </button>
+              <button className="chip-btn" onClick={() => setEditing(true)}>Use my key</button>
+            </>
+          )}
+        </div>
+        <div className="two">
+          <div>
+            <label>Request body</label>
+            <textarea value={body} onChange={(e) => setBody(e.target.value)} spellCheck={false}
+                      style={{ minHeight: 130 }} />
+            <div style={{ display: "flex", gap: 8, marginTop: 8, flexWrap: "wrap" }}>
+              {API_SAMPLES.map(([name, sample]) => (
+                <button key={name} className="chip-btn"
+                        onClick={() => { setBody(JSON.stringify(sample, null, 2)); setResp(null); }}>
+                  {name}
+                </button>
+              ))}
+              <button className="btn" style={{ marginLeft: "auto", height: 34, padding: "0 22px", fontSize: 12.5 }}
+                      onClick={send} disabled={busy || !key}>
+                {busy ? <><span className="spin" />Parsing…</> : "Send →"}
+              </button>
+            </div>
+            <div style={{ fontSize: 11, color: "var(--muted)", marginTop: 12 }}>as curl:</div>
+            <pre style={{ ...mono, fontSize: 10.5, margin: "6px 0 0", padding: "10px 13px", overflowX: "auto",
+                          background: "var(--canvas)", border: "1px solid var(--line)", color: "var(--ink-2)" }}>
+{curl}
+            </pre>
+          </div>
+          <div>
+            <label>Response {resp && <span style={{ color: resp.status === 200 ? "var(--green)" : "var(--magenta)" }}>· HTTP {resp.status}</span>}</label>
+            <pre style={{ ...mono, margin: 0, padding: "12px 14px", minHeight: 130, maxHeight: 420, overflow: "auto",
+                          background: "var(--canvas)", border: "1px solid var(--line)", color: "var(--ink-2)" }}>
+{resp ? JSON.stringify(resp.data, null, 2) : "—  send a record to see the structured output"}
+            </pre>
+            {err && <div className="error">{err}</div>}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function AgentsView() {
+  return (
+    <div className="view">
+      <ApiTester />
+
+      <div className="block statgrid three">
+        <Link className="scell act" href="/docs" style={{ textDecoration: "none", color: "inherit" }}>
+          <div className="k">Integration docs</div>
+          <div className="qtitle">Read the API docs →</div>
+          <div className="d">auth, /parse contract, snippets, deploy — for the engineering team</div>
+        </Link>
+        <a className="scell act" href={apiBase() + "/docs"} target="_blank" rel="noreferrer"
+           style={{ textDecoration: "none", color: "inherit" }}>
+          <div className="k">OpenAPI spec</div>
+          <div className="qtitle">Swagger UI →</div>
+          <div className="d">try every endpoint live against this instance</div>
+        </a>
+        <div className="scell">
+          <div className="k">Sample DB</div>
+          <div className="qtitle" style={{ fontFamily: "var(--mono)", fontSize: 13 }}>data/sample_input.json</div>
+          <div className="d">12 multilingual records, ready to POST</div>
+        </div>
+      </div>
+
+      <div className="block statgrid">
+        <div className="scell">
+          <div className="k">MCP tools</div>
+          <div className="v" style={{ color: "var(--blue)" }}>7</div>
+          <div className="d">parse · resolve · dedupe · match · validate</div>
+        </div>
+        <div className="scell">
+          <div className="k">REST endpoints</div>
+          <div className="v">20</div>
+          <div className="d">full OpenAPI 3 spec · self-service API keys</div>
+        </div>
+        <div className="scell">
+          <div className="k">Transport</div>
+          <div className="v" style={{ fontSize: 22, paddingTop: 4 }}>stdio</div>
+          <div className="d">works against local or deployed API</div>
+        </div>
+        <div className="scell act" style={{ cursor: "pointer" }}
+             onClick={() => window.open(apiBase() + "/docs", "_blank")}>
+          <div className="k">Interactive spec</div>
+          <div className="qtitle">Open Swagger UI →</div>
+          <div className="d">{"{api}"}/docs · try every endpoint live</div>
+        </div>
+      </div>
+
+      <div className="duo">
+        <div className="block">
+          <div className="block-head">
+            <h3>Tools an agent can call</h3>
+            <span className="right">server/lattice_mcp.py</span>
+          </div>
+          {MCP_TOOLS.map(([name, desc]) => (
+            <div key={name} className="brow" style={{ gridTemplateColumns: "170px 1fr" }}>
+              <div className="name" style={{ fontFamily: "var(--mono)", fontSize: 12.5 }}>{name}</div>
+              <div style={{ fontSize: 12.5, color: "var(--muted)" }}>{desc}</div>
+            </div>
+          ))}
+        </div>
+
+        <div style={{ display: "grid", gap: 16, alignContent: "start" }}>
+          <div className="block">
+            <div className="block-head"><h3>Register — one command</h3></div>
+            <div className="block-body">
+              <pre style={{ margin: 0, fontFamily: "var(--mono)", fontSize: 11.5, lineHeight: 1.7,
+                            color: "var(--ink-2)", overflowX: "auto" }}>
+{`claude mcp add lattice \
+  --env LATTICE_API=<api-url> \
+  -- python -m server.lattice_mcp`}
+              </pre>
+              <div style={{ fontSize: 11.5, color: "var(--muted)", marginTop: 10 }}>
+                or via <span style={{ fontFamily: "var(--mono)" }}>.mcp.json</span>, checked into this repo:
+              </div>
+              <pre style={{ margin: "8px 0 0", fontFamily: "var(--mono)", fontSize: 10.5, lineHeight: 1.65,
+                            color: "var(--ink-2)", overflowX: "auto", background: "var(--canvas)",
+                            border: "1px solid var(--line)", borderRadius: 10, padding: "10px 13px" }}>
+{MCP_CONFIG}
+              </pre>
+            </div>
+          </div>
+
+          <div className="block">
+            <div className="block-head">
+              <h3>Verified tool calls</h3>
+              <span className="right">recorded from a live session</span>
+            </div>
+            <div className="block-body" style={{ fontFamily: "var(--mono)", fontSize: 11.5, lineHeight: 2, color: "var(--ink-2)" }}>
+              <div>→ compare_addresses(Indore pair)</div>
+              <div style={{ color: "var(--amber)" }}>← verdict: "likely" · score: 0.734</div>
+              <div style={{ marginTop: 6 }}>→ check_pincode("411038")</div>
+              <div style={{ color: "var(--green)" }}>← exists: true · Maharashtra / Pune</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div className="note">
+        <b>Why this exists.</b> The next generation of ops software is agentic — and an
+        agent booking a delivery or reviewing a loan file needs the same three answers a
+        human does: what does this address say, is it the one we already have, will it
+        deliver. Lattice exposes exactly those as tools. Text→DIGIPIN runs through a
+        pluggable geocoder (OSM by default) and labels its precision honestly — a
+        locality-level fix is truncated to a locality-level cell, never sold as 4m.
+      </div>
+    </div>
+  );
+}
+
+/* --------------------------------- shell --------------------------------- */
+
+const VIEWS = {
+  overview: { title: "The problem", icon: I.overview, stage: null,
+              sub: "what Indian addresses actually look like, and what they cost" },
+  parse: { title: "Parse", icon: I.parse, stage: "L0",
+           sub: "one messy string → structured components" },
+  resolve: { title: "Resolve", icon: I.resolve, stage: "L1",
+             sub: "two records — same door, or different door?" },
+  batch: { title: "Deduplicate", icon: I.batch, stage: "L1",
+           sub: "a whole file — duplicates collapsed, golden records out" },
+  deliver: { title: "Score", icon: I.deliver, stage: "L2",
+             sub: "call risk before dispatch, and the field to ask for" },
+  digipin: { title: "Group by DIGIPIN", icon: I.digipin, stage: "L3",
+             sub: "points bucketed into grid cells — one cell, one delivery batch" },
+  evidence: { title: "Evidence", icon: I.evidence, stage: null,
+              sub: "benchmarks, provenance, and the honest caveats" },
+  agents: { title: "Agents & API", icon: I.mcp, stage: null,
+            sub: "OpenAPI spec + MCP server — systems and agents as users" },
+};
+const FLOW_KEYS = ["overview", "parse", "resolve", "batch", "deliver", "digipin", "evidence"];
+
+export default function Page() {
+  const [view, setView] = useState("overview");
+  const [real, setReal] = useState(null);
+
+  useEffect(() => {
+    fetchReal().then(setReal).catch(() => {});
+  }, []);
+
+  return (
+    <div className="shell">
+      <aside className="side">
+        <Link href="/" className="brand">
+          <Mark />
+          <span>
+            <span className="brand-name">lattice</span>
+            <div className="brand-sub">Indian Address Intelligence</div>
+          </span>
+        </Link>
+        <div className="nav-group">The flow</div>
+        {FLOW_KEYS.map((k) => [k, VIEWS[k]]).map(([k, v]) => (
+          <button key={k} className={`nav-item${view === k ? " on" : ""}`} onClick={() => setView(k)}>
+            {v.icon}{v.title}
+            {v.stage && <span className="stage">{v.stage}</span>}
+          </button>
+        ))}
+        <div className="nav-group">Integrate</div>
+        <button className={`nav-item${view === "agents" ? " on" : ""}`} onClick={() => setView("agents")}>
+          {I.mcp}Agents &amp; API
+        </button>
+      </aside>
+
+      <div className="main">
+        <div className="topbar">
+          <h1>{VIEWS[view].title}</h1>
+          <span className="topbar-sub">{VIEWS[view].sub}</span>
+        </div>
+        <div className="content">
+          {view === "overview" && <Overview real={real} go={setView} />}
+          {view === "parse" && <ParseView />}
+          {view === "resolve" && <Resolve />}
+          {view === "batch" && <BatchView />}
+          {view === "deliver" && <Deliver real={real} />}
+          {view === "digipin" && <div className="view"><GroupByDigipin /></div>}
+          {view === "evidence" && <Evidence />}
+          {view === "agents" && <AgentsView />}
+        </div>
+      </div>
+    </div>
+  );
+}

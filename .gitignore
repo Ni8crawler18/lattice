@@ -1,0 +1,9 @@
+.env
+env/
+__pycache__/
+*.pyc
+.vercel
+node_modules/
+.next/
+server/raw_cache.json
+server/api_keys.json

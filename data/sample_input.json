@@ -1,0 +1,17 @@
+{
+  "description": "Sample address DB for the Lattice API. Real Razorpay IFSC records plus multi-script examples. POST each record's `address` to /parse, or the whole list to /batch (<=40) or /jobs (<=5000).",
+  "records": [
+    { "id": "rec-01", "address": "MADHAVLEELA COMPLEX, 1ST FLOOR, MASKASATH SQUARE, ITWARI" },
+    { "id": "rec-02", "address": "1ST FLOOR, MADHAVLEELA COMPLEX, MASKASATH SQUARE, ITWARI NAGPUR" },
+    { "id": "rec-03", "address": "PLOT NO 7&7A, MYSARI CHAMBERS, SARASWATHI COLONY, LOTHUKUNTA" },
+    { "id": "rec-04", "address": "PT NO.7 AND 7A , MYSARI CHAMBERS, SARAWATHI COLONY, LOTHUKUNTA HYDERABAD-PIN" },
+    { "id": "rec-05", "address": "GMCB BHAVAN, PLOT NO 12, SECTOR NO 9, BANKING CIRCLE, GANDHIDHAM KUTCH 370 201" },
+    { "id": "rec-06", "address": "3-116, 1ST FLOOR, HANUMANNAGAR COLONY CHAITANYAPURI, DILSUKHNAGAR, HYDERABAD-PIN" },
+    { "id": "rec-07", "address": "DOOR NO.3-116, FIRST FLOOR, HANUMAN NAGAR COLONY, CHAITANYAPURI, DILSUKNAGAR" },
+    { "id": "rec-08", "address": "ICICI BANK LTD., 19B BROAD STREET, KOLKATA, WEST BENGAL." },
+    { "id": "rec-09", "address": "239-A, NAMDEO PRASAD BUILDING, TAMIL SANGAM ROAD, SION(EAST), MUMBAI, PIN" },
+    { "id": "rec-10", "address": "Ganesh mandir ke peeche, blue gate wala ghar, opp SBI ATM, Kothrud, Pune 411038" },
+    { "id": "rec-11", "address": "गणेश मंदिराच्या मागे, निळा गेट, एसबीआय एटीएम समोर, कोथरूड, पुणे ४११०३८" },
+    { "id": "rec-12", "address": "M.C. NO.53, M J MALL, RAILWAY ROAD, RISHIKESH." }
+  ]
+}

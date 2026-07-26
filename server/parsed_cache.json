@@ -1,0 +1,576 @@
+{
+  "p1": {
+    "raw": "Ganesh mandir ke peeche, blue gate wala ghar, opp SBI ATM, Kothrud, Pune 411038",
+    "language_code": "hi-IN",
+    "script_code": "Latn",
+    "house_number": null,
+    "floor": null,
+    "building": null,
+    "visual_descriptor": "blue gate",
+    "street": null,
+    "landmarks": [
+      {
+        "name": "Ganesh Mandir",
+        "relation": "behind"
+      },
+      {
+        "name": "SBI ATM",
+        "relation": "opposite"
+      }
+    ],
+    "landmark": "Ganesh Mandir",
+    "landmark_relation": "behind",
+    "sublocality": null,
+    "locality": "Kothrud",
+    "city": "Pune",
+    "state": "Maharashtra",
+    "pincode": "411038",
+    "completeness": 0.44,
+    "missing": [
+      "house_number",
+      "street"
+    ],
+    "error": null
+  },
+  "p2": {
+    "raw": "Blue gate house, behind Ganesh Temple, near State Bank ATM, Kothrood, Pune - 411 038",
+    "language_code": "en-IN",
+    "script_code": "Latn",
+    "house_number": null,
+    "floor": null,
+    "building": null,
+    "visual_descriptor": "Blue gate house",
+    "street": null,
+    "landmarks": [
+      {
+        "name": "Ganesh Mandir",
+        "relation": "behind"
+      },
+      {
+        "name": "SBI ATM",
+        "relation": "near"
+      }
+    ],
+    "landmark": "Ganesh Mandir",
+    "landmark_relation": "behind",
+    "sublocality": null,
+    "locality": "Kothrud",
+    "city": "Pune",
+    "state": "Maharashtra",
+    "pincode": "411038",
+    "completeness": 0.44,
+    "missing": [
+      "house_number",
+      "street"
+    ],
+    "error": null
+  },
+  "p3": {
+    "raw": "गणेश मंदिराच्या मागे, निळा गेट, एसबीआय एटीएम समोर, कोथरूड, पुणे ४११०३८",
+    "language_code": "mr-IN",
+    "script_code": "Deva",
+    "house_number": null,
+    "floor": null,
+    "building": null,
+    "visual_descriptor": "blue gate",
+    "street": null,
+    "landmarks": [
+      {
+        "name": "Ganesh Mandir",
+        "relation": "behind"
+      },
+      {
+        "name": "SBI ATM",
+        "relation": "opposite"
+      }
+    ],
+    "landmark": "Ganesh Mandir",
+    "landmark_relation": "behind",
+    "sublocality": null,
+    "locality": "Kothrud",
+    "city": "Pune",
+    "state": "Maharashtra",
+    "pincode": "411038",
+    "completeness": 0.44,
+    "missing": [
+      "house_number",
+      "street"
+    ],
+    "error": null
+  },
+  "p4": {
+    "raw": "Nr SBI atm, Kothrud, behind ganesh mndir, blue gate, Pune",
+    "language_code": "en-IN",
+    "script_code": "Latn",
+    "house_number": null,
+    "floor": null,
+    "building": null,
+    "visual_descriptor": "blue gate",
+    "street": null,
+    "landmarks": [
+      {
+        "name": "SBI ATM",
+        "relation": "near"
+      },
+      {
+        "name": "Ganesh Mandir",
+        "relation": "behind"
+      }
+    ],
+    "landmark": "SBI ATM",
+    "landmark_relation": "near",
+    "sublocality": null,
+    "locality": "Kothrud",
+    "city": "Pune",
+    "state": "Maharashtra",
+    "pincode": null,
+    "completeness": 0.38,
+    "missing": [
+      "house_number",
+      "street",
+      "pincode"
+    ],
+    "error": null
+  },
+  "b1": {
+    "raw": "2nd cross, 4th main, near Ayyappa temple, behind Reliance Fresh, BTM 2nd stage, B'lore 560076",
+    "language_code": "en-IN",
+    "script_code": "Latn",
+    "house_number": null,
+    "floor": null,
+    "building": null,
+    "visual_descriptor": null,
+    "street": "2nd Cross, 4th Main",
+    "landmarks": [
+      {
+        "name": "Ayyappa Mandir",
+        "relation": "near"
+      },
+      {
+        "name": "Reliance Fresh",
+        "relation": "behind"
+      }
+    ],
+    "landmark": "Ayyappa Mandir",
+    "landmark_relation": "near",
+    "sublocality": "2nd Stage",
+    "locality": "BTM Layout",
+    "city": "Bengaluru",
+    "state": "Karnataka",
+    "pincode": "560076",
+    "completeness": 0.66,
+    "missing": [
+      "house_number"
+    ],
+    "error": null
+  },
+  "b2": {
+    "raw": "#12, 4th Main Road, 2nd Cross, BTM Layout 2nd Stage, Bengaluru 560076, opposite Ayyappa Temple",
+    "language_code": "en-IN",
+    "script_code": "Latn",
+    "house_number": "12",
+    "floor": null,
+    "building": null,
+    "visual_descriptor": null,
+    "street": "4th Main Road, 2nd Cross",
+    "landmarks": [
+      {
+        "name": "Ayyappa Mandir",
+        "relation": "opposite"
+      }
+    ],
+    "landmark": "Ayyappa Mandir",
+    "landmark_relation": "opposite",
+    "sublocality": "2nd Stage",
+    "locality": "BTM Layout",
+    "city": "Bengaluru",
+    "state": "Karnataka",
+    "pincode": "560076",
+    "completeness": 0.88,
+    "missing": [],
+    "error": null
+  },
+  "b3": {
+    "raw": "4th main 2nd cross btm 2nd stage bangalore near ayyappa temple reliance fresh backside",
+    "language_code": "en-IN",
+    "script_code": "Latn",
+    "house_number": null,
+    "floor": null,
+    "building": null,
+    "visual_descriptor": null,
+    "street": "4th Main 2nd Cross",
+    "landmarks": [
+      {
+        "name": "Ayyappa Mandir",
+        "relation": "near"
+      },
+      {
+        "name": "Reliance Fresh",
+        "relation": "near"
+      }
+    ],
+    "landmark": "Ayyappa Mandir",
+    "landmark_relation": "near",
+    "sublocality": "2nd Stage",
+    "locality": "BTM Layout",
+    "city": "Bengaluru",
+    "state": "Karnataka",
+    "pincode": null,
+    "completeness": 0.6,
+    "missing": [
+      "house_number",
+      "pincode"
+    ],
+    "error": null
+  },
+  "c1": {
+    "raw": "No 7, Bharathi Street, Ashok Nagar, opposite to Saravana Stores, Chennai 600083",
+    "language_code": "en-IN",
+    "script_code": "Latn",
+    "house_number": "7",
+    "floor": null,
+    "building": null,
+    "visual_descriptor": null,
+    "street": "Bharathi Street",
+    "landmarks": [
+      {
+        "name": "Saravana Stores",
+        "relation": "opposite"
+      }
+    ],
+    "landmark": "Saravana Stores",
+    "landmark_relation": "opposite",
+    "sublocality": null,
+    "locality": "Ashok Nagar",
+    "city": "Chennai",
+    "state": "Tamil Nadu",
+    "pincode": "600083",
+    "completeness": 0.82,
+    "missing": [],
+    "error": null
+  },
+  "c2": {
+    "raw": "7, பாரதி தெரு, அசோக் நகர், சரவணா ஸ்டோர்ஸ் எதிரில், சென்னை 600083",
+    "language_code": "ta-IN",
+    "script_code": "Taml",
+    "house_number": "7",
+    "floor": null,
+    "building": null,
+    "visual_descriptor": null,
+    "street": "Bharathi Theru",
+    "landmarks": [
+      {
+        "name": "Saravana Stores",
+        "relation": "opposite"
+      }
+    ],
+    "landmark": "Saravana Stores",
+    "landmark_relation": "opposite",
+    "sublocality": null,
+    "locality": "Ashok Nagar",
+    "city": "Chennai",
+    "state": "Tamil Nadu",
+    "pincode": "600083",
+    "completeness": 0.82,
+    "missing": [],
+    "error": null
+  },
+  "d1": {
+    "raw": "H.No 45, Gali No 6, Shakarpur, near Laxmi Nagar metro station, Delhi-110092",
+    "language_code": "en-IN",
+    "script_code": "Latn",
+    "house_number": "45",
+    "floor": null,
+    "building": null,
+    "visual_descriptor": null,
+    "street": "Gali No 6",
+    "landmarks": [
+      {
+        "name": "Laxmi Nagar Metro Station",
+        "relation": "near"
+      }
+    ],
+    "landmark": "Laxmi Nagar Metro Station",
+    "landmark_relation": "near",
+    "sublocality": null,
+    "locality": "Shakarpur",
+    "city": "Delhi",
+    "state": "Delhi",
+    "pincode": "110092",
+    "completeness": 0.82,
+    "missing": [],
+    "error": null
+  },
+  "d2": {
+    "raw": "45, gali no. 6 shakarpur, laxmi nagar metro ke paas, new delhi 110092",
+    "language_code": "hi-IN",
+    "script_code": "Latn",
+    "house_number": "45",
+    "floor": null,
+    "building": null,
+    "visual_descriptor": null,
+    "street": "Gali No. 6",
+    "landmarks": [
+      {
+        "name": "Laxmi Nagar Metro",
+        "relation": "near"
+      }
+    ],
+    "landmark": "Laxmi Nagar Metro",
+    "landmark_relation": "near",
+    "sublocality": "Shakarpur",
+    "locality": "Laxmi Nagar",
+    "city": "New Delhi",
+    "state": "Delhi",
+    "pincode": "110092",
+    "completeness": 0.88,
+    "missing": [],
+    "error": null
+  },
+  "x1": {
+    "raw": "Flat 302, Shivneri Apartments, Karve Road, Kothrud, Pune 411038",
+    "language_code": "en-IN",
+    "script_code": "Latn",
+    "house_number": "302",
+    "floor": null,
+    "building": "Shivneri Apartments",
+    "visual_descriptor": null,
+    "street": "Karve Road",
+    "landmarks": [],
+    "landmark": null,
+    "landmark_relation": null,
+    "sublocality": null,
+    "locality": "Kothrud",
+    "city": "Pune",
+    "state": "Maharashtra",
+    "pincode": "411038",
+    "completeness": 0.8,
+    "missing": [],
+    "error": null
+  },
+  "x2": {
+    "raw": "No 88, 4th Main, BTM 1st Stage, Bengaluru 560029, near Udupi Hotel",
+    "language_code": "en-IN",
+    "script_code": "Latn",
+    "house_number": "88",
+    "floor": null,
+    "building": null,
+    "visual_descriptor": null,
+    "street": "4th Main Road",
+    "landmarks": [
+      {
+        "name": "Udupi Hotel",
+        "relation": "near"
+      }
+    ],
+    "landmark": "Udupi Hotel",
+    "landmark_relation": "near",
+    "sublocality": "1st Stage",
+    "locality": "BTM Layout",
+    "city": "Bengaluru",
+    "state": "Karnataka",
+    "pincode": "560029",
+    "completeness": 0.88,
+    "missing": [],
+    "error": null
+  },
+  "x3": {
+    "raw": "H.No 45, Gali No 6, Krishna Nagar, near Laxmi Nagar metro, Delhi 110051",
+    "language_code": "en-IN",
+    "script_code": "Latn",
+    "house_number": "45",
+    "floor": null,
+    "building": null,
+    "visual_descriptor": null,
+    "street": "Gali No 6",
+    "landmarks": [
+      {
+        "name": "Laxmi Nagar Metro",
+        "relation": "near"
+      }
+    ],
+    "landmark": "Laxmi Nagar Metro",
+    "landmark_relation": "near",
+    "sublocality": null,
+    "locality": "Krishna Nagar",
+    "city": "Delhi",
+    "state": "Delhi",
+    "pincode": "110051",
+    "completeness": 0.82,
+    "missing": [],
+    "error": null
+  },
+  "s1": {
+    "raw": "Beside Ratnadeep supermarket, above Kotak bank, Madhapur, Hyd",
+    "language_code": "en-IN",
+    "script_code": "Latn",
+    "house_number": null,
+    "floor": null,
+    "building": null,
+    "visual_descriptor": null,
+    "street": null,
+    "landmarks": [
+      {
+        "name": "Ratnadeep Supermarket",
+        "relation": "beside"
+      },
+      {
+        "name": "Kotak Bank",
+        "relation": "above"
+      }
+    ],
+    "landmark": "Ratnadeep Supermarket",
+    "landmark_relation": "beside",
+    "sublocality": null,
+    "locality": "Madhapur",
+    "city": "Hyderabad",
+    "state": "Telangana",
+    "pincode": null,
+    "completeness": 0.38,
+    "missing": [
+      "house_number",
+      "street",
+      "pincode"
+    ],
+    "error": null
+  },
+  "s2": {
+    "raw": "৩২এ, রাসবিহারী এভিনিউ, কালীঘাট মেট্রোর কাছে, কলকাতা ৭০০০২৬",
+    "language_code": "bn-IN",
+    "script_code": "Beng",
+    "house_number": "32A",
+    "floor": null,
+    "building": null,
+    "visual_descriptor": null,
+    "street": "Rasbihari Avenue",
+    "landmarks": [
+      {
+        "name": "Kalighat Metro",
+        "relation": "near"
+      }
+    ],
+    "landmark": "Kalighat Metro",
+    "landmark_relation": "near",
+    "sublocality": null,
+    "locality": null,
+    "city": "Kolkata",
+    "state": "West Bengal",
+    "pincode": "700026",
+    "completeness": 0.66,
+    "missing": [
+      "locality"
+    ],
+    "error": null
+  },
+  "s3": {
+    "raw": "Hanuman mandir ke saamne wali gali, teesra makan, Aminabad, Lucknow",
+    "language_code": "hi-IN",
+    "script_code": "Latn",
+    "house_number": "3",
+    "floor": null,
+    "building": null,
+    "visual_descriptor": null,
+    "street": null,
+    "landmarks": [
+      {
+        "name": "Hanuman Mandir",
+        "relation": "opposite"
+      }
+    ],
+    "landmark": "Hanuman Mandir",
+    "landmark_relation": "opposite",
+    "sublocality": null,
+    "locality": "Aminabad",
+    "city": "Lucknow",
+    "state": "Uttar Pradesh",
+    "pincode": null,
+    "completeness": 0.6,
+    "missing": [
+      "street",
+      "pincode"
+    ],
+    "error": null
+  },
+  "s4": {
+    "raw": "B-14, Swagat Flats, Naranpura char rasta pase, Ahmedabad 380013",
+    "language_code": "gu-IN",
+    "script_code": "Latn",
+    "house_number": "B-14",
+    "floor": null,
+    "building": "Swagat Flats",
+    "visual_descriptor": null,
+    "street": null,
+    "landmarks": [
+      {
+        "name": "Char Rasta",
+        "relation": "near"
+      }
+    ],
+    "landmark": "Char Rasta",
+    "landmark_relation": "near",
+    "sublocality": null,
+    "locality": "Naranpura",
+    "city": "Ahmedabad",
+    "state": "Gujarat",
+    "pincode": "380013",
+    "completeness": 0.78,
+    "missing": [
+      "street"
+    ],
+    "error": null
+  },
+  "s5": {
+    "raw": "Plot 22, near Jain mandir, Malviya Ngr sector 4, Jaipur, Raj - 302017",
+    "language_code": "en-IN",
+    "script_code": "Latn",
+    "house_number": "22",
+    "floor": null,
+    "building": null,
+    "visual_descriptor": null,
+    "street": null,
+    "landmarks": [
+      {
+        "name": "Jain Mandir",
+        "relation": "near"
+      }
+    ],
+    "landmark": "Jain Mandir",
+    "landmark_relation": "near",
+    "sublocality": "Sector 4",
+    "locality": "Malviya Nagar",
+    "city": "Jaipur",
+    "state": "Rajasthan",
+    "pincode": "302017",
+    "completeness": 0.72,
+    "missing": [
+      "street"
+    ],
+    "error": null
+  },
+  "s6": {
+    "raw": "Room no 4, chawl no 2, Dr Ambedkar Rd, behind Sena bhavan, Dadar East, Mumbai 400014",
+    "language_code": "en-IN",
+    "script_code": "Latn",
+    "house_number": "Room no 4",
+    "floor": null,
+    "building": "Chawl no 2",
+    "visual_descriptor": null,
+    "street": "Dr Ambedkar Road",
+    "landmarks": [
+      {
+        "name": "Sena Bhavan",
+        "relation": "behind"
+      }
+    ],
+    "landmark": "Sena Bhavan",
+    "landmark_relation": "behind",
+    "sublocality": "East",
+    "locality": "Dadar",
+    "city": "Mumbai",
+    "state": "Maharashtra",
+    "pincode": "400014",
+    "completeness": 1.0,
+    "missing": [],
+    "error": null
+  }
+}

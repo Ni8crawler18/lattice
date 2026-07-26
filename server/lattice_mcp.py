@@ -1,0 +1,128 @@
+"""Lattice MCP server -- Indian Address Intelligence for agents.
+
+Bridges MCP tools to the Lattice REST API (local or deployed), so any
+MCP-capable agent (Claude Code, Cursor, ...) can parse, resolve, dedupe and
+score Indian addresses.
+
+Run:
+    LATTICE_API=http://127.0.0.1:8077 python -m server.lattice_mcp
+
+Register (Claude Code):
+    claude mcp add lattice -- <venv>/bin/python -m server.lattice_mcp
+
+Design notes:
+- stdlib urllib only; the single dependency is the `mcp` SDK.
+- Tools mirror the public API 1:1 and return the API's JSON verbatim --
+  no reshaping, so tool output always matches the OpenAPI schema at /docs.
+- Text -> DIGIPIN is NOT offered: DIGIPIN tools take coordinates, per the
+  project's claims discipline.
+"""
+
+import json
+import os
+import urllib.error
+import urllib.request
+
+from mcp.server.fastmcp import FastMCP
+
+API = os.environ.get("LATTICE_API", "http://127.0.0.1:8077").rstrip("/")
+
+mcp = FastMCP(
+    "lattice",
+    instructions=(
+        "Indian address intelligence. Free-text Indian addresses are "
+        "landmark-led, multi-script and non-canonical; these tools parse them "
+        "into structure, decide whether two strings are the same physical "
+        "door, deduplicate batches, and score deliverability risk. "
+        "All tools call a running Lattice API (LATTICE_API env)."
+    ),
+)
+
+
+def _call(method: str, path: str, body: dict | None = None) -> dict:
+    req = urllib.request.Request(
+        API + path,
+        data=json.dumps(body).encode() if body is not None else None,
+        headers={"Content-Type": "application/json"},
+        method=method,
+    )
+    try:
+        with urllib.request.urlopen(req, timeout=180) as r:
+            return json.loads(r.read())
+    except urllib.error.HTTPError as e:
+        detail = e.read().decode(errors="replace")[:400]
+        return {"error": f"HTTP {e.code}", "detail": detail}
+    except urllib.error.URLError as e:
+        return {"error": "lattice API unreachable",
+                "detail": f"{e.reason} -- is it running at {API}?"}
+
+
+@mcp.tool()
+def parse_address(address: str) -> dict:
+    """Parse one messy Indian address (any script) into structured components.
+
+    Returns house_number/building/street/locality/post_office/city/district/
+    state/pincode, landmarks with spatial relations, a deliverability risk
+    score with reasons and the single best field to ask the customer for,
+    and an offline postal-directory check of the pincode.
+    """
+    return _call("POST", "/parse", {"address": address})
+
+
+@mcp.tool()
+def compare_addresses(a: str, b: str) -> dict:
+    """Do two address strings refer to the same physical door?
+
+    Returns score (0-1), verdict (same/likely/different), coarse vs fine
+    signal breakdown, matched landmarks, and any veto (e.g. house-number
+    mismatch). Decision threshold used downstream is 0.75.
+    """
+    return _call("POST", "/compare", {"a": a, "b": b})
+
+
+@mcp.tool()
+def dedupe_batch(addresses: list[str]) -> dict:
+    """Deduplicate up to 40 address strings to unique physical locations.
+
+    Returns cluster ids, unique_locations, duplicates_collapsed, one golden
+    (canonical merged) record per cluster with provenance, and per-address
+    deliverability scores.
+    """
+    return _call("POST", "/batch", {"addresses": addresses})
+
+
+@mcp.tool()
+def match_address(address: str, top_k: int = 5) -> dict:
+    """Match an incoming address against the reference corpus.
+
+    Answers: has this address (under any spelling) been seen before?
+    Returns top-k candidates with scores and evidence.
+    """
+    return _call("POST", "/match", {"address": address, "top_k": top_k})
+
+
+@mcp.tool()
+def check_pincode(pincode: str) -> dict:
+    """Look up a 6-digit PIN in the offline postal directory (19,238 pins):
+    does it exist, which state/district does it belong to, which areas
+    does it serve."""
+    return _call("GET", f"/pincode/{pincode}")
+
+
+@mcp.tool()
+def digipin_encode(latitude: float, longitude: float) -> dict:
+    """Coordinates -> DIGIPIN code (India Post's official 4m x 4m grid).
+    Coordinates only -- free-text addresses need geocoding first, which
+    Lattice deliberately does not claim to do."""
+    return _call("POST", "/digipin/encode",
+                 {"latitude": latitude, "longitude": longitude})
+
+
+@mcp.tool()
+def digipin_decode(digipin: str) -> dict:
+    """DIGIPIN code -> cell centre coordinates and bounds."""
+    return _call("POST", "/digipin/decode", {"digipin": digipin})
+
+
+if __name__ == "__main__":
+    mcp.run()

@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lattice — Pitch Deck</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Silkscreen&display=swap" rel="stylesheet">
+<style>
+  /* Lattice — same theme as the console: light canvas · navy/blue · magenta accents · Inter */
+  :root {
+    --bg: #f6f7f9; --card: #ffffff; --ink: #16181d; --ink2: #40454e;
+    --muted: #81868f; --line: #e7e9ee; --line2: #d6d9e0;
+    --navy: #22293a; --blue: #2f6be0; --blue-soft: #eaf1fd;
+    --magenta: #c13a76; --magenta-soft: #fbecf3;
+    --green: #1d8043; --green-soft: #e8f4ec; --amber: #b0731a;
+    --mono: "JetBrains Mono", ui-monospace, monospace;
+    --pixel: "Silkscreen", ui-monospace, monospace;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: "Inter", ui-sans-serif, system-ui, sans-serif;
+    background: var(--bg); color: var(--ink);
+    overflow: hidden; height: 100vh; width: 100vw;
+    -webkit-font-smoothing: antialiased; font-feature-settings: "tnum";
+  }
+
+  .deck { position: relative; width: 100%; height: 100vh; }
+  .slide {
+    position: absolute; inset: 0; overflow: hidden;
+    display: flex; flex-direction: column; justify-content: center;
+    padding: 10vh 8vw;
+    opacity: 0; pointer-events: none; transition: opacity 0.45s ease;
+  }
+  .slide.active { opacity: 1; pointer-events: auto; }
+
+  /* atmosphere: the lattice plus-grid */
+  .plus-grid {
+    position: absolute; inset: 0; pointer-events: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40'%3E%3Cpath d='M20 16v8M16 20h8' stroke='%23dcdee4' stroke-width='1'/%3E%3C/svg%3E");
+    -webkit-mask-image: radial-gradient(ellipse 85% 75% at 45% 10%, #000 25%, transparent 90%);
+    mask-image: radial-gradient(ellipse 85% 75% at 45% 10%, #000 25%, transparent 90%);
+  }
+  .glow { position: absolute; border-radius: 9999px; filter: blur(70px); pointer-events: none; }
+  .glow-blue { background: radial-gradient(circle, rgba(47,107,224,0.12), transparent 70%); }
+  .glow-mag  { background: radial-gradient(circle, rgba(193,58,118,0.09), transparent 70%); }
+
+  .relz { position: relative; z-index: 2; }
+  .accent { color: var(--blue); }
+  .accent-m { color: var(--magenta); }
+  .eyebrow { font-size: 0.68rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.28em; color: var(--blue); margin-bottom: 1.4rem; }
+  h1 { font-weight: 700; font-size: clamp(2.8rem, 6.4vw, 5.4rem); line-height: 1.02; letter-spacing: -0.045em; }
+  h2 { font-weight: 700; font-size: clamp(2rem, 4.6vw, 3.8rem); line-height: 1.04; letter-spacing: -0.04em; }
+  .lede { font-size: clamp(1rem, 1.35vw, 1.25rem); font-weight: 400; color: var(--ink2); line-height: 1.6; max-width: 680px; margin-top: 1.5rem; }
+  .lede strong { color: var(--ink); font-weight: 600; }
+
+  .reveal { opacity: 0; transform: translateY(20px); }
+  .slide.active .reveal {
+    opacity: 1; transform: none;
+    transition: opacity 0.7s cubic-bezier(.22,1,.36,1), transform 0.7s cubic-bezier(.22,1,.36,1);
+    transition-delay: calc(var(--i,0) * 90ms);
+  }
+
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+  .grid-3 { display: grid; grid-template-columns: repeat(3,1fr); gap: 1rem; }
+  .grid-4 { display: grid; grid-template-columns: repeat(4,1fr); gap: 1rem; }
+  .split  { display: grid; grid-template-columns: 1.05fr 0.95fr; gap: 3.6rem; align-items: center; }
+
+  .card { border: 1px solid var(--line); background: var(--card); border-radius: 16px; padding: 1.4rem 1.5rem; box-shadow: 0 1px 2px rgba(22,24,29,0.04); }
+  .card h3 { font-size: 0.98rem; font-weight: 600; margin-bottom: 0.4rem; letter-spacing: -0.01em; }
+  .card h3.blue { color: var(--blue); font-size: 0.9rem; }
+  .card p { font-size: 0.83rem; color: var(--muted); line-height: 1.55; }
+  .card .num { font-family: var(--mono); font-size: 0.72rem; color: var(--blue); margin-bottom: 0.6rem; }
+
+  /* closed hairline grid — the console's statgrid register */
+  .cells { display: grid; gap: 1px; background: var(--line); border: 1px solid var(--line); border-radius: 18px; overflow: hidden; }
+  .cell { background: var(--card); padding: 1.35rem 1.5rem; }
+  .cell .top { display: flex; align-items: baseline; justify-content: space-between; }
+  .cell .t { font-size: 1.3rem; font-weight: 650; letter-spacing: -0.02em; }
+  .cell .n { font-family: var(--mono); font-size: 0.7rem; color: var(--blue); }
+  .cell p { font-size: 0.76rem; color: var(--muted); line-height: 1.5; margin-top: 0.6rem; }
+  .cell.dim .t { color: var(--ink2); }
+  .cell.dim p { font-style: italic; }
+
+  .figs { display: flex; flex-direction: column; gap: 1.5rem; }
+  .fig-v { font-weight: 700; font-size: clamp(2.2rem,3.6vw,3.2rem); line-height: 1; font-variant-numeric: tabular-nums; letter-spacing: -0.04em; }
+  .fig-v small { font-size: 0.45em; color: var(--muted); font-weight: 500; }
+  .fig-l { font-size: 0.74rem; color: var(--muted); margin-top: 0.4rem; }
+
+  .proof { display: flex; flex-wrap: wrap; gap: 0.6rem 2rem; font-size: 0.82rem; color: var(--muted); }
+  .proof b { color: var(--blue); font-weight: 600; margin-right: 0.35rem; }
+
+  .pull { font-weight: 500; font-size: clamp(1.1rem,1.8vw,1.5rem); line-height: 1.45; color: var(--ink); max-width: 920px; margin-top: 2rem; letter-spacing: -0.01em; }
+
+  /* terminal */
+  .term { border-radius: 16px; overflow: hidden; border: 1px solid var(--line2); background: var(--card);
+    box-shadow: 0 2px 8px rgba(22,24,29,0.06), 0 16px 44px rgba(22,24,29,0.08); font-family: var(--mono); }
+  .term-bar { display: flex; align-items: center; gap: 0.45rem; padding: 0.8rem 1.1rem; border-bottom: 1px solid var(--line); font-size: 0.6rem; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted); }
+  .term-bar i { width: 8px; height: 8px; border-radius: 50%; background: var(--line2); }
+  .term-body { padding: 1.2rem 1.4rem; font-size: 0.8rem; line-height: 1.9; color: var(--ink2); }
+  .term-body .ok { color: var(--green); font-weight: 500; }
+  .term-body .dim { color: var(--line2); }
+  .term-body .cm { color: var(--muted); }
+
+  /* raw address exhibits */
+  .exhibit { font-family: var(--mono); font-size: 0.82rem; line-height: 1.6; color: var(--ink2);
+    background: var(--card); border: 1px solid var(--line); border-left: 3px solid var(--magenta);
+    border-radius: 12px; padding: 0.9rem 1.2rem; }
+  .exhibit em { font-style: normal; font-size: 0.62rem; font-family: "Inter", sans-serif; font-weight: 700;
+    letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); display: block; margin-bottom: 0.3rem; }
+
+  /* flow pills */
+  .flowrow { display: flex; flex-wrap: wrap; gap: 0.55rem; margin-top: 1.6rem; }
+  .fpill { display: inline-flex; align-items: center; gap: 0.5rem; background: var(--card); border: 1px solid var(--line);
+    border-radius: 999px; padding: 0.6rem 1.1rem; font-size: 0.82rem; font-weight: 600; }
+  .fpill span { font-family: var(--mono); font-size: 0.62rem; color: var(--blue); }
+  .fpill:not(:last-child)::after { content: "→"; color: var(--line2); margin-left: 0.35rem; }
+  .fpill.dim { color: var(--ink2); border-style: dashed; }
+
+  /* bench table */
+  table { width: 100%; border-collapse: collapse; font-size: 0.85rem; background: var(--card); border-radius: 16px; overflow: hidden; }
+  .tblwrap { border: 1px solid var(--line); border-radius: 16px; overflow: hidden; }
+  th, td { text-align: left; padding: 0.75rem 1.2rem; border-bottom: 1px solid var(--line); }
+  th { font-size: 0.6rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); background: var(--bg); }
+  td.mono { font-family: var(--mono); font-size: 0.8rem; font-variant-numeric: tabular-nums; }
+  tr.win td { background: var(--blue-soft); font-weight: 600; }
+  tr.win td.mono { color: var(--blue); }
+  tr:last-child td { border-bottom: none; }
+
+  .tags { display: flex; gap: 0.45rem; flex-wrap: wrap; }
+  .tag { font-size: 0.66rem; font-weight: 500; color: var(--ink2); border: 1px solid var(--line); background: var(--card); padding: 0.32rem 0.75rem; border-radius: 999px; }
+  .badge { display: inline-flex; align-items: center; gap: 0.5rem; font-size: 0.72rem; font-weight: 600; color: var(--blue); border: 1px solid rgba(47,107,224,0.3); background: var(--blue-soft); padding: 0.42rem 0.95rem; border-radius: 999px; }
+
+  .bar { position: absolute; top: 5vh; left: 8vw; right: 8vw; display: flex; align-items: center; justify-content: space-between; z-index: 5; }
+  .bar .wm { display: flex; align-items: center; gap: 0.6rem; font-family: var(--pixel); font-size: 0.95rem; }
+  .bar .sec { font-size: 0.62rem; font-weight: 700; letter-spacing: 0.16em; text-transform: uppercase; color: var(--muted); }
+  .mark { display: inline-grid; grid-template-columns: 1fr 1fr; gap: 2.5px; width: 19px; height: 19px; }
+  .mark i { border: 1.6px solid var(--navy); border-radius: 4px; }
+  .mark i:nth-child(2) { background: var(--blue); border-color: var(--blue); }
+
+  .cta { display: flex; gap: 0.7rem; margin-top: 2.2rem; }
+  .cta a { font-size: 0.86rem; font-weight: 600; text-decoration: none; padding: 0.8rem 1.6rem; border-radius: 999px; transition: all 0.2s; }
+  .cta .p { background: var(--navy); color: #fff; }
+  .cta .p:hover { background: var(--blue); box-shadow: 0 8px 26px rgba(47,107,224,0.35); }
+  .cta .s { border: 1px solid var(--line2); color: var(--ink); background: var(--card); }
+  .cta .s:hover { border-color: var(--blue); color: var(--blue); }
+
+  .progress { position: fixed; bottom: 0; left: 0; height: 2px; z-index: 100; background: linear-gradient(90deg, var(--blue), var(--magenta)); transition: width 0.45s ease; }
+  .counter { position: fixed; bottom: 1.5rem; right: 2rem; font-family: var(--mono); font-size: 0.64rem; color: var(--muted); z-index: 100; }
+
+  .footnote { font-size: 0.66rem; color: var(--muted); margin-top: 1.6rem; }
+
+  @media print {
+    body { overflow: visible; height: auto; width: auto; }
+    .deck { position: static; height: auto; }
+    .slide { position: static !important; opacity: 1 !important; pointer-events: auto !important; page-break-after: always; page-break-inside: avoid; min-height: 100vh; padding: 8vh 6vw; }
+    .slide:last-child { page-break-after: auto; }
+    .reveal { opacity: 1 !important; transform: none !important; }
+    .progress, .counter { display: none !important; }
+    * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+  }
+</style>
+</head>
+<body>
+
+<div class="deck" id="deck">
+
+  <!-- ░ COVER ░ -->
+  <div class="slide active" data-slide="0">
+    <div class="plus-grid"></div>
+    <div class="glow glow-blue" style="right:-12%; top:-16%; width:600px; height:600px;"></div>
+    <div class="bar"><span class="wm"><span class="mark"><i></i><i></i><i></i><i></i></span>lattice</span><a class="sec" href="/" target="_top" style="text-decoration:none;">lattice · console ↗</a></div>
+    <div class="relz">
+      <div class="badge reveal" style="--i:0; margin-bottom:2rem;">Sarvam Epoch Buildathon · Bengaluru · July 26</div>
+      <h1 class="reveal" style="--i:1;">Every Indian address,<br><span class="accent">resolved to a door.</span></h1>
+      <p class="lede reveal" style="--i:2;">Free-text addresses are the last unstructured field in Indian operations. Lattice <strong>parses</strong> them, <strong>deduplicates</strong> them to physical doors, and <strong>scores delivery risk</strong> before dispatch — over your own data, through one API.</p>
+      <div class="proof reveal" style="--i:3; margin-top:2.2rem;">
+        <span><b>1.000</b>dedupe precision on real pairs</span>
+        <span><b>182,758</b>real records behind the eval</span>
+        <span><b>Indic-native</b>built on the Sarvam stack</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ░ 01 PROBLEM ░ -->
+  <div class="slide" data-slide="1">
+    <div class="glow glow-mag" style="right:-14%; bottom:-20%; width:520px; height:520px;"></div>
+    <div class="bar"><span class="wm"><span class="mark"><i></i><i></i><i></i><i></i></span>lattice</span><span class="sec">01 / Problem</span></div>
+    <div class="relz split">
+      <div>
+        <p class="eyebrow reveal" style="--i:0;">The problem</p>
+        <h2 class="reveal" style="--i:1;">Indian addresses are not addresses.<br><span class="accent-m">They are directions.</span></h2>
+        <p class="lede reveal" style="--i:2;">Landmarks instead of street identity, four scripts, no canonical spelling, one door written a dozen ways. Software built for <strong>house → street → postcode</strong> doesn't fail loudly here — it returns a confident answer that is quietly wrong.</p>
+        <p class="pull reveal" style="--i:3; font-size:clamp(1rem,1.5vw,1.3rem);">Silent failure is the expensive kind — <span class="accent">nobody knows to fix it.</span></p>
+      </div>
+      <div style="display:grid; gap:0.8rem;">
+        <div class="exhibit reveal" style="--i:2;"><em>Real record · IFSC dataset</em>KHEWAT NO. 50 4, KHATA NO.55, KHASRA NO 397, OPP. METRO PILLAR NO 908, SANKHOL, BAHADURGARH</div>
+        <div class="exhibit reveal" style="--i:3;"><em>Real record · IFSC dataset</em>GROUND FLOOR, SUDHAMA BUILDING, DAULAT BHAI ROAD, NEAR JAGANATH, TEMPLE, NANICHHIPWAD, VALSAD</div>
+        <div class="exhibit reveal" style="--i:4;"><em>How people actually write</em>Ganesh mandir ke peeche, blue gate wala ghar, opp SBI ATM, Kothrud, Pune 411038</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ░ 02 COST ░ -->
+  <div class="slide" data-slide="2">
+    <div class="bar"><span class="wm"><span class="mark"><i></i><i></i><i></i><i></i></span>lattice</span><span class="sec">02 / What it costs</span></div>
+    <div class="relz split">
+      <div>
+        <p class="eyebrow reveal" style="--i:0;">What it costs</p>
+        <h2 class="reveal" style="--i:1;">The address field is a <span class="accent-m">P&amp;L line.</span></h2>
+        <p class="lede reveal" style="--i:2;">Every returned parcel is shipping paid twice for revenue booked zero. Every rider phone call is paid minutes per order at national scale — and its root cause is address ambiguity. Every ops leader in this room tracks that number.</p>
+        <p class="footnote reveal" style="--i:3;">¹ Industry-reported figures for COD-heavy Indian e-commerce logistics; not primary research. Sources in the console.</p>
+      </div>
+      <div class="figs">
+        <div class="reveal" style="--i:3;"><div class="fig-v accent-m">15–30%</div><div class="fig-l">return-to-origin rate in India¹ — spiking past 40% in COD-heavy categories</div></div>
+        <div class="reveal" style="--i:4;"><div class="fig-v accent">2–5%</div><div class="fig-l">the global benchmark¹</div></div>
+        <div class="reveal" style="--i:5;"><div class="fig-v accent-m">&gt;45%</div><div class="fig-l">of RTOs trace to incorrect, vague or incomplete addresses¹</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ░ 03 INSIGHT ░ -->
+  <div class="slide" data-slide="3">
+    <div class="glow glow-blue" style="left:-12%; top:-16%; width:520px; height:520px;"></div>
+    <div class="bar"><span class="wm"><span class="mark"><i></i><i></i><i></i><i></i></span>lattice</span><span class="sec">03 / The insight</span></div>
+    <div class="relz">
+      <p class="eyebrow reveal" style="--i:0;">The insight</p>
+      <h2 class="reveal" style="--i:1;">Validation is not <span class="accent">resolution.</span></h2>
+      <p class="lede reveal" style="--i:2;">A validation API checks one address in isolation. It will never tell you that six rows in your CRM are <strong>one physical house</strong> — the question behind delivery consolidation, lending fraud rings, and duplicate patient records.</p>
+      <div class="grid-2" style="margin-top:2rem; gap:1.2rem;">
+        <div class="card reveal" style="--i:3;">
+          <h3 class="blue">We found the failure in production banking data</h3>
+          <p>In the IFSC dataset, MICR codes are meant to identify one physical branch. Of 18 record pairs sharing a MICR, only <strong style="color:var(--ink);">8 were actually the same building</strong>. India's banking system itself cannot keep one building as one record.</p>
+        </div>
+        <div class="card reveal" style="--i:4;">
+          <h3 class="blue">And the fix is a language problem</h3>
+          <p>The variance is Hinglish, Devanagari, transliteration drift — HANUMANNAGAR vs HANUMAN NAGAR. It fails at the language layer, not the formatting layer. That is why it stayed unsolved, and why Indic-native models finally make it solvable.</p>
+        </div>
+      </div>
+      <p class="pull reveal" style="--i:5;">Same door, or different door? <span class="accent">Nobody answers that question for India.</span></p>
+    </div>
+  </div>
+
+  <!-- ░ 04 PIPELINE ░ -->
+  <div class="slide" data-slide="4">
+    <div class="bar"><span class="wm"><span class="mark"><i></i><i></i><i></i><i></i></span>lattice</span><span class="sec">04 / How it works</span></div>
+    <div class="relz">
+      <p class="eyebrow reveal" style="--i:0;">How it works</p>
+      <h2 class="reveal" style="--i:1;">One pipeline, <span class="accent">seven steps.</span></h2>
+      <div class="flowrow reveal" style="--i:2;">
+        <span class="fpill"><span>01</span>Address</span>
+        <span class="fpill"><span>02</span>LLM parse</span>
+        <span class="fpill"><span>03</span>Normalise</span>
+        <span class="fpill"><span>04</span>PIN check</span>
+        <span class="fpill dim"><span>05</span>DIGIPIN</span>
+        <span class="fpill"><span>06</span>Similarity</span>
+        <span class="fpill"><span>07</span>Confidence</span>
+      </div>
+      <div class="cells reveal" style="--i:3; grid-template-columns:repeat(3,1fr); margin-top:1.6rem;">
+        <div class="cell"><div class="top"><span class="t">Parse</span><span class="n">L0</span></div><p>sarvam-105b extracts structure from any script — landmarks kept as first-class fields with spatial relations, because in India the landmark <b>is</b> the address.</p></div>
+        <div class="cell"><div class="top"><span class="t">Resolve</span><span class="n">L1</span></div><p>Coarse signals gate the neighbourhood; fine signals decide the door. Locality agreement spans tens of thousands of households — it is never proof of a match.</p></div>
+        <div class="cell"><div class="top"><span class="t">Score</span><span class="n">L2</span></div><p>Call-risk before dispatch, with reasons and the single field whose answer most reduces risk. Rule-based on purpose — ops teams can't action a black box.</p></div>
+      </div>
+      <p class="footnote reveal" style="--i:4;">DIGIPIN cell assignment (India Post's official grid — encode, decode, group are live) operates on coordinates; free text reaches it once a geocoder is in the loop.</p>
+    </div>
+  </div>
+
+  <!-- ░ 05 LIVE ░ -->
+  <div class="slide" data-slide="5">
+    <div class="glow glow-blue" style="right:-10%; top:14%; width:460px; height:460px;"></div>
+    <div class="bar"><span class="wm"><span class="mark"><i></i><i></i><i></i><i></i></span>lattice</span><span class="sec">05 / Live</span></div>
+    <div class="relz split" style="gap:3.2rem;">
+      <div>
+        <p class="eyebrow reveal" style="--i:0;">Live, on real records</p>
+        <h2 class="reveal" style="--i:1;">Two spellings.<br><span class="accent">One door. 0.97.</span></h2>
+        <p class="lede reveal" style="--i:2;">Both records are real, unmodified rows from the IFSC dataset — the same Hyderabad branch, written by two different hands. Raw string matching calls them different. Lattice resolves them with per-signal evidence.</p>
+        <div class="tags reveal" style="--i:3; margin-top:1.4rem;">
+          <span class="tag">HANUMANNAGAR → Hanuman Nagar</span><span class="tag">DILSUKHNAGAR ↔ DILSUKNAGAR</span><span class="tag">3-116 = DOOR NO.3-116</span>
+        </div>
+      </div>
+      <div class="reveal" style="--i:3;">
+        <div class="term">
+          <div class="term-bar"><i></i> POST /compare · real IFSC records</div>
+          <div class="term-body">
+"a": "3-116, 1ST FLOOR, HANUMANNAGAR COLONY<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CHAITANYAPURI, DILSUKHNAGAR, HYDERABAD"<br>
+"b": "DOOR NO.3-116, FIRST FLOOR, HANUMAN NAGAR<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;COLONY, CHAITANYAPURI, DILSUKNAGAR"<br>
+<span class="dim">──────────────────────────────────────</span><br>
+"score":&nbsp;&nbsp; <span class="ok">0.971</span><br>
+"verdict": <span class="ok">"same door"</span><br>
+"coarse":&nbsp;&nbsp;1.00&nbsp;&nbsp;<span class="cm">// neighbourhood</span><br>
+"fine":&nbsp;&nbsp;&nbsp;&nbsp;0.94&nbsp;&nbsp;<span class="cm">// the door itself</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ░ 06 SERVICES ░ -->
+  <div class="slide" data-slide="6">
+    <div class="bar"><span class="wm"><span class="mark"><i></i><i></i><i></i><i></i></span>lattice</span><span class="sec">06 / Services</span></div>
+    <div class="relz">
+      <p class="eyebrow reveal" style="--i:0;">What you can call today</p>
+      <h2 class="reveal" style="--i:1;">Eight services. <span class="accent">One API.</span></h2>
+      <div class="cells reveal" style="--i:2; grid-template-columns:repeat(4,1fr); margin-top:2rem;">
+        <div class="cell"><div class="top"><span class="t" style="font-size:1rem;">Parsing</span><span class="n">/parse</span></div><p>Any script → one canonical structured record.</p></div>
+        <div class="cell"><div class="top"><span class="t" style="font-size:1rem;">Risk score</span><span class="n">/parse</span></div><p>Call-risk pre-dispatch + the field to ask for.</p></div>
+        <div class="cell"><div class="top"><span class="t" style="font-size:1rem;">Similarity</span><span class="n">/compare</span></div><p>Same door or not, with evidence and vetoes.</p></div>
+        <div class="cell"><div class="top"><span class="t" style="font-size:1rem;">Dedupe</span><span class="n">/batch</span></div><p>Duplicates collapsed; one golden record per door.</p></div>
+        <div class="cell"><div class="top"><span class="t" style="font-size:1rem;">Match</span><span class="n">/match</span></div><p>Incoming address vs your corpus, top-k.</p></div>
+        <div class="cell"><div class="top"><span class="t" style="font-size:1rem;">Bulk jobs</span><span class="n">/jobs</span></div><p>5,000 per job, cached parsing, CSV in and out.</p></div>
+        <div class="cell"><div class="top"><span class="t" style="font-size:1rem;">PIN check</span><span class="n">/pincode</span></div><p>Offline 19,238-pin directory; conflicts flagged.</p></div>
+        <div class="cell"><div class="top"><span class="t" style="font-size:1rem;">DIGIPIN</span><span class="n">/digipin</span></div><p>Encode, decode, group on India Post's grid.</p></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ░ 07 EVIDENCE ░ -->
+  <div class="slide" data-slide="7">
+    <div class="glow glow-mag" style="left:-10%; bottom:-18%; width:480px; height:480px;"></div>
+    <div class="bar"><span class="wm"><span class="mark"><i></i><i></i><i></i><i></i></span>lattice</span><span class="sec">07 / Evidence</span></div>
+    <div class="relz split" style="gap:3rem;">
+      <div>
+        <p class="eyebrow reveal" style="--i:0;">Evidence</p>
+        <h2 class="reveal" style="--i:1;">Measured on real records, <span class="accent">not demos.</span></h2>
+        <p class="lede reveal" style="--i:2;">36 labelled pairs from 182,758 real bank-branch addresses. Zero false merges — and in deduplication, a false merge silently fuses two customers into one record. Precision <strong>is</strong> the product.</p>
+        <div class="card reveal" style="--i:4; margin-top:1.4rem;">
+          <h3 class="blue">Said before you ask</h3>
+          <p>Small set: 8 positives, labels ours, weights tuned after seeing results. Treat the margin as indicative. What we defend is the architecture — and the known misses are published in the console.</p>
+        </div>
+      </div>
+      <div class="reveal" style="--i:3;">
+        <div class="tblwrap">
+          <table>
+            <thead><tr><th>Method</th><th>P</th><th>R</th><th>F1</th></tr></thead>
+            <tbody>
+              <tr class="win"><td>Lattice</td><td class="mono">1.000</td><td class="mono">0.625</td><td class="mono">0.769</td></tr>
+              <tr><td>Raw string @ 0.55</td><td class="mono">0.462</td><td class="mono">0.750</td><td class="mono">0.571</td></tr>
+              <tr><td>Raw string @ 0.65</td><td class="mono">0.625</td><td class="mono">0.625</td><td class="mono">0.625</td></tr>
+              <tr><td>Raw string @ 0.75</td><td class="mono">0.667</td><td class="mono">0.500</td><td class="mono">0.571</td></tr>
+              <tr><td>Raw string @ 0.85</td><td class="mono">0.000</td><td class="mono">0.000</td><td class="mono">0.000</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ░ 08 WHY NOW ░ -->
+  <div class="slide" data-slide="8">
+    <div class="bar"><span class="wm"><span class="mark"><i></i><i></i><i></i><i></i></span>lattice</span><span class="sec">08 / Why now</span></div>
+    <div class="relz">
+      <p class="eyebrow reveal" style="--i:0;">Why now</p>
+      <h2 class="reveal" style="--i:1;">Two forces just <span class="accent">crossed.</span></h2>
+      <div class="grid-2" style="margin-top:2.2rem; gap:1.2rem;">
+        <div class="card reveal" style="--i:2; padding:1.8rem;">
+          <div class="num">01 · The state built the destination</div>
+          <h3 style="font-size:1.25rem;">DIGIPIN is live.</h3>
+          <p style="margin-top:0.5rem;">India Post + ISRO shipped DIGIPIN — a geo-code for every 4m×4m cell (May 2025) — and DHRUVA, an "Address-as-a-Service" DPI framework, now follows it (framework stage, 2026). The state has committed: addresses are infrastructure. But DIGIPIN converts <strong style="color:var(--ink);">coordinates</strong>, not text — and legacy CRMs hold hundreds of millions of free-text strings. <strong style="color:var(--ink);">The state builds rails, not products — UPI created PhonePe. The legacy bridge onto these rails is the product. Lattice is that bridge.</strong></p>
+        </div>
+        <div class="card reveal" style="--i:3; padding:1.8rem;">
+          <div class="num">02 · The language layer became solvable</div>
+          <h3 style="font-size:1.25rem;">Indic-native models arrived.</h3>
+          <p style="margin-top:0.5rem;">This problem is decades old. It stayed unsolved because it fails at the <strong style="color:var(--ink);">language layer</strong> — Hinglish, Devanagari, transliteration drift — not the formatting layer. That is exactly what the Sarvam stack unlocked. This product could not be built in 2020.</p>
+        </div>
+      </div>
+      <div class="grid-4" style="margin-top:1.2rem;">
+        <div class="card reveal" style="--i:4;"><h3 style="font-size:0.9rem;">Quick commerce &amp; logistics</h3><p>Fewer rider calls, fewer failed attempts, consolidated drop points.</p></div>
+        <div class="card reveal" style="--i:5;"><h3 style="font-size:0.9rem;">Lending &amp; BFSI</h3><p>Six applications, one house, six spellings — surfaced as one.</p></div>
+        <div class="card reveal" style="--i:6;"><h3 style="font-size:0.9rem;">Healthcare</h3><p>Patient records deduplicated across facilities.</p></div>
+        <div class="card reveal" style="--i:7;"><h3 style="font-size:0.9rem;">Insurance</h3><p>Property resolved to one risk location before pricing.</p></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ░ CLOSE ░ -->
+  <div class="slide" data-slide="9">
+    <div class="plus-grid"></div>
+    <div class="glow glow-blue" style="left:50%; top:50%; width:560px; height:560px; transform:translate(-50%,-50%);"></div>
+    <div class="bar"><span class="wm"><span class="mark"><i></i><i></i><i></i><i></i></span>lattice</span><span class="sec">lattice · Indian Address Intelligence</span></div>
+    <div class="relz">
+      <p class="eyebrow reveal" style="--i:0;">The ask</p>
+      <h1 class="reveal" style="--i:1; font-size:clamp(2.4rem,5.6vw,4.6rem);">The address is India's last<br><span class="accent">unstructured field.</span></h1>
+      <p class="lede reveal" style="--i:2;">Parse it. Resolve it to a door. Score it before dispatch. Built for regulated, high-volume operations — measured on real records, caveats included.</p>
+      <div class="cta reveal" style="--i:3;">
+        <a class="p" href="/dashboard" target="_top">Open the console →</a>
+        <a class="s" href="/" target="_top">lattice</a>
+      </div>
+      <div class="reveal" style="--i:4; margin-top:3rem; display:flex; gap:3.5rem; flex-wrap:wrap;">
+        <div><div class="fig-v accent">1.000</div><div class="fig-l">precision, real pairs</div></div>
+        <div><div class="fig-v accent">8</div><div class="fig-l">services, one API</div></div>
+        <div><div class="fig-v accent">182,758</div><div class="fig-l">records behind the eval</div></div>
+        <div><div class="fig-v accent">0</div><div class="fig-l">false merges</div></div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<div class="progress" id="progress"></div>
+<div class="counter" id="counter">01 / 10</div>
+
+<script>
+  const slides = document.querySelectorAll('.slide');
+  const total = slides.length;
+  let current = 0;
+  const pad = n => String(n).padStart(2,'0');
+  function go(n) {
+    if (n < 0 || n >= total) return;
+    slides[current].classList.remove('active');
+    current = n;
+    slides[current].classList.add('active');
+    document.getElementById('progress').style.width = ((current + 1) / total * 100) + '%';
+    document.getElementById('counter').textContent = pad(current + 1) + ' / ' + pad(total);
+  }
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'ArrowRight' || e.key === ' ') { e.preventDefault(); go(current + 1); }
+    if (e.key === 'ArrowLeft') { e.preventDefault(); go(current - 1); }
+    if (e.key === 'Home') { e.preventDefault(); go(0); }
+    if (e.key === 'End') { e.preventDefault(); go(total - 1); }
+  });
+  document.addEventListener('click', (e) => {
+    if (e.target.closest('a')) return;
+    const x = e.clientX / window.innerWidth;
+    if (x > 0.5) go(current + 1); else go(current - 1);
+  });
+  let tsx = 0;
+  document.addEventListener('touchstart', (e) => { tsx = e.touches[0].clientX; });
+  document.addEventListener('touchend', (e) => {
+    const dx = e.changedTouches[0].clientX - tsx;
+    if (Math.abs(dx) > 50) { dx < 0 ? go(current + 1) : go(current - 1); }
+  });
+  go(0);
+</script>
+</body>
+</html>

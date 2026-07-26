@@ -1,0 +1,1792 @@
+[
+ {
+  "id": "UBIN0593435",
+  "raw": "NEAR BUS STAND, MEGHA MART, WARD NO 11, KATANGI",
+  "bank": "Union Bank of India",
+  "truth_state": "Madhya Pradesh",
+  "parsed": {
+   "raw": "NEAR BUS STAND, MEGHA MART, WARD NO 11, KATANGI",
+   "language_code": "en-IN",
+   "script_code": "Latn",
+   "occupant": "Meghamart",
+   "house_number": null,
+   "floor": null,
+   "building": null,
+   "visual_descriptor": null,
+   "street": null,
+   "landmarks": [
+    {
+     "name": "Bus Stand",
+     "relation": "near"
+    }
+   ],
+   "landmark": "Bus Stand",
+   "landmark_relation": "near",
+   "sublocality": "Ward No 11",
+   "locality": "Katangi",
+   "city": null,
+   "state": null,
+   "pincode": null,
+   "completeness": 0.36,
+   "missing": [
+    "house_number",
+    "street",
+    "city",
+    "pincode"
+   ],
+   "error": null
+  },
+  "score": {
+   "risk": 0.94,
+   "band": "high",
+   "will_likely_need_call": true,
+   "reasons": [
+    "No house or flat number — rider must identify the door from the building name or landmark alone.",
+    "Neither street nor building named — nothing to navigate to below locality level.",
+    "Landmark-only address — resolvable by someone who already knows the area, not by a first-time rider.",
+    "No pincode — serviceability and routing cannot be confirmed.",
+    "No city identified.",
+    "Landmark relation is only \"near\" — direction is unspecified."
+   ],
+   "ask_for": {
+    "field": "house_number",
+    "label": "House / flat / door number",
+    "why": "the single highest-value field — it is what identifies the door",
+    "risk_reduction": 0.44
+   },
+   "completeness": 0.36
+  }
+ },
+ {
+  "id": "UCBA0001684",
+  "raw": "51, MUKUNDNAGAR, GULTEKDI, SWARGATE , PUNE , MAHARASHTRA PIN",
+  "bank": "UCO Bank",
+  "truth_state": "Maharashtra",
+  "parsed": {
+   "raw": "51, MUKUNDNAGAR, GULTEKDI, SWARGATE , PUNE , MAHARASHTRA PIN",
+   "language_code": "en-IN",
+   "script_code": "Latn",
+   "occupant": null,
+   "house_number": "51",
+   "floor": null,
+   "building": null,
+   "visual_descriptor": null,
+   "street": null,
+   "landmarks": [],
+   "landmark": null,
+   "landmark_relation": null,
+   "sublocality": "['MUKUNDNAGAR', 'GULTEKDI']",
+   "locality": "SWARGATE",
+   "city": "Pune",
+   "state": "Maharashtra",
+   "pincode": null,
+   "completeness": 0.52,
+   "missing": [
+    "street",
+    "pincode"
+   ],
+   "error": null
+  },
+  "score": {
+   "risk": 0.34,
+   "band": "medium",
+   "will_likely_need_call": false,
+   "reasons": [
+    "Neither street nor building named — nothing to navigate to below locality level.",
+    "No pincode — serviceability and routing cannot be confirmed."
+   ],
+   "ask_for": {
+    "field": "street",
+    "label": "Street, road or cross",
+    "why": "gives the rider something to navigate to",
+    "risk_reduction": 0.22
+   },
+   "completeness": 0.52
+  }
+ },
+ {
+  "id": "TGRB0000448",
+  "raw": "H.NO. 1-16, BUDDARAM VILLAGE, GOPALPET MANDAL, WANAPARTHY",
+  "bank": "TELANGANA GRAMEENA BANK",
+  "truth_state": "Telangana",
+  "parsed": {
+   "raw": "H.NO. 1-16, BUDDARAM VILLAGE, GOPALPET MANDAL, WANAPARTHY",
+   "language_code": "en-IN",
+   "script_code": "Latn",
+   "occupant": null,
+   "house_number": "1-16",
+   "floor": null,
+   "building": null,
+   "visual_descriptor": null,
+   "street": null,
+   "landmarks": [],
+   "landmark": null,
+   "landmark_relation": null,
+   "sublocality": "Buddaram Village",
+   "locality": "Gopalpet Mandal",
+   "city": "Wanaparthy",
+   "state": "Telangana",
+   "pincode": null,
+   "completeness": 0.52,
+   "missing": [
+    "street",
+    "pincode"
+   ],
+   "error": null
+  },
+  "score": {
+   "risk": 0.46,
+   "band": "medium",
+   "will_likely_need_call": false,
+   "reasons": [
+    "Neither street nor building named — nothing to navigate to below locality level.",
+    "No pincode — serviceability and routing cannot be confirmed.",
+    "Rural/administrative addressing (village, post office, tehsil) — no street-level grid to route on."
+   ],
+   "ask_for": {
+    "field": "street",
+    "label": "Street, road or cross",
+    "why": "gives the rider something to navigate to",
+    "risk_reduction": 0.22
+   },
+   "completeness": 0.52
+  }
+ },
+ {
+  "id": "SBIN0013283",
+  "raw": "NO.274, N R G V ROAD, SUBEDAR CHATRAM ROAD, GANDHINAGAR, BANGALORE560009",
+  "bank": "State Bank of India",
+  "truth_state": "Karnataka",
+  "parsed": {
+   "raw": "NO.274, N R G V ROAD, SUBEDAR CHATRAM ROAD, GANDHINAGAR, BANGALORE560009",
+   "language_code": "en-IN",
+   "script_code": "Latn",
+   "occupant": null,
+   "house_number": "274",
+   "floor": null,
+   "building": null,
+   "visual_descriptor": null,
+   "street": "N R G V Road",
+   "landmarks": [],
+   "landmark": null,
+   "landmark_relation": null,
+   "sublocality": null,
+   "locality": "Gandhinagar",
+   "city": "Bengaluru",
+   "state": "Karnataka",
+   "pincode": "560009",
+   "completeness": 0.68,
+   "missing": [],
+   "error": null
+  },
+  "score": {
+   "risk": 0.0,
+   "band": "low",
+   "will_likely_need_call": false,
+   "reasons": [],
+   "ask_for": null,
+   "completeness": 0.68
+  }
+ },
+ {
+  "id": "ICIC0000474",
+  "raw": "ICICI BANK LTD., HONDA SHOW ROOM, BYE PASS ROAD, CHAS JHARKHAND.",
+  "bank": "ICICI Bank",
+  "truth_state": "Jharkhand",
+  "parsed": {
+   "raw": "ICICI BANK LTD., HONDA SHOW ROOM, BYE PASS ROAD, CHAS JHARKHAND.",
+   "language_code": "en-IN",
+   "script_code": "Latn",
+   "occupant": "ICICI BANK LTD., HONDA SHOW ROOM",
+   "house_number": null,
+   "floor": null,
+   "building": null,
+   "visual_descriptor": null,
+   "street": "Bypass Road",
+   "landmarks": [],
+   "landmark": null,
+   "landmark_relation": null,
+   "sublocality": null,
+   "locality": null,
+   "city": "Chas",
+   "state": "Jharkhand",
+   "pincode": null,
+   "completeness": 0.24,
+   "missing": [
+    "house_number",
+    "locality",
+    "pincode"
+   ],
+   "error": null
+  },
+  "score": {
+   "risk": 0.74,
+   "band": "high",
+   "will_likely_need_call": true,
+   "reasons": [
+    "No house or flat number, and no building to fall back on.",
+    "No locality identified.",
+    "No pincode — serviceability and routing cannot be confirmed."
+   ],
+   "ask_for": {
+    "field": "house_number",
+    "label": "House / flat / door number",
+    "why": "the single highest-value field — it is what identifies the door",
+    "risk_reduction": 0.42
+   },
+   "completeness": 0.24
+  }
+ },
+ {
+  "id": "YESB0000471",
+  "raw": "GROUND FLOOR, 29, SUNDER NAGAR MARKET, , NEW DELHI, SUNDER NAGAR, DELHI",
+  "bank": "Yes Bank",
+  "truth_state": "Delhi",
+  "parsed": {
+   "raw": "GROUND FLOOR, 29, SUNDER NAGAR MARKET, , NEW DELHI, SUNDER NAGAR, DELHI",
+   "language_code": "en-IN",
+   "script_code": "Latn",
+   "occupant": null,
+   "house_number": "29",
+   "floor": "Ground Floor",
+   "building": null,
+   "visual_descriptor": null,
+   "street": "Sunder Nagar Market",
+   "landmarks": [],
+   "landmark": null,
+   "landmark_relation": null,
+   "sublocality": null,
+   "locality": "Sunder Nagar",
+   "city": "New Delhi",
+   "state": "Delhi",
+   "pincode": null,
+   "completeness": 0.62,
+   "missing": [
+    "pincode"
+   ],
+   "error": null
+  },
+  "score": {
+   "risk": 0.12,
+   "band": "low",
+   "will_likely_need_call": false,
+   "reasons": [
+    "No pincode — serviceability and routing cannot be confirmed."
+   ],
+   "ask_for": null,
+   "completeness": 0.62
+  }
+ },
+ {
+  "id": "IBKL0SBCB02",
+  "raw": "V/698, VG COMPLEX, BUS STAND JUNCTION, AMBALAVAYAL",
+  "bank": "IDBI",
+  "truth_state": "Kerala",
+  "parsed": {
+   "raw": "V/698, VG COMPLEX, BUS STAND JUNCTION, AMBALAVAYAL",
+   "language_code": "ml-IN",
+   "script_code": "Latn",
+   "occupant": null,
+   "house_number": "V/698",
+   "floor": null,
+   "building": "VG Complex",
+   "visual_descriptor": null,
+   "street": null,
+   "landmarks": [
+    {
+     "name": "Bus Stand Junction",
+     "relation": null
+    }
+   ],
+   "landmark": "Bus Stand Junction",
+   "landmark_relation": null,
+   "sublocality": null,
+   "locality": "Ambalavayal",
+   "city": null,
+   "state": null,
+   "pincode": null,
+   "completeness": 0.64,
+   "missing": [
+    "street",
+    "city",
+    "pincode"
+   ],
+   "error": null
+  },
+  "score": {
+   "risk": 0.28,
+   "band": "medium",
+   "will_likely_need_call": false,
+   "reasons": [
+    "No pincode — serviceability and routing cannot be confirmed.",
+    "No city identified.",
+    "Landmark relation is only \"near\" — direction is unspecified."
+   ],
+   "ask_for": {
+    "field": "pincode",
+    "label": "Pincode",
+    "why": "confirms serviceability and routing",
+    "risk_reduction": 0.12
+   },
+   "completeness": 0.64
+  }
+ },
+ {
+  "id": "UTIB0004496",
+  "raw": "GF, SHOP NOS 16, 17, 18 AND 19, JKG PALM COURT, PLOT NO GH 01D, SECTOR 16C, GREATER NOIDA WEST",
+  "bank": "Axis Bank",
+  "truth_state": "Uttar Pradesh",
+  "parsed": {
+   "raw": "GF, SHOP NOS 16, 17, 18 AND 19, JKG PALM COURT, PLOT NO GH 01D, SECTOR 16C, GREATER NOIDA WEST",
+   "language_code": "en-IN",
+   "script_code": "Latn",
+   "occupant": null,
+   "house_number": "SHOP NOS 16, 17, 18 AND 19",
+   "floor": "GF",
+   "building": "JKG Palm Court",
+   "visual_descriptor": null,
+   "street": null,
+   "landmarks": [],
+   "landmark": null,
+   "landmark_relation": null,
+   "sublocality": "Sector 16C",
+   "locality": "Greater Noida West",
+   "city": "Greater Noida",
+   "state": "Uttar Pradesh",
+   "pincode": null,
+   "completeness": 0.64,
+   "missing": [
+    "street",
+    "pincode"
+   ],
+   "error": null
+  },
+  "score": {
+   "risk": 0.22,
+   "band": "low",
+   "will_likely_need_call": false,
+   "reasons": [
+    "No pincode — serviceability and routing cannot be confirmed.",
+    "Revenue-record identifiers (khasra/khewat/survey number) — a land record, not a navigable address."
+   ],
+   "ask_for": null,
+   "completeness": 0.64
+  }
+ },
+ {
+  "id": "SBIN0040004",
+  "raw": "KUPPAM, CHITTOOR, ANDHRA PRADESH, 517 425",
+  "bank": "State Bank of India",
+  "truth_state": "Andhra Pradesh",
+  "parsed": {
+   "raw": "KUPPAM, CHITTOOR, ANDHRA PRADESH, 517 425",
+   "language_code": "en-IN",
+   "script_code": "Latn",
+   "occupant": null,
+   "house_number": null,
+   "floor": null,
+   "building": null,
+   "visual_descriptor": null,
+   "street": null,
+   "landmarks": [],
+   "landmark": null,
+   "landmark_relation": null,
+   "sublocality": null,
+   "locality": "KUPPAM",
+   "city": "CHITTOOR",
+   "state": "ANDHRA PRADESH",
+   "pincode": "517425",
+   "completeness": 0.3,
+   "missing": [
+    "house_number",
+    "street"
+   ],
+   "error": null
+  },
+  "score": {
+   "risk": 0.64,
+   "band": "high",
+   "will_likely_need_call": true,
+   "reasons": [
+    "No house or flat number, and no building to fall back on.",
+    "Neither street nor building named — nothing to navigate to below locality level."
+   ],
+   "ask_for": {
+    "field": "house_number",
+    "label": "House / flat / door number",
+    "why": "the single highest-value field — it is what identifies the door",
+    "risk_reduction": 0.42
+   },
+   "completeness": 0.3
+  }
+ },
+ {
+  "id": "NKGS0000032",
+  "raw": "GORAI BUS DEPOT BLDG, GROUND FLOOR, GORAI , BORIVALI (W) , MUMBAI 400 091",
+  "bank": "NKGSB Co-operative Bank",
+  "truth_state": "Maharashtra",
+  "parsed": {
+   "raw": "GORAI BUS DEPOT BLDG, GROUND FLOOR, GORAI , BORIVALI (W) , MUMBAI 400 091",
+   "language_code": "en-IN",
+   "script_code": "Latn",
+   "occupant": null,
+   "house_number": null,
+   "floor": "Ground Floor",
+   "building": "Gorai Bus Depot Bldg",
+   "visual_descriptor": null,
+   "street": null,
+   "landmarks": [],
+   "landmark": null,
+   "landmark_relation": null,
+   "sublocality": "Gorai",
+   "locality": "Borivali (W)",
+   "city": "Mumbai",
+   "state": "Maharashtra",
+   "pincode": "400091",
+   "completeness": 0.48,
+   "missing": [
+    "house_number",
+    "street"
+   ],
+   "error": null
+  },
+  "score": {
+   "risk": 0.28,
+   "band": "medium",
+   "will_likely_need_call": false,
+   "reasons": [
+    "No house or flat number — rider must identify the door from the building name or landmark alone."
+   ],
+   "ask_for": {
+    "field": "house_number",
+    "label": "House / flat / door number",
+    "why": "the single highest-value field — it is what identifies the door",
+    "risk_reduction": 0.28
+   },
+   "completeness": 0.48
+  }
+ },
+ {
+  "id": "UNBA0000012",
+  "raw": "PLOT NO. 88, SECTOR-6, KASTURI, KOPAR KHAIRANE, NAVI MUMBAI",
+  "bank": "Unity Small finance Bank Limited",
+  "truth_state": "Maharashtra",
+  "parsed": {
+   "raw": "PLOT NO. 88, SECTOR-6, KASTURI, KOPAR KHAIRANE, NAVI MUMBAI",
+   "language_code": "gu-IN",
+   "script_code": "Latn",
+   "occupant": null,
+   "house_number": "88",
+   "floor": null,
+   "building": null,
+   "visual_descriptor": null,
+   "street": "Kasturi",
+   "landmarks": [],
+   "landmark": null,
+   "landmark_relation": null,
+   "sublocality": "Sector 6",
+   "locality": "Kopar Khairane",
+   "city": "Navi Mumbai",
+   "state": "Maharashtra",
+   "pincode": null,
+   "completeness": 0.68,
+   "missing": [
+    "pincode"
+   ],
+   "error": null
+  },
+  "score": {
+   "risk": 0.22,
+   "band": "low",
+   "will_likely_need_call": false,
+   "reasons": [
+    "No pincode — serviceability and routing cannot be confirmed.",
+    "Revenue-record identifiers (khasra/khewat/survey number) — a land record, not a navigable address."
+   ],
+   "ask_for": null,
+   "completeness": 0.68
+  }
+ },
+ {
+  "id": "IDFB0060201",
+  "raw": "VN HARDWARE BUILDING, DEMESEINIONG, LAITHUMKRA, OPPOSITE NEEPCO OFFICE, EAST SHILLONG, MEGHALAYA , TOLL FREE NO 1800 419 8332",
+  "bank": "IDFC FIRST Bank",
+  "truth_state": "Meghalaya",
+  "parsed": {
+   "raw": "VN HARDWARE BUILDING, DEMESEINIONG, LAITHUMKRA, OPPOSITE NEEPCO OFFICE, EAST SHILLONG, MEGHALAYA , TOLL FREE NO 1800 419 8332",
+   "language_code": "en-IN",
+   "script_code": "Latn",
+   "occupant": "VN HARDWARE BUILDING",
+   "house_number": null,
+   "floor": null,
+   "building": null,
+   "visual_descriptor": null,
+   "street": null,
+   "landmarks": [
+    {
+     "name": "NEEPCO OFFICE",
+     "relation": "opposite"
+    }
+   ],
+   "landmark": "NEEPCO OFFICE",
+   "landmark_relation": "opposite",
+   "sublocality": "LAITHUMKRA",
+   "locality": "EAST SHILLONG",
+   "city": "SHILLONG",
+   "state": "MEGHALAYA",
+   "pincode": null,
+   "completeness": 0.44,
+   "missing": [
+    "house_number",
+    "street",
+    "pincode"
+   ],
+   "error": null
+  },
+  "score": {
+   "risk": 0.78,
+   "band": "high",
+   "will_likely_need_call": true,
+   "reasons": [
+    "No house or flat number — rider must identify the door from the building name or landmark alone.",
+    "Neither street nor building named — nothing to navigate to below locality level.",
+    "Landmark-only address — resolvable by someone who already knows the area, not by a first-time rider.",
+    "No pincode — serviceability and routing cannot be confirmed."
+   ],
+   "ask_for": {
+    "field": "house_number",
+    "label": "House / flat / door number",
+    "why": "the single highest-value field — it is what identifies the door",
+    "risk_reduction": 0.44
+   },
+   "completeness": 0.44
+  }
+ },
+ {
+  "id": "MAHB0002980",
+  "raw": "737/32, SHIVAJI COLONY, ROHTAK, DIST. - ROHTAK, HARYANA",
+  "bank": "Bank of Maharashtra",
+  "truth_state": "Haryana",
+  "parsed": {
+   "raw": "737/32, SHIVAJI COLONY, ROHTAK, DIST. - ROHTAK, HARYANA",
+   "language_code": "en-IN",
+   "script_code": "Latn",
+   "occupant": null,
+   "house_number": "737/32",
+   "floor": null,
+   "building": null,
+   "visual_descriptor": null,
+   "street": null,
+   "landmarks": [],
+   "landmark": null,
+   "landmark_relation": null,
+   "sublocality": null,
+   "locality": "Shivaji Colony",
+   "city": "Rohtak",
+   "state": "Haryana",
+   "pincode": null,
+   "completeness": 0.46,
+   "missing": [
+    "street",
+    "pincode"
+   ],
+   "error": null
+  },
+  "score": {
+   "risk": 0.34,
+   "band": "medium",
+   "will_likely_need_call": false,
+   "reasons": [
+    "Neither street nor building named — nothing to navigate to below locality level.",
+    "No pincode — serviceability and routing cannot be confirmed."
+   ],
+   "ask_for": {
+    "field": "street",
+    "label": "Street, road or cross",
+    "why": "gives the rider something to navigate to",
+    "risk_reduction": 0.22
+   },
+   "completeness": 0.46
+  }
+ },
+ {
+  "id": "PSIB0021339",
+  "raw": "VPO DORANGLA, GURDASPUR DORANGLA ROAD, TEHSIL AND DISTT.GURDASPUR , PUNJAB",
+  "bank": "Punjab & Sind Bank",
+  "truth_state": "Punjab",
+  "parsed": {
+   "raw": "VPO DORANGLA, GURDASPUR DORANGLA ROAD, TEHSIL AND DISTT.GURDASPUR , PUNJAB",
+   "language_code": "hi-IN",
+   "script_code": "Latn",
+   "occupant": "VPO Dorangla",
+   "house_number": null,
+   "floor": null,
+   "building": null,
+   "visual_descriptor": null,
+   "street": "Dorangla Road",
+   "landmarks": [],
+   "landmark": null,
+   "landmark_relation": null,
+   "sublocality": null,
+   "locality": "Dorangla",
+   "city": "Gurdaspur",
+   "state": "Punjab",
+   "pincode": null,
+   "completeness": 0.4,
+   "missing": [
+    "house_number",
+    "pincode"
+   ],
+   "error": null
+  },
+  "score": {
+   "risk": 0.66,
+   "band": "high",
+   "will_likely_need_call": true,
+   "reasons": [
+    "No house or flat number, and no building to fall back on.",
+    "No pincode — serviceability and routing cannot be confirmed.",
+    "Rural/administrative addressing (village, post office, tehsil) — no street-level grid to route on."
+   ],
+   "ask_for": {
+    "field": "house_number",
+    "label": "House / flat / door number",
+    "why": "the single highest-value field — it is what identifies the door",
+    "risk_reduction": 0.42
+   },
+   "completeness": 0.4
+  }
+ },
+ {
+  "id": "SBIN0063778",
+  "raw": "1ST FLOOR, JANAK SUPER MARKET COMPLEX, COLLEGE ROAD, NEAR GHOSH MORE, GOPALGANJ, BIHAR",
+  "bank": "State Bank of India",
+  "truth_state": "Bihar",
+  "parsed": {
+   "raw": "1ST FLOOR, JANAK SUPER MARKET COMPLEX, COLLEGE ROAD, NEAR GHOSH MORE, GOPALGANJ, BIHAR",
+   "language_code": "en-IN",
+   "script_code": "Latn",
+   "occupant": "Janak Super Market",
+   "house_number": null,
+   "floor": "1st",
+   "building": null,
+   "visual_descriptor": null,
+   "street": "College Road",
+   "landmarks": [
+    {
+     "name": "Ghosh More",
+     "relation": "near"
+    }
+   ],
+   "landmark": "Ghosh More",
+   "landmark_relation": "near",
+   "sublocality": null,
+   "locality": null,
+   "city": "Gopalganj",
+   "state": "Bihar",
+   "pincode": null,
+   "completeness": 0.38,
+   "missing": [
+    "house_number",
+    "locality",
+    "pincode"
+   ],
+   "error": null
+  },
+  "score": {
+   "risk": 0.66,
+   "band": "high",
+   "will_likely_need_call": true,
+   "reasons": [
+    "No house or flat number — rider must identify the door from the building name or landmark alone.",
+    "No locality identified.",
+    "No pincode — serviceability and routing cannot be confirmed.",
+    "Landmark relation is only \"near\" — direction is unspecified."
+   ],
+   "ask_for": {
+    "field": "house_number",
+    "label": "House / flat / door number",
+    "why": "the single highest-value field — it is what identifies the door",
+    "risk_reduction": 0.28
+   },
+   "completeness": 0.38
+  }
+ },
+ {
+  "id": "SBIN0006499",
+  "raw": "F 149 MANGAL BAZAR, LAXMI NAGAR, DELHI , PIN",
+  "bank": "State Bank of India",
+  "truth_state": "Delhi",
+  "parsed": {
+   "raw": "F 149 MANGAL BAZAR, LAXMI NAGAR, DELHI , PIN",
+   "language_code": "hi-IN",
+   "script_code": "Latn",
+   "occupant": null,
+   "house_number": "F 149",
+   "floor": null,
+   "building": null,
+   "visual_descriptor": null,
+   "street": "Mangal Bazar",
+   "landmarks": [],
+   "landmark": null,
+   "landmark_relation": null,
+   "sublocality": null,
+   "locality": "Laxmi Nagar",
+   "city": "Delhi",
+   "state": null,
+   "pincode": null,
+   "completeness": 0.62,
+   "missing": [
+    "pincode"
+   ],
+   "error": null
+  },
+  "score": {
+   "risk": 0.12,
+   "band": "low",
+   "will_likely_need_call": false,
+   "reasons": [
+    "No pincode — serviceability and routing cannot be confirmed."
+   ],
+   "ask_for": null,
+   "completeness": 0.62
+  }
+ },
+ {
+  "id": "BARB0SODEPU",
+  "raw": "SODEPUR BRANCH, STATION RD, SODEPUR DT.24PGS(N), SODEPUR, KOLKATA",
+  "bank": "Bank of Baroda",
+  "truth_state": "West Bengal",
+  "parsed": {
+   "raw": "SODEPUR BRANCH, STATION RD, SODEPUR DT.24PGS(N), SODEPUR, KOLKATA",
+   "language_code": "ml-IN",
+   "script_code": "Latn",
+   "occupant": "Sodepur Branch",
+   "house_number": null,
+   "floor": null,
+   "building": null,
+   "visual_descriptor": null,
+   "street": "Station Road",
+   "landmarks": [],
+   "landmark": null,
+   "landmark_relation": null,
+   "sublocality": null,
+   "locality": "Sodepur",
+   "city": "Kolkata",
+   "state": "West Bengal",
+   "pincode": null,
+   "completeness": 0.4,
+   "missing": [
+    "house_number",
+    "pincode"
+   ],
+   "error": null
+  },
+  "score": {
+   "risk": 0.54,
+   "band": "medium",
+   "will_likely_need_call": false,
+   "reasons": [
+    "No house or flat number, and no building to fall back on.",
+    "No pincode — serviceability and routing cannot be confirmed."
+   ],
+   "ask_for": {
+    "field": "house_number",
+    "label": "House / flat / door number",
+    "why": "the single highest-value field — it is what identifies the door",
+    "risk_reduction": 0.42
+   },
+   "completeness": 0.4
+  }
+ },
+ {
+  "id": "MAHB0001939",
+  "raw": "OPP MURLI MANHOHAR TEMPLE, SADAR BAZAR, SHIVPURI, DIST. SHIVPURI",
+  "bank": "Bank of Maharashtra",
+  "truth_state": "Madhya Pradesh",
+  "parsed": {
+   "raw": "OPP MURLI MANHOHAR TEMPLE, SADAR BAZAR, SHIVPURI, DIST. SHIVPURI",
+   "language_code": "en-IN",
+   "script_code": "Latn",
+   "occupant": null,
+   "house_number": null,
+   "floor": null,
+   "building": null,
+   "visual_descriptor": null,
+   "street": "Sadar Bazar",
+   "landmarks": [
+    {
+     "name": "MURLI MANHOHAR MANDIR",
+     "relation": "opposite"
+    }
+   ],
+   "landmark": "MURLI MANHOHAR MANDIR",
+   "landmark_relation": "opposite",
+   "sublocality": null,
+   "locality": "Shivpuri",
+   "city": "Shivpuri",
+   "state": null,
+   "pincode": null,
+   "completeness": 0.54,
+   "missing": [
+    "house_number",
+    "pincode"
+   ],
+   "error": null
+  },
+  "score": {
+   "risk": 0.4,
+   "band": "medium",
+   "will_likely_need_call": false,
+   "reasons": [
+    "No house or flat number — rider must identify the door from the building name or landmark alone.",
+    "No pincode — serviceability and routing cannot be confirmed."
+   ],
+   "ask_for": {
+    "field": "house_number",
+    "label": "House / flat / door number",
+    "why": "the single highest-value field — it is what identifies the door",
+    "risk_reduction": 0.28
+   },
+   "completeness": 0.54
+  }
+ },
+ {
+  "id": "SBIN0032018",
+  "raw": "COMMUNITY HALL, NAGAR PALIKA, WARD NO 8, INDERGARH",
+  "bank": "State Bank of India",
+  "truth_state": "Rajasthan",
+  "parsed": {
+   "raw": "COMMUNITY HALL, NAGAR PALIKA, WARD NO 8, INDERGARH",
+   "language_code": "hi-IN",
+   "script_code": "Latn",
+   "occupant": null,
+   "house_number": null,
+   "floor": null,
+   "building": "Community Hall",
+   "visual_descriptor": null,
+   "street": null,
+   "landmarks": [
+    {
+     "name": "Nagar Palika",
+     "relation": null
+    }
+   ],
+   "landmark": "Nagar Palika",
+   "landmark_relation": null,
+   "sublocality": "Ward No 8",
+   "locality": "Indergarh",
+   "city": null,
+   "state": null,
+   "pincode": null,
+   "completeness": 0.48,
+   "missing": [
+    "house_number",
+    "street",
+    "city",
+    "pincode"
+   ],
+   "error": null
+  },
+  "score": {
+   "risk": 0.72,
+   "band": "high",
+   "will_likely_need_call": true,
+   "reasons": [
+    "No house or flat number — rider must identify the door from the building name or landmark alone.",
+    "Landmark-only address — resolvable by someone who already knows the area, not by a first-time rider.",
+    "No pincode — serviceability and routing cannot be confirmed.",
+    "No city identified.",
+    "Landmark relation is only \"near\" — direction is unspecified."
+   ],
+   "ask_for": {
+    "field": "house_number",
+    "label": "House / flat / door number",
+    "why": "the single highest-value field — it is what identifies the door",
+    "risk_reduction": 0.44
+   },
+   "completeness": 0.48
+  }
+ },
+ {
+  "id": "TDCB0000017",
+  "raw": "AASTHA ABOD CO-OP.HOUSING SOC. LTD., GR.FLOOR, TALUKA-DAHANU, PIN",
+  "bank": "Thane District Central Co-operative Bank",
+  "truth_state": "Maharashtra",
+  "parsed": {
+   "raw": "AASTHA ABOD CO-OP.HOUSING SOC. LTD., GR.FLOOR, TALUKA-DAHANU, PIN",
+   "language_code": "ml-IN",
+   "script_code": "Latn",
+   "occupant": "AASTHA ABOD CO-OP.HOUSING SOC. LTD",
+   "house_number": null,
+   "floor": "Ground",
+   "building": null,
+   "visual_descriptor": null,
+   "street": null,
+   "landmarks": [],
+   "landmark": null,
+   "landmark_relation": null,
+   "sublocality": "Taluka",
+   "locality": "Dahanu",
+   "city": null,
+   "state": null,
+   "pincode": null,
+   "completeness": 0.22,
+   "missing": [
+    "house_number",
+    "street",
+    "city",
+    "pincode"
+   ],
+   "error": null
+  },
+  "score": {
+   "risk": 0.98,
+   "band": "high",
+   "will_likely_need_call": true,
+   "reasons": [
+    "No house or flat number, and no building to fall back on.",
+    "Neither street nor building named — nothing to navigate to below locality level.",
+    "No pincode — serviceability and routing cannot be confirmed.",
+    "No city identified.",
+    "Rural/administrative addressing (village, post office, tehsil) — no street-level grid to route on."
+   ],
+   "ask_for": {
+    "field": "house_number",
+    "label": "House / flat / door number",
+    "why": "the single highest-value field — it is what identifies the door",
+    "risk_reduction": 0.42
+   },
+   "completeness": 0.22
+  }
+ },
+ {
+  "id": "MAHB0002502",
+  "raw": "L K CORPORATES & LOGISTICS PARK, NH-30, NEW DHAMTARI ROAD, DUMARTARAI, RAIPUR, CHHATTISGARH",
+  "bank": "Bank of Maharashtra",
+  "truth_state": "Chhattisgarh",
+  "parsed": {
+   "raw": "L K CORPORATES & LOGISTICS PARK, NH-30, NEW DHAMTARI ROAD, DUMARTARAI, RAIPUR, CHHATTISGARH",
+   "language_code": "pa-IN",
+   "script_code": "Latn",
+   "occupant": "L K Corporates & Logistics Park",
+   "house_number": null,
+   "floor": null,
+   "building": null,
+   "visual_descriptor": null,
+   "street": "New Dhamtari Road",
+   "landmarks": [
+    {
+     "name": "NH-30",
+     "relation": "near"
+    }
+   ],
+   "landmark": "NH-30",
+   "landmark_relation": "near",
+   "sublocality": null,
+   "locality": "Dumartarai",
+   "city": "Raipur",
+   "state": "Chhattisgarh",
+   "pincode": null,
+   "completeness": 0.54,
+   "missing": [
+    "house_number",
+    "pincode"
+   ],
+   "error": null
+  },
+  "score": {
+   "risk": 0.46,
+   "band": "medium",
+   "will_likely_need_call": false,
+   "reasons": [
+    "No house or flat number — rider must identify the door from the building name or landmark alone.",
+    "No pincode — serviceability and routing cannot be confirmed.",
+    "Landmark relation is only \"near\" — direction is unspecified."
+   ],
+   "ask_for": {
+    "field": "house_number",
+    "label": "House / flat / door number",
+    "why": "the single highest-value field — it is what identifies the door",
+    "risk_reduction": 0.28
+   },
+   "completeness": 0.54
+  }
+ },
+ {
+  "id": "UTIB0004622",
+  "raw": "UPPER GROUND FLOOR, PROPERTY NO 72, BLOCK A, PHASE , ASHOK VIHAR, DELHI",
+  "bank": "Axis Bank",
+  "truth_state": "Delhi",
+  "parsed": {
+   "raw": "UPPER GROUND FLOOR, PROPERTY NO 72, BLOCK A, PHASE , ASHOK VIHAR, DELHI",
+   "language_code": "en-IN",
+   "script_code": "Latn",
+   "occupant": null,
+   "house_number": "72",
+   "floor": "Upper Ground Floor",
+   "building": null,
+   "visual_descriptor": null,
+   "street": null,
+   "landmarks": [],
+   "landmark": null,
+   "landmark_relation": null,
+   "sublocality": "['Block A', 'Phase']",
+   "locality": "Ashok Vihar",
+   "city": "Delhi",
+   "state": "Delhi",
+   "pincode": null,
+   "completeness": 0.52,
+   "missing": [
+    "street",
+    "pincode"
+   ],
+   "error": null
+  },
+  "score": {
+   "risk": 0.46,
+   "band": "medium",
+   "will_likely_need_call": false,
+   "reasons": [
+    "Neither street nor building named — nothing to navigate to below locality level.",
+    "No pincode — serviceability and routing cannot be confirmed.",
+    "Rural/administrative addressing (village, post office, tehsil) — no street-level grid to route on."
+   ],
+   "ask_for": {
+    "field": "street",
+    "label": "Street, road or cross",
+    "why": "gives the rider something to navigate to",
+    "risk_reduction": 0.22
+   },
+   "completeness": 0.52
+  }
+ },
+ {
+  "id": "CNRB0004454",
+  "raw": "CANARA BANK KOLAR MILK PRODUCERS SOCIETY, OPP GOVT SCHOOL, BANGARPET TL, KOLAR DIST ITTARASANAHALLI KARNATAKA",
+  "bank": "Canara Bank",
+  "truth_state": "Karnataka",
+  "parsed": {
+   "raw": "CANARA BANK KOLAR MILK PRODUCERS SOCIETY, OPP GOVT SCHOOL, BANGARPET TL, KOLAR DIST ITTARASANAHALLI KARNATAKA",
+   "language_code": "en-IN",
+   "script_code": "Latn",
+   "occupant": "CANARA BANK KOLAR MILK PRODUCERS SOCIETY",
+   "house_number": null,
+   "floor": null,
+   "building": null,
+   "visual_descriptor": null,
+   "street": null,
+   "landmarks": [
+    {
+     "name": "Government School",
+     "relation": "opposite"
+    }
+   ],
+   "landmark": "Government School",
+   "landmark_relation": "opposite",
+   "sublocality": "ITTARASANAHALLI",
+   "locality": "Bangarpet",
+   "city": null,
+   "state": "Karnataka",
+   "pincode": null,
+   "completeness": 0.36,
+   "missing": [
+    "house_number",
+    "street",
+    "city",
+    "pincode"
+   ],
+   "error": null
+  },
+  "score": {
+   "risk": 1.0,
+   "band": "high",
+   "will_likely_need_call": true,
+   "reasons": [
+    "No house or flat number — rider must identify the door from the building name or landmark alone.",
+    "Neither street nor building named — nothing to navigate to below locality level.",
+    "Landmark-only address — resolvable by someone who already knows the area, not by a first-time rider.",
+    "No pincode — serviceability and routing cannot be confirmed.",
+    "No city identified.",
+    "Rural/administrative addressing (village, post office, tehsil) — no street-level grid to route on."
+   ],
+   "ask_for": {
+    "field": "house_number",
+    "label": "House / flat / door number",
+    "why": "the single highest-value field — it is what identifies the door",
+    "risk_reduction": 0.44
+   },
+   "completeness": 0.36
+  }
+ },
+ {
+  "id": "CSBK0000838",
+  "raw": "GROUND FLOOR, D 854, SARASWATI VIHAR, PITAMPURA, NEW DELHI",
+  "bank": "Catholic Syrian Bank",
+  "truth_state": "Delhi",
+  "parsed": {
+   "raw": "GROUND FLOOR, D 854, SARASWATI VIHAR, PITAMPURA, NEW DELHI",
+   "language_code": "en-IN",
+   "script_code": "Latn",
+   "occupant": null,
+   "house_number": "D 854",
+   "floor": "Ground Floor",
+   "building": "Saraswati Vihar",
+   "visual_descriptor": null,
+   "street": null,
+   "landmarks": [],
+   "landmark": null,
+   "landmark_relation": null,
+   "sublocality": null,
+   "locality": "Pitampura",
+   "city": "New Delhi",
+   "state": "Delhi",
+   "pincode": null,
+   "completeness": 0.58,
+   "missing": [
+    "street",
+    "pincode"
+   ],
+   "error": null
+  },
+  "score": {
+   "risk": 0.12,
+   "band": "low",
+   "will_likely_need_call": false,
+   "reasons": [
+    "No pincode — serviceability and routing cannot be confirmed."
+   ],
+   "ask_for": null,
+   "completeness": 0.58
+  }
+ },
+ {
+  "id": "ICIC0004312",
+  "raw": "ICICI BANK LTD., SHOP NO105 TO 108, 1ST FOOR, SUNPLAZA II, MAKARPURA, VADODARA, GUJARAT.",
+  "bank": "ICICI Bank",
+  "truth_state": "Gujarat",
+  "parsed": {
+   "raw": "ICICI BANK LTD., SHOP NO105 TO 108, 1ST FOOR, SUNPLAZA II, MAKARPURA, VADODARA, GUJARAT.",
+   "language_code": "ta-IN",
+   "script_code": "Latn",
+   "occupant": "ICICI Bank Ltd",
+   "house_number": "Shop No 105 To 108",
+   "floor": "1st Floor",
+   "building": "Sunplaza II",
+   "visual_descriptor": null,
+   "street": null,
+   "landmarks": [],
+   "landmark": null,
+   "landmark_relation": null,
+   "sublocality": null,
+   "locality": "Makarpura",
+   "city": "Vadodara",
+   "state": "Gujarat",
+   "pincode": null,
+   "completeness": 0.58,
+   "missing": [
+    "street",
+    "pincode"
+   ],
+   "error": null
+  },
+  "score": {
+   "risk": 0.12,
+   "band": "low",
+   "will_likely_need_call": false,
+   "reasons": [
+    "No pincode — serviceability and routing cannot be confirmed."
+   ],
+   "ask_for": null,
+   "completeness": 0.58
+  }
+ },
+ {
+  "id": "ICIC0001977",
+  "raw": "ICICI BANK LTD., CHANDNI BHATA, BAJRANG MANDIR, NEAR BAJAJ SHOWROOM, DALLI RAJHARA, DIST. BALOD, CHHATTISGARH.",
+  "bank": "ICICI Bank",
+  "truth_state": "Chhattisgarh",
+  "parsed": {
+   "raw": "ICICI BANK LTD., CHANDNI BHATA, BAJRANG MANDIR, NEAR BAJAJ SHOWROOM, DALLI RAJHARA, DIST. BALOD, CHHATTISGARH.",
+   "language_code": "en-IN",
+   "script_code": "Latn",
+   "occupant": "ICICI Bank Ltd",
+   "house_number": null,
+   "floor": null,
+   "building": null,
+   "visual_descriptor": null,
+   "street": null,
+   "landmarks": [
+    {
+     "name": "Bajrang Mandir",
+     "relation": "near"
+    },
+    {
+     "name": "Bajaj Showroom",
+     "relation": "near"
+    }
+   ],
+   "landmark": "Bajrang Mandir",
+   "landmark_relation": "near",
+   "sublocality": "Chandni Bhata",
+   "locality": "Dalli Rajhara",
+   "city": "Balod",
+   "state": "Chhattisgarh",
+   "pincode": null,
+   "completeness": 0.44,
+   "missing": [
+    "house_number",
+    "street",
+    "pincode"
+   ],
+   "error": null
+  },
+  "score": {
+   "risk": 0.84,
+   "band": "high",
+   "will_likely_need_call": true,
+   "reasons": [
+    "No house or flat number — rider must identify the door from the building name or landmark alone.",
+    "Neither street nor building named — nothing to navigate to below locality level.",
+    "Landmark-only address — resolvable by someone who already knows the area, not by a first-time rider.",
+    "No pincode — serviceability and routing cannot be confirmed.",
+    "Landmark relation is only \"near\" — direction is unspecified."
+   ],
+   "ask_for": {
+    "field": "house_number",
+    "label": "House / flat / door number",
+    "why": "the single highest-value field — it is what identifies the door",
+    "risk_reduction": 0.44
+   },
+   "completeness": 0.44
+  }
+ },
+ {
+  "id": "UTIB0005741",
+  "raw": "GF, BUILDING NUMBER 227 PLOT NUMBER 163, WARD 38, SAROJINI NAGAR, GUMTI, KANPUR NAGAR, UP",
+  "bank": "Axis Bank",
+  "truth_state": "Uttar Pradesh",
+  "parsed": {
+   "raw": "GF, BUILDING NUMBER 227 PLOT NUMBER 163, WARD 38, SAROJINI NAGAR, GUMTI, KANPUR NAGAR, UP",
+   "language_code": "en-IN",
+   "script_code": "Latn",
+   "occupant": null,
+   "house_number": "GF, Plot No. 163",
+   "floor": null,
+   "building": "Building No. 227",
+   "visual_descriptor": null,
+   "street": null,
+   "landmarks": [],
+   "landmark": null,
+   "landmark_relation": null,
+   "sublocality": "Ghumti",
+   "locality": "Sarojini Nagar",
+   "city": "Kanpur",
+   "state": "Uttar Pradesh",
+   "pincode": null,
+   "completeness": 0.64,
+   "missing": [
+    "street",
+    "pincode"
+   ],
+   "error": null
+  },
+  "score": {
+   "risk": 0.12,
+   "band": "low",
+   "will_likely_need_call": false,
+   "reasons": [
+    "No pincode — serviceability and routing cannot be confirmed."
+   ],
+   "ask_for": null,
+   "completeness": 0.64
+  }
+ },
+ {
+  "id": "KARB0000790",
+  "raw": "B M ROAD, VIBHUTHIKERE GRAMA PANCHAYATH, ARCHAKARAHALLI - , LJOOR (PO)",
+  "bank": "Karnataka Bank",
+  "truth_state": "Karnataka",
+  "parsed": {
+   "raw": "B M ROAD, VIBHUTHIKERE GRAMA PANCHAYATH, ARCHAKARAHALLI - , LJOOR (PO)",
+   "language_code": "ml-IN",
+   "script_code": "Latn",
+   "occupant": null,
+   "house_number": null,
+   "floor": null,
+   "building": null,
+   "visual_descriptor": null,
+   "street": "B M Road",
+   "landmarks": [
+    {
+     "name": "LJOOR Post Office",
+     "relation": null
+    }
+   ],
+   "landmark": "LJOOR Post Office",
+   "landmark_relation": null,
+   "sublocality": "Vibhuthikere Grama Panchayat",
+   "locality": "Archakarahalli",
+   "city": null,
+   "state": null,
+   "pincode": null,
+   "completeness": 0.52,
+   "missing": [
+    "house_number",
+    "city",
+    "pincode"
+   ],
+   "error": null
+  },
+  "score": {
+   "risk": 0.56,
+   "band": "high",
+   "will_likely_need_call": true,
+   "reasons": [
+    "No house or flat number — rider must identify the door from the building name or landmark alone.",
+    "No pincode — serviceability and routing cannot be confirmed.",
+    "No city identified.",
+    "Landmark relation is only \"near\" — direction is unspecified."
+   ],
+   "ask_for": {
+    "field": "house_number",
+    "label": "House / flat / door number",
+    "why": "the single highest-value field — it is what identifies the door",
+    "risk_reduction": 0.28
+   },
+   "completeness": 0.52
+  }
+ },
+ {
+  "id": "UBIN0900150",
+  "raw": "DIVYA TOWERS, I FLOOR, 4957 FORT MAIN ROAD, SALEM",
+  "bank": "Union Bank of India",
+  "truth_state": "Tamil Nadu",
+  "parsed": {
+   "raw": "DIVYA TOWERS, I FLOOR, 4957 FORT MAIN ROAD, SALEM",
+   "language_code": "en-IN",
+   "script_code": "Latn",
+   "occupant": null,
+   "house_number": "4957",
+   "floor": "I FLOOR",
+   "building": "Divya Towers",
+   "visual_descriptor": null,
+   "street": "Fort Main Road",
+   "landmarks": [],
+   "landmark": null,
+   "landmark_relation": null,
+   "sublocality": null,
+   "locality": null,
+   "city": "Salem",
+   "state": "Tamil Nadu",
+   "pincode": null,
+   "completeness": 0.58,
+   "missing": [
+    "locality",
+    "pincode"
+   ],
+   "error": null
+  },
+  "score": {
+   "risk": 0.32,
+   "band": "medium",
+   "will_likely_need_call": false,
+   "reasons": [
+    "No locality identified.",
+    "No pincode — serviceability and routing cannot be confirmed."
+   ],
+   "ask_for": {
+    "field": "locality",
+    "label": "Locality or area name",
+    "why": "needed to route below city level",
+    "risk_reduction": 0.2
+   },
+   "completeness": 0.58
+  }
+ },
+ {
+  "id": "ICIC0008398",
+  "raw": "GROUND FLOOR, SHOP NO 1, 2, 3, BUSINESS PARK, 80 FEET ROLEX ROAD, NEAR SAIBABA CIRCLE, KOTHARIYA",
+  "bank": "ICICI Bank",
+  "truth_state": "Gujarat",
+  "parsed": {
+   "raw": "GROUND FLOOR, SHOP NO 1, 2, 3, BUSINESS PARK, 80 FEET ROLEX ROAD, NEAR SAIBABA CIRCLE, KOTHARIYA",
+   "language_code": "ml-IN",
+   "script_code": "Latn",
+   "occupant": null,
+   "house_number": "Shop No 1, 2, 3",
+   "floor": "Ground Floor",
+   "building": "Business Park",
+   "visual_descriptor": null,
+   "street": "80 Feet Rolex Road",
+   "landmarks": [
+    {
+     "name": "Saibaba Circle",
+     "relation": "near"
+    }
+   ],
+   "landmark": "Saibaba Circle",
+   "landmark_relation": "near",
+   "sublocality": null,
+   "locality": "Kothariya",
+   "city": null,
+   "state": null,
+   "pincode": null,
+   "completeness": 0.8,
+   "missing": [
+    "city",
+    "pincode"
+   ],
+   "error": null
+  },
+  "score": {
+   "risk": 0.28,
+   "band": "medium",
+   "will_likely_need_call": false,
+   "reasons": [
+    "No pincode — serviceability and routing cannot be confirmed.",
+    "No city identified.",
+    "Landmark relation is only \"near\" — direction is unspecified."
+   ],
+   "ask_for": {
+    "field": "pincode",
+    "label": "Pincode",
+    "why": "confirms serviceability and routing",
+    "risk_reduction": 0.12
+   },
+   "completeness": 0.8
+  }
+ },
+ {
+  "id": "UBIN0915033",
+  "raw": "GROUND FLOOR, SURVEY NO 44, VANDALUR WALAJABAD ROAD, ORAGADAM KOOT ROAD, ORAGADAM, KANCHEEPURAM DISTRICT602105",
+  "bank": "Union Bank of India",
+  "truth_state": "Tamil Nadu",
+  "parsed": {
+   "raw": "GROUND FLOOR, SURVEY NO 44, VANDALUR WALAJABAD ROAD, ORAGADAM KOOT ROAD, ORAGADAM, KANCHEEPURAM DISTRICT602105",
+   "language_code": "en-IN",
+   "script_code": "Latn",
+   "occupant": null,
+   "house_number": "Survey No 44",
+   "floor": "Ground Floor",
+   "building": null,
+   "visual_descriptor": null,
+   "street": "Vandalur Walajabad Road",
+   "landmarks": [],
+   "landmark": null,
+   "landmark_relation": null,
+   "sublocality": null,
+   "locality": "Oragadam",
+   "city": null,
+   "state": null,
+   "pincode": "602105",
+   "completeness": 0.6,
+   "missing": [
+    "city"
+   ],
+   "error": null
+  },
+  "score": {
+   "risk": 0.2,
+   "band": "low",
+   "will_likely_need_call": false,
+   "reasons": [
+    "No city identified.",
+    "Revenue-record identifiers (khasra/khewat/survey number) — a land record, not a navigable address."
+   ],
+   "ask_for": null,
+   "completeness": 0.6
+  }
+ },
+ {
+  "id": "COSB0000117",
+  "raw": "RUSHABH APARTMENT, GROUND FLOOR, BUILDING NO. 1, S. NO. 5A, HISSA 1 (PART), PATEL NAGAR NO. 1, BHAYANDER (W), TALUKA & DIST. THANE",
+  "bank": "Cosmos Co-operative Bank",
+  "truth_state": "Maharashtra",
+  "parsed": {
+   "raw": "RUSHABH APARTMENT, GROUND FLOOR, BUILDING NO. 1, S. NO. 5A, HISSA 1 (PART), PATEL NAGAR NO. 1, BHAYANDER (W), TALUKA & DIST. THANE",
+   "language_code": "en-IN",
+   "script_code": "Latn",
+   "occupant": "RUSHABH APARTMENT",
+   "house_number": "S. No. 5A, Hissa 1 (Part)",
+   "floor": "Ground Floor",
+   "building": "Building No. 1",
+   "visual_descriptor": null,
+   "street": null,
+   "landmarks": [],
+   "landmark": null,
+   "landmark_relation": null,
+   "sublocality": "Patel Nagar No. 1",
+   "locality": "Bhayander",
+   "city": "Thane",
+   "state": "Maharashtra",
+   "pincode": null,
+   "completeness": 0.64,
+   "missing": [
+    "street",
+    "pincode"
+   ],
+   "error": null
+  },
+  "score": {
+   "risk": 0.24,
+   "band": "low",
+   "will_likely_need_call": false,
+   "reasons": [
+    "No pincode — serviceability and routing cannot be confirmed.",
+    "Rural/administrative addressing (village, post office, tehsil) — no street-level grid to route on."
+   ],
+   "ask_for": null,
+   "completeness": 0.64
+  }
+ },
+ {
+  "id": "CNRB0006367",
+  "raw": "CANARA BANAK MAIN RD, WARD NO 17, BODHKI, AMLA BETUL, BHOPAL, MADHYA PRADESH, AMLA MADHYA PRADESH",
+  "bank": "Canara Bank",
+  "truth_state": "Madhya Pradesh",
+  "parsed": {
+   "raw": "CANARA BANAK MAIN RD, WARD NO 17, BODHKI, AMLA BETUL, BHOPAL, MADHYA PRADESH, AMLA MADHYA PRADESH",
+   "language_code": "en-IN",
+   "script_code": "Latn",
+   "occupant": "Canara Bank",
+   "house_number": null,
+   "floor": null,
+   "building": null,
+   "visual_descriptor": null,
+   "street": "Main Road",
+   "landmarks": [],
+   "landmark": null,
+   "landmark_relation": null,
+   "sublocality": "Bodhkhi",
+   "locality": "Amla",
+   "city": "Bhopal",
+   "state": "Madhya Pradesh",
+   "pincode": null,
+   "completeness": 0.46,
+   "missing": [
+    "house_number",
+    "pincode"
+   ],
+   "error": null
+  },
+  "score": {
+   "risk": 0.54,
+   "band": "medium",
+   "will_likely_need_call": false,
+   "reasons": [
+    "No house or flat number, and no building to fall back on.",
+    "No pincode — serviceability and routing cannot be confirmed."
+   ],
+   "ask_for": {
+    "field": "house_number",
+    "label": "House / flat / door number",
+    "why": "the single highest-value field — it is what identifies the door",
+    "risk_reduction": 0.42
+   },
+   "completeness": 0.46
+  }
+ },
+ {
+  "id": "DCBL0000420",
+  "raw": "DCB BANK LTD, KHARIAR BRANCH, AISHANI COMPLEX, RAJAPADA, NEAR SAMALESHWARI TEMPLE, AT/PO-KHARIAR, DISTRICT-NUAPADA, STATE-ODISHA, PIN",
+  "bank": "DCB Bank",
+  "truth_state": "Odisha",
+  "parsed": {
+   "raw": "DCB BANK LTD, KHARIAR BRANCH, AISHANI COMPLEX, RAJAPADA, NEAR SAMALESHWARI TEMPLE, AT/PO-KHARIAR, DISTRICT-NUAPADA, STATE-ODISHA, PIN",
+   "language_code": "en-IN",
+   "script_code": "Latn",
+   "occupant": "DCB BANK LTD",
+   "house_number": null,
+   "floor": null,
+   "building": "AISHANI COMPLEX",
+   "visual_descriptor": null,
+   "street": "RAJAPADA",
+   "landmarks": [
+    {
+     "name": "SAMALESHWARI TEMPLE",
+     "relation": "near"
+    }
+   ],
+   "landmark": "SAMALESHWARI TEMPLE",
+   "landmark_relation": "near",
+   "sublocality": null,
+   "locality": "KHARIAR",
+   "city": "KHARIAR",
+   "state": "ODISHA",
+   "pincode": null,
+   "completeness": 0.66,
+   "missing": [
+    "house_number",
+    "pincode"
+   ],
+   "error": null
+  },
+  "score": {
+   "risk": 0.46,
+   "band": "medium",
+   "will_likely_need_call": false,
+   "reasons": [
+    "No house or flat number — rider must identify the door from the building name or landmark alone.",
+    "No pincode — serviceability and routing cannot be confirmed.",
+    "Landmark relation is only \"near\" — direction is unspecified."
+   ],
+   "ask_for": {
+    "field": "house_number",
+    "label": "House / flat / door number",
+    "why": "the single highest-value field — it is what identifies the door",
+    "risk_reduction": 0.28
+   },
+   "completeness": 0.66
+  }
+ },
+ {
+  "id": "BARB0SAMOGA",
+  "raw": "SAMOGARA, PO - SIRSA, TEHSIL - MEJA, DIST ALLAHABAD, UTTAR PRADESH",
+  "bank": "Bank of Baroda",
+  "truth_state": "Uttar Pradesh",
+  "parsed": {
+   "raw": "SAMOGARA, PO - SIRSA, TEHSIL - MEJA, DIST ALLAHABAD, UTTAR PRADESH",
+   "language_code": "hi-IN",
+   "script_code": "Latn",
+   "occupant": null,
+   "house_number": null,
+   "floor": null,
+   "building": null,
+   "visual_descriptor": null,
+   "street": null,
+   "landmarks": [],
+   "landmark": null,
+   "landmark_relation": null,
+   "sublocality": "Meja",
+   "locality": "Samogara",
+   "city": null,
+   "state": "Uttar Pradesh",
+   "pincode": null,
+   "completeness": 0.22,
+   "missing": [
+    "house_number",
+    "street",
+    "city",
+    "pincode"
+   ],
+   "error": null
+  },
+  "score": {
+   "risk": 0.98,
+   "band": "high",
+   "will_likely_need_call": true,
+   "reasons": [
+    "No house or flat number, and no building to fall back on.",
+    "Neither street nor building named — nothing to navigate to below locality level.",
+    "No pincode — serviceability and routing cannot be confirmed.",
+    "No city identified.",
+    "Rural/administrative addressing (village, post office, tehsil) — no street-level grid to route on."
+   ],
+   "ask_for": {
+    "field": "house_number",
+    "label": "House / flat / door number",
+    "why": "the single highest-value field — it is what identifies the door",
+    "risk_reduction": 0.42
+   },
+   "completeness": 0.22
+  }
+ },
+ {
+  "id": "MAHB0002677",
+  "raw": "SHOP NO. B1, B WING, KINI ARCADE, STELLA, VASAI ROAD WEST, BARAMPUR, DIST. - PALGHAR, MAHARASHTRA",
+  "bank": "Bank of Maharashtra",
+  "truth_state": "Maharashtra",
+  "parsed": {
+   "raw": "SHOP NO. B1, B WING, KINI ARCADE, STELLA, VASAI ROAD WEST, BARAMPUR, DIST. - PALGHAR, MAHARASHTRA",
+   "language_code": "en-IN",
+   "script_code": "Latn",
+   "occupant": null,
+   "house_number": "B1",
+   "floor": null,
+   "building": "B Wing, Kini Arcade",
+   "visual_descriptor": null,
+   "street": "Vasai Road West",
+   "landmarks": [],
+   "landmark": null,
+   "landmark_relation": null,
+   "sublocality": "Stella",
+   "locality": "Barampur",
+   "city": "Palghar",
+   "state": "Maharashtra",
+   "pincode": null,
+   "completeness": 0.8,
+   "missing": [
+    "pincode"
+   ],
+   "error": null
+  },
+  "score": {
+   "risk": 0.12,
+   "band": "low",
+   "will_likely_need_call": false,
+   "reasons": [
+    "No pincode — serviceability and routing cannot be confirmed."
+   ],
+   "ask_for": null,
+   "completeness": 0.8
+  }
+ },
+ {
+  "id": "UJVN0002377",
+  "raw": "GROUND FLOOR, NEAR RADHA KRISHAN MARRIAGE HOME, PARAGNA DAURALA TEHSIL SARDHANA, MEERUT, UTTAR PRADESH",
+  "bank": "Ujjivan Small Finance Bank",
+  "truth_state": "Uttar Pradesh",
+  "parsed": {
+   "raw": "GROUND FLOOR, NEAR RADHA KRISHAN MARRIAGE HOME, PARAGNA DAURALA TEHSIL SARDHANA, MEERUT, UTTAR PRADESH",
+   "language_code": "en-IN",
+   "script_code": "Latn",
+   "occupant": null,
+   "house_number": null,
+   "floor": "Ground Floor",
+   "building": null,
+   "visual_descriptor": null,
+   "street": null,
+   "landmarks": [
+    {
+     "name": "Radha Krishan Marriage Home",
+     "relation": "near"
+    }
+   ],
+   "landmark": "Radha Krishan Marriage Home",
+   "landmark_relation": "near",
+   "sublocality": "Paragana Daurala",
+   "locality": "Sardhana",
+   "city": "Meerut",
+   "state": "Uttar Pradesh",
+   "pincode": null,
+   "completeness": 0.44,
+   "missing": [
+    "house_number",
+    "street",
+    "pincode"
+   ],
+   "error": null
+  },
+  "score": {
+   "risk": 0.96,
+   "band": "high",
+   "will_likely_need_call": true,
+   "reasons": [
+    "No house or flat number — rider must identify the door from the building name or landmark alone.",
+    "Neither street nor building named — nothing to navigate to below locality level.",
+    "Landmark-only address — resolvable by someone who already knows the area, not by a first-time rider.",
+    "No pincode — serviceability and routing cannot be confirmed.",
+    "Rural/administrative addressing (village, post office, tehsil) — no street-level grid to route on.",
+    "Landmark relation is only \"near\" — direction is unspecified."
+   ],
+   "ask_for": {
+    "field": "house_number",
+    "label": "House / flat / door number",
+    "why": "the single highest-value field — it is what identifies the door",
+    "risk_reduction": 0.44
+   },
+   "completeness": 0.44
+  }
+ }
+]

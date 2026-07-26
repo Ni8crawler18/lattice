@@ -1,0 +1,14 @@
+services:
+  - type: web
+    name: lattice-api
+    runtime: python
+    plan: free
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn server.app:app --host 0.0.0.0 --port $PORT
+    envVars:
+      - key: SARVAM_API_KEY
+        sync: false          # set in the Render dashboard, never commit it
+      - key: LATTICE_API_KEY
+        sync: false          # master API key/secret — minted keys are HMAC-signed with it
+      - key: PYTHON_VERSION
+        value: "3.11.9"
