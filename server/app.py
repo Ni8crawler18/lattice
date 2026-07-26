@@ -490,6 +490,12 @@ async def api_stt(request: Request):
         raise HTTPException(status_code=413, detail="audio too large (10 MB max)")
     try:
         return sarvam.transcribe(audio, request.headers.get("content-type", "audio/webm"))
+    except ValueError as exc:
+        # bad AUDIO, not a bad service: say so, with the fix
+        raise HTTPException(status_code=422, detail=(
+            f"{exc} — send a complete audio file (wav/mp3/ogg/webm/m4a) as the "
+            "raw request body with a matching Content-Type; a truncated or "
+            "headerless recording cannot be decoded."))
     except Exception as exc:
         raise HTTPException(status_code=502, detail=f"stt failed: {exc}")
 
@@ -510,6 +516,11 @@ async def api_stt_parse(request: Request):
         raise HTTPException(status_code=413, detail="audio too large (10 MB max)")
     try:
         heard = sarvam.transcribe(audio, request.headers.get("content-type", "audio/webm"))
+    except ValueError as exc:
+        raise HTTPException(status_code=422, detail=(
+            f"{exc} — send a complete audio file (wav/mp3/ogg/webm/m4a) as the "
+            "raw request body with a matching Content-Type; a truncated or "
+            "headerless recording cannot be decoded."))
     except Exception as exc:
         raise HTTPException(status_code=502, detail=f"stt failed: {exc}")
     transcript = (heard.get("transcript") or "").strip()

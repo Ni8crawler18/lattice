@@ -76,6 +76,14 @@ def transcribe(audio: bytes, content_type: str = "audio/webm") -> dict:
         files={"file": (f"audio.{ext}", audio, content_type)},
         timeout=60.0,
     )
+    if 400 <= r.status_code < 500:
+        # Sarvam's body says WHY (verified: undecodable bytes -> 400
+        # "Failed to read the file"); don't bury it in a bare status line.
+        try:
+            msg = r.json()["error"]["message"]
+        except Exception:
+            msg = r.text[:200]
+        raise ValueError(f"Sarvam rejected the audio ({r.status_code}): {msg}")
     r.raise_for_status()
     d = r.json()
     return {
