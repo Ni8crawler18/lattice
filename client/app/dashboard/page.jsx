@@ -1043,21 +1043,17 @@ const API_SAMPLES = [
 const maskKey = (k) => (k ? k.slice(0, 9) + "*".repeat(Math.max(4, k.length - 9)) : "");
 
 function ApiTester({ goKeys }) {
-  const [key, setKey] = useState("");
-  const [editing, setEditing] = useState(false);
-  const [draft, setDraft] = useState("");
   const [body, setBody] = useState(JSON.stringify(API_SAMPLES[0][1], null, 2));
   const [resp, setResp] = useState(null);
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState("");
-  useEffect(() => { setKey(apiKey()); }, []);
 
   const send = async () => {
     setBusy(true); setErr(""); setResp(null);
     try {
       const r = await fetch(apiBase() + "/parse", {
         method: "POST",
-        headers: { "Content-Type": "application/json", "X-API-Key": key },
+        headers: { "Content-Type": "application/json", ...apiHeaders() },
         body,
       });
       setResp({ status: r.status, data: await r.json() });
@@ -1078,29 +1074,6 @@ function ApiTester({ goKeys }) {
         <span className="right">POST /parse · unstructured in, structured + DIGIPIN + lat/lon out</span>
       </div>
       <div className="block-body">
-        <div style={{ display: "flex", gap: 10, alignItems: "center", flexWrap: "wrap", marginBottom: 14 }}>
-          <label style={{ margin: 0 }}>API key</label>
-          {editing ? (
-            <>
-              <input value={draft} onChange={(e) => setDraft(e.target.value)} spellCheck={false}
-                     placeholder="paste your ltk_… key" autoFocus
-                     style={{ ...mono, flex: 1, minWidth: 240, padding: "9px 12px",
-                              border: "1px solid var(--line-2)", background: "var(--canvas)", color: "var(--ink)" }} />
-              <button className="chip-btn" onClick={() => { if (draft.trim()) setKey(draft.trim()); setEditing(false); setDraft(""); }}>Save</button>
-              <button className="chip-btn" onClick={() => { setEditing(false); setDraft(""); }}>Cancel</button>
-            </>
-          ) : (
-            <>
-              <code style={{ ...mono, flex: 1, minWidth: 240, padding: "9px 12px",
-                             border: "1px solid var(--line-2)", background: "var(--canvas)",
-                             color: "var(--ink-2)", letterSpacing: "0.04em" }}>
-                {maskKey(key) || "no key set"}
-              </code>
-              <button className="chip-btn" onClick={() => setEditing(true)}>Use my key</button>
-              {goKeys && <button className="chip-btn" onClick={goKeys}>Mint one → API keys</button>}
-            </>
-          )}
-        </div>
         <div className="two">
           <div>
             <label>Request body</label>
@@ -1114,7 +1087,7 @@ function ApiTester({ goKeys }) {
                 </button>
               ))}
               <button className="btn" style={{ marginLeft: "auto", height: 34, padding: "0 22px", fontSize: 12.5 }}
-                      onClick={send} disabled={busy || !key}>
+                      onClick={send} disabled={busy}>
                 {busy ? <><span className="spin" />Parsing…</> : "Send →"}
               </button>
             </div>
@@ -1132,6 +1105,12 @@ function ApiTester({ goKeys }) {
             </pre>
             {err && <div className="error">{err}</div>}
           </div>
+        </div>
+        <div style={{ fontSize: 11.5, color: "var(--muted)", marginTop: 12 }}>
+          Requests are authenticated with this console's key. Need your own?{" "}
+          {goKeys
+            ? <button className="expand" style={{ padding: 0 }} onClick={goKeys}>Generate one under API keys →</button>
+            : "Generate one under API keys."}
         </div>
       </div>
     </div>

@@ -83,7 +83,7 @@
     "street": null,
     "landmarks": [
       {
-        "name": "Ganash Mandir",
+        "name": "Ganesh Mandir",
         "relation": "behind"
       },
       {
@@ -91,14 +91,14 @@
         "relation": "opposite"
       }
     ],
-    "landmark": "Ganash Mandir",
+    "landmark": "Ganesh Mandir",
     "landmark_relation": "behind",
     "sublocality": null,
     "locality": "Kothrud",
     "post_office": null,
     "city": "Pune",
     "district": null,
-    "state": null,
+    "state": "Maharashtra",
     "pincode": "411038",
     "completeness": 0.44,
     "missing": [
@@ -134,7 +134,7 @@
     "post_office": null,
     "city": "Pune",
     "district": null,
-    "state": "Maharashtra",
+    "state": null,
     "pincode": null,
     "completeness": 0.38,
     "missing": [
@@ -153,7 +153,7 @@
     "floor": null,
     "building": null,
     "visual_descriptor": null,
-    "street": "2nd Cross, 4th Main",
+    "street": "['2nd Cross', '4th Main']",
     "landmarks": [
       {
         "name": "Ayyappa Mandir",
@@ -167,11 +167,11 @@
     "landmark": "Ayyappa Mandir",
     "landmark_relation": "near",
     "sublocality": "2nd Stage",
-    "locality": "BTM",
+    "locality": "BTM Layout",
     "post_office": null,
     "city": "Bengaluru",
     "district": null,
-    "state": null,
+    "state": "Karnataka",
     "pincode": "560076",
     "completeness": 0.66,
     "missing": [
@@ -184,29 +184,24 @@
     "language_code": "en-IN",
     "script_code": "Latn",
     "occupant": null,
-    "house_number": "12",
+    "house_number": null,
     "floor": null,
     "building": null,
     "visual_descriptor": null,
-    "street": "4th Main Road, 2nd Cross",
-    "landmarks": [
-      {
-        "name": "Ayyappa Temple",
-        "relation": "opposite"
-      }
-    ],
-    "landmark": "Ayyappa Temple",
-    "landmark_relation": "opposite",
-    "sublocality": "2nd Stage",
-    "locality": "BTM Layout",
+    "street": null,
+    "landmarks": [],
+    "landmark": null,
+    "landmark_relation": null,
+    "sublocality": null,
+    "locality": null,
     "post_office": null,
-    "city": "Bengaluru",
+    "city": null,
     "district": null,
-    "state": "Karnataka",
-    "pincode": "560076",
-    "completeness": 0.88,
+    "state": null,
+    "pincode": null,
+    "completeness": 0.0,
     "missing": [],
-    "error": null
+    "error": "ValueError: empty completion"
   },
   "b3": {
     "raw": "4th main 2nd cross btm 2nd stage bangalore near ayyappa temple reliance fresh backside",
@@ -231,11 +226,11 @@
     "landmark": "Ayyappa Mandir",
     "landmark_relation": "near",
     "sublocality": "2nd Stage",
-    "locality": "BTM Layout",
+    "locality": "BTM",
     "post_office": null,
     "city": "Bengaluru",
     "district": null,
-    "state": "Karnataka",
+    "state": null,
     "pincode": null,
     "completeness": 0.6,
     "missing": [
@@ -282,18 +277,23 @@
     "floor": null,
     "building": null,
     "visual_descriptor": null,
-    "street": "Bharati Street",
-    "landmarks": [],
-    "landmark": null,
-    "landmark_relation": null,
+    "street": "Bharathi Street",
+    "landmarks": [
+      {
+        "name": "Saravana Stores",
+        "relation": "opposite"
+      }
+    ],
+    "landmark": "Saravana Stores",
+    "landmark_relation": "opposite",
     "sublocality": null,
     "locality": "Ashok Nagar",
     "post_office": null,
     "city": "Chennai",
     "district": null,
-    "state": null,
+    "state": "Tamil Nadu",
     "pincode": "600083",
-    "completeness": 0.68,
+    "completeness": 0.82,
     "missing": [],
     "error": null
   },
@@ -338,18 +338,18 @@
     "street": "Gali No 6",
     "landmarks": [
       {
-        "name": "Laxmi Nagar Metro Station",
+        "name": "Metro",
         "relation": "near"
       }
     ],
-    "landmark": "Laxmi Nagar Metro Station",
+    "landmark": "Metro",
     "landmark_relation": "near",
     "sublocality": "Shakarpur",
     "locality": "Laxmi Nagar",
     "post_office": null,
     "city": "New Delhi",
     "district": null,
-    "state": "Delhi",
+    "state": null,
     "pincode": "110092",
     "completeness": 0.88,
     "missing": [],
@@ -373,7 +373,7 @@
     "post_office": null,
     "city": "Pune",
     "district": null,
-    "state": null,
+    "state": "Maharashtra",
     "pincode": "411038",
     "completeness": 0.8,
     "missing": [],
@@ -398,11 +398,11 @@
     "landmark": "Udupi Hotel",
     "landmark_relation": "near",
     "sublocality": "1st Stage",
-    "locality": "BTM Layout",
+    "locality": "BTM",
     "post_office": null,
     "city": "Bengaluru",
     "district": null,
-    "state": null,
+    "state": "Karnataka",
     "pincode": "560029",
     "completeness": 0.88,
     "missing": [],
@@ -443,21 +443,21 @@
     "script_code": "Latn",
     "occupant": null,
     "house_number": null,
-    "floor": null,
+    "floor": "above Kotak bank",
     "building": null,
     "visual_descriptor": null,
     "street": null,
     "landmarks": [
       {
-        "name": "Ratnadeep Supermarket",
+        "name": "Ratnadeep supermarket",
         "relation": "beside"
       },
       {
-        "name": "Kotak Bank",
+        "name": "Kotak bank",
         "relation": "above"
       }
     ],
-    "landmark": "Ratnadeep Supermarket",
+    "landmark": "Ratnadeep supermarket",
     "landmark_relation": "beside",
     "sublocality": null,
     "locality": "Madhapur",
@@ -483,17 +483,17 @@
     "floor": null,
     "building": null,
     "visual_descriptor": null,
-    "street": "Rasbihari Avenue",
+    "street": "Rabindra Sarani",
     "landmarks": [
       {
-        "name": "Kali Ghat Metro",
+        "name": "Kalighat Metro",
         "relation": "near"
       }
     ],
-    "landmark": "Kali Ghat Metro",
+    "landmark": "Kalighat Metro",
     "landmark_relation": "near",
     "sublocality": null,
-    "locality": "Kali Ghat",
+    "locality": "Kalighat",
     "post_office": null,
     "city": "Kolkata",
     "district": null,
@@ -508,11 +508,11 @@
     "language_code": "hi-IN",
     "script_code": "Latn",
     "occupant": null,
-    "house_number": "3",
+    "house_number": "3rd",
     "floor": null,
     "building": null,
     "visual_descriptor": null,
-    "street": null,
+    "street": "Hanuman Mandir Ki Samne Wali Gali",
     "landmarks": [
       {
         "name": "Hanuman Mandir",
@@ -528,9 +528,8 @@
     "district": null,
     "state": "Uttar Pradesh",
     "pincode": null,
-    "completeness": 0.6,
+    "completeness": 0.76,
     "missing": [
-      "street",
       "pincode"
     ],
     "error": null
@@ -547,11 +546,11 @@
     "street": null,
     "landmarks": [
       {
-        "name": "Char Rasta",
+        "name": "Naranpura Char Rasta",
         "relation": "near"
       }
     ],
-    "landmark": "Char Rasta",
+    "landmark": "Naranpura Char Rasta",
     "landmark_relation": "near",
     "sublocality": null,
     "locality": "Naranpura",
@@ -571,7 +570,7 @@
     "language_code": "en-IN",
     "script_code": "Latn",
     "occupant": null,
-    "house_number": "Plot 22",
+    "house_number": "22",
     "floor": null,
     "building": null,
     "visual_descriptor": null,
@@ -584,12 +583,12 @@
     ],
     "landmark": "Jain Mandir",
     "landmark_relation": "near",
-    "sublocality": "sector 4",
-    "locality": "Malviya Ngr",
+    "sublocality": "4",
+    "locality": "Malviya Nagar",
     "post_office": null,
     "city": "Jaipur",
     "district": null,
-    "state": "Rajasthan",
+    "state": "Raj",
     "pincode": "302017",
     "completeness": 0.72,
     "missing": [
@@ -602,9 +601,9 @@
     "language_code": "en-IN",
     "script_code": "Latn",
     "occupant": null,
-    "house_number": "Room no 4",
+    "house_number": "4",
     "floor": null,
-    "building": "chawl no 2",
+    "building": "Chawl no 2",
     "visual_descriptor": null,
     "street": "Dr Ambedkar Road",
     "landmarks": [
@@ -615,14 +614,14 @@
     ],
     "landmark": "Sena Bhavan",
     "landmark_relation": "behind",
-    "sublocality": null,
-    "locality": "Dadar East",
+    "sublocality": "East",
+    "locality": "Dadar",
     "post_office": null,
     "city": "Mumbai",
     "district": null,
     "state": "Maharashtra",
     "pincode": "400014",
-    "completeness": 0.94,
+    "completeness": 1.0,
     "missing": [],
     "error": null
   }
