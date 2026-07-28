@@ -1,0 +1,66 @@
+𝗘𝘃𝗲𝗿𝘆 𝗳𝗼𝘂𝗿𝘁𝗵 𝗽𝗮𝗿𝗰𝗲𝗹 𝗶𝗻 𝗜𝗻𝗱𝗶𝗮 𝗰𝗼𝗺𝗲𝘀 𝗯𝗮𝗰𝗸. Nearly half of it is the address's fault.
+
+RTO here runs 15–30% against 2–5% globally, and over 45% traces to bad addresses. That is shipping paid twice for revenue booked zero.
+
+Why software can't fix it:
+
+𝗔𝗻 𝗜𝗻𝗱𝗶𝗮𝗻 𝗮𝗱𝗱𝗿𝗲𝘀𝘀 𝗶𝘀 𝗻𝗼𝘁 𝗮𝗻 𝗮𝗱𝗱𝗿𝗲𝘀𝘀. 𝗜𝘁 𝗶𝘀 𝗱𝗶𝗿𝗲𝗰𝘁𝗶𝗼𝗻𝘀.
+
+"Ganesh mandir ke peeche, blue gate wala ghar, opp SBI ATM, Kothrud"
+
+No street number. A temple as the reference point. Hinglish today, Devanagari tomorrow. Every system assumes house → street → postcode, so it doesn't fail loudly — it returns a confident pin 800 metres off.
+
+What exists today:
+
+→ Shipping platforms like Shiprocket optimise routes. They consume address quality, they don't produce it.
+→ DIGIPIN (India Post + ISRO) codes every 4m x 4m cell — but encodes coordinates, not text.
+→ DHRUVA, the Address-as-a-Service framework, is the rails going on top.
+
+The state is building the destination. But hundreds of millions of legacy addresses in CRMs and loan files have no coordinates, and nobody is solving the actual gap: reading the language the address is written in.
+
+This fails at the language layer, not the formatting layer. That's why regex and English-first geocoders never cracked it — and why Indic-native models finally can.
+
+𝗧𝗵𝗮𝘁 𝗶𝘀 𝗟𝗮𝘁𝘁𝗶𝗰𝗲 — Indian Address Intelligence, built on Sarvam.
+
+• Parse — any script into clean fields, landmarks kept as first-class data with their spatial relation (behind / opposite / near)
+• Resolve — are these two differently-written records the same physical door? Validation APIs check one address in isolation. Nobody answers this.
+• Score — delivery risk before dispatch, plus the one question to ask the customer
+
+On 182,758 real bank-branch addresses: 𝗽𝗿𝗲𝗰𝗶𝘀𝗶𝗼𝗻 𝟭.𝟬𝟬𝟬, 𝘇𝗲𝗿𝗼 𝗳𝗮𝗹𝘀𝗲 𝗺𝗲𝗿𝗴𝗲𝘀, against 0.625 for string matching. Misses published, not hidden.
+
+Three ways in:
+🔧 REST + voice APIs — speak an address in Hindi, get structured JSON
+🤖 MCP server — AI agents call it as a native tool
+📊 Console — drop a CSV, watch duplicates collapse into doors
+
+𝗙𝗶𝗿𝘀𝘁 𝟱𝟬 𝗱𝗲𝘃𝗲𝗹𝗼𝗽𝗲𝗿𝘀 𝗸𝗲𝗲𝗽 𝗶𝘁 𝗳𝗿𝗲𝗲, 𝗽𝗲𝗿𝗺𝗮𝗻𝗲𝗻𝘁𝗹𝘆.
+
+I don't want money. I want to know which addresses break it. Claim a key, run the worst address you've ever seen, and comment with what you threw at it, what came back, and where it broke.
+
+Especially logistics, quick commerce and NBFC/BFSI ops — you know your rider-call rate better than any benchmark I can quote.
+
+🔗 lattice-labs.vercel.app/get-access
+
+Built at the Sarvam Epoch Buildathon on the Sarvam AI stack. Thanks GrowthX, Lightspeed, Bessemer Venture Partners and Razorpay — and Ameesh Dubey, whose "build an API, write the docs, nail one demo" is why this shipped as a product, not a prototype.
+
+Breaking it helps me more than praising it.
+
+#SarvamEpoch #IndicAI #BuildInPublic #DPI #India
+
+
+---------------------------------------------------------------
+DELETE EVERYTHING BELOW BEFORE POSTING
+---------------------------------------------------------------
+TAGS: type @ and pick from LinkedIn's dropdown, or it's just text.
+  @Sarvam AI · @GrowthX · @Lightspeed · @Bessemer Venture Partners
+  @Razorpay · @Ameesh Dubey
+Never bold a name you're tagging — the bold glyphs aren't real
+letters, so LinkedIn can't resolve the mention and the tag fails.
+
+Bold costs 2 characters each on LinkedIn's counter (the glyphs sit
+outside the basic Unicode plane). Only 6 phrases are bold. If you
+need room, un-bold the "First 50 developers" line for ~45 chars.
+
+Google consent screen is published, so "Continue with Google" works
+for strangers. The email form is there as a fallback either way.
+Open the link in an incognito window before posting.
