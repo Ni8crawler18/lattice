@@ -1,22 +1,22 @@
 # Lattice — Indian Address Intelligence
 
-Lattice is an address-intelligence API for Indian addresses: free-text,
-landmark-led, multi-script input (Devanagari, Tamil, Bengali, code-mixed
-Hinglish) in; structured, comparable, machine-usable records out. It answers
-three questions:
+Lattice is an address-intelligence API for Indian addresses. It parses
+unstructured address text in the 23 languages Sarvam supports — 13 scripts,
+from Devanagari and Tamil to Gurmukhi and Perso-Arabic, plus romanised and
+code-mixed text like Hinglish — into structured components, validates them
+against an offline postal directory, and returns coordinates and a DIGIPIN
+where the address can be located. It can also compare two addresses to decide whether
+they refer to the same location, deduplicate a batch into one merged record
+per location, and score delivery risk. When an address cannot be fully
+resolved, the response says so: `status: partial`, the fields that were
+extracted, and a message stating what is missing.
 
-1. **What does this address say?** — component extraction with landmarks as
-   first-class objects, deliverability risk, postal-directory validation,
-   geocoding, DIGIPIN.
-2. **Are these two the same physical door?** — deterministic entity resolution
-   with per-signal evidence; batch dedupe emits one merged *golden record* per
-   location.
-3. **Will it deliver?** — rule-based risk score with reasons and the single
-   highest-value field to ask the customer for.
+Legacy CRMs can use it to parse and clean the addresses they already hold,
+through the batch API. New systems can use it in their forms — `/parse`
+behind the address field, or `/stt/parse` for spoken input.
 
-The LLM (Sarvam `sarvam-105b`) runs once per address, at parse time. Everything
-downstream — resolution, scoring, clustering, validation, grid arithmetic — is
-deterministic Python, evaluable offline.
+Parsing uses Sarvam `sarvam-105b`, once per address. Resolution, scoring,
+clustering and validation are deterministic Python, evaluable offline.
 
 - **API** `https://lattice-api-fs5f.onrender.com` · OpenAPI at `/docs`
 - **Console** `https://lattice-labs.vercel.app`
@@ -59,10 +59,10 @@ mismatch, uncorroborated locality mismatch. Cluster threshold 0.75.
 
 | Capability | Sarvam API | Where |
 |---|---|---|
-| Address parsing | `sarvam-105b` chat completions | `parser.py` — the full extraction schema is the system prompt |
+| Address parsing | `sarvam-105b` chat completions — 23 languages, 13 scripts | `parser.py` — the full extraction schema is the system prompt |
 | Language/script ID | Text LID | `parser.py` |
 | Latin canonicalisation | Transliterate | `parser.py` fallback — resolver/directory/geocoder always see Latin |
-| Speech → address | Saaras `saaras:v3`, language auto-detect | `/stt`, `/stt/parse` |
+| Speech → address | Saaras `saaras:v3` — 23 languages, auto-detect | `/stt`, `/stt/parse` |
 
 ## HTTP API
 
@@ -162,11 +162,3 @@ env/bin/python3 server/eval_real.py
 
 Push to `main` deploys automatically: API → Render, console → Vercel,
 accounts/usage → Postgres.
-
-## Known limitations
-
-Key revocation is a ledger, not yet enforced at auth time. No per-key rate
-limiting. Geocoding is locality-level for most real addresses (OSM adapter;
-swappable in one function). Async jobs are in-memory and do not survive
-restarts. The deliverability score is rule-based; calibration against real
-delivery outcomes needs pilot data.
