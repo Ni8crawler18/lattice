@@ -655,7 +655,7 @@ function Deliver() {
             placeholder="Ganesh mandir ke peeche, blue gate wala ghar, opp SBI ATM, Kothrud, Pune 411038"
             style={{ width: "100%", fontFamily: "var(--mono)", fontSize: 12.5 }}
           />
-          <div className="row" style={{ gap: 10, marginTop: 12, alignItems: "center", flexWrap: "wrap" }}>
+          <div style={{ display: "flex", gap: 16, marginTop: 12, alignItems: "center", flexWrap: "wrap" }}>
             <button className="btn" onClick={run} disabled={busy}>
               {busy ? "Scoring…" : "Score this address"}
             </button>
@@ -1880,26 +1880,29 @@ function DocsView() {
 /* --------------------------------- shell --------------------------------- */
 
 const VIEWS = {
-  parse: { title: "Parse", icon: I.parse, stage: "L0",
-           sub: "one messy string → structured components" },
-  resolve: { title: "Resolve", icon: I.resolve, stage: "L1",
-             sub: "two records — same door, or different door?" },
-  batch: { title: "Deduplicate", icon: I.batch, stage: "L1",
-           sub: "a whole file — duplicates collapsed, golden records out" },
-  deliver: { title: "Score", icon: I.deliver, stage: "L2",
-             sub: "call risk before dispatch, and the field to ask for" },
-  digipin: { title: "Group by DIGIPIN", icon: I.digipin, stage: "L3",
-             sub: "points bucketed into grid cells — one cell, one delivery batch" },
+  // Named for what the user does, not for the layer it happens to be. Someone
+  // seeing this console for the first time should not have to learn our
+  // vocabulary before they can find the thing they came for.
+  parse: { title: "Extract", icon: I.parse, stage: null,
+           sub: "turn one messy address into clean, labelled fields" },
+  resolve: { title: "Compare", icon: I.resolve, stage: null,
+             sub: "do these two addresses point at the same door?" },
+  batch: { title: "Deduplicate", icon: I.batch, stage: null,
+           sub: "upload a file, get one clean record per real location" },
+  deliver: { title: "Score", icon: I.deliver, stage: null,
+             sub: "how likely is this to fail, and what should you ask for?" },
+  digipin: { title: "Group by DIGIPIN", icon: I.digipin, stage: null,
+             sub: "bucket points into map cells — one cell, one delivery run" },
   rest: { title: "REST API", icon: I.rest, stage: null,
-          sub: "one call: unstructured address in, structured JSON + DIGIPIN out" },
+          sub: "one call: address in, structured JSON out" },
   stt: { title: "Speech → JSON", icon: I.mic, stage: null,
-         sub: "spoken address — mp3 or live mic — through the same pipeline" },
+         sub: "a spoken address — mp3 or live mic — through the same pipeline" },
   mcp: { title: "MCP", icon: I.mcp, stage: null,
-         sub: "the address toolset for AI agents — 7 tools over stdio" },
+         sub: "the same tools, callable by an AI agent" },
   keys: { title: "API keys", icon: I.key, stage: null,
-          sub: "self-service generation, shown once, masked history" },
+          sub: "generate and revoke keys for your account" },
   docs: { title: "Documentation", icon: I.docs, stage: null,
-          sub: "integration guide — tool reference, registration, API contract" },
+          sub: "how to get a key, call the API, and send audio" },
 };
 const INTEGRATE_KEYS = ["rest", "stt", "mcp", "keys", "docs"];
 const FLOW_KEYS = ["parse", "resolve", "batch", "deliver", "digipin"];
