@@ -1,255 +1,172 @@
 # Lattice — Indian Address Intelligence
 
-> Indian addresses are not addresses. They are directions.
-> Lattice turns them into structured, resolvable, machine-usable locations.
+Lattice is an address-intelligence API for Indian addresses: free-text,
+landmark-led, multi-script input (Devanagari, Tamil, Bengali, code-mixed
+Hinglish) in; structured, comparable, machine-usable records out. It answers
+three questions:
 
-Built on the Sarvam stack. Indic-native by design.
+1. **What does this address say?** — component extraction with landmarks as
+   first-class objects, deliverability risk, postal-directory validation,
+   geocoding, DIGIPIN.
+2. **Are these two the same physical door?** — deterministic entity resolution
+   with per-signal evidence; batch dedupe emits one merged *golden record* per
+   location.
+3. **Will it deliver?** — rule-based risk score with reasons and the single
+   highest-value field to ask the customer for.
 
----
+The LLM (Sarvam `sarvam-105b`) runs once per address, at parse time. Everything
+downstream — resolution, scoring, clustering, validation, grid arithmetic — is
+deterministic Python, evaluable offline.
 
-## 1. The problem
+- **API** `https://lattice-api-fs5f.onrender.com` · OpenAPI at `/docs`
+- **Console** `https://lattice-labs.vercel.app`
+- **MCP** `https://lattice-api-fs5f.onrender.com/mcp`
 
-An Indian address is a natural-language wayfinding instruction, not a structured record:
+## Architecture
 
 ```
-Ganesh mandir ke peeche, blue gate wala ghar,
-opp SBI ATM, Kothrud, Pune 411038
+raw string ──► L0 parse    sarvam-105b + LID + transliteration → ParsedAddress
+                 ├───────► L1 resolve  compare / cluster / block / match / golden
+                 ├───────► L2 score    risk + reasons + ask_for
+                 └───────► L3 locate   pincode directory · geocoder → DIGIPIN
 ```
 
-```
-2nd cross, 4th main, near Ayyappa temple,
-behind Reliance Fresh, BTM 2nd stage, B'lore
-```
+**Resolution invariant:** coarse signals (pincode, city, locality) gate; fine
+signals (house number, building, landmarks, street) score. Locality agreement
+alone spans tens of thousands of households, so without door-level evidence
+the score is capped at 0.50. Hard vetoes: pincode mismatch, house-number
+mismatch, uncorroborated locality mismatch. Cluster threshold 0.75.
 
-There is no standard component order, no street numbering discipline, landmarks
-substitute for street identity, and the same physical house is written a dozen
-different ways by a dozen different people — in English, in Hinglish, or in
-Devanagari/Tamil/Bengali script.
+### Server modules (`server/`)
 
-Every address system in production assumes Western structured addressing:
-`house → street → locality → city → postcode`. Indian addresses do not carry
-that structure, so these systems do not fail loudly. **They fail silently** —
-returning a confident pin several hundred metres off, or a "valid" verdict on an
-undeliverable string.
-
-### What it costs (industry-reported)
-
-| Metric | Figure | Source quality |
-|---|---|---|
-| RTO (return-to-origin) rate, India | **15–30%**, spiking 40%+ in COD-heavy categories | Industry-reported |
-| RTO rate, global benchmark | 2–5% | Industry-reported |
-| RTO on COD / non-prepaid orders | ~26% (vs <2% prepaid), FY25 | Shipway ShipNotes FY25 |
-| **Share of RTOs caused by incorrect, vague or incomplete addresses** | **>45%** | Industry-reported |
-| Failed deliveries as share of orders (growing businesses) | 20–30% | Industry-reported |
-
-> ⚠️ **Source discipline.** These figures circulate across logistics-vendor blogs
-> that cite each other; they are *industry-reported*, not primary research. Label
-> them that way on any slide. A VC who has done logistics diligence will know the
-> range independently — quoting it honestly earns more credibility than a precise
-> number you can't defend. Do **not** cite the "₹8,000 crore/year" figure: it
-> traces to a single vendor blog with no methodology.
-
-**The compounding metric nobody publishes:** the rate at which a delivery rider
-has to phone the customer for directions. Every last-mile and quick-commerce ops
-team instruments this internally. It is minutes of paid rider time per order, at
-national scale, and its root cause is address ambiguity. Ask any ops lead in the
-room for their number — they will have it, and it will be larger than anything
-we could have claimed.
-
-### The government agrees the problem is real
-
-On **27 May 2025**, the Department of Posts — with IIT Hyderabad and NRSC/ISRO —
-launched **DIGIPIN**, an open, geo-coded, grid-based digital addressing system
-assigning a 10-character code to every 4m × 4m cell in India. It exists as Digital
-Public Infrastructure precisely because PIN codes (unchanged since 1972) and
-free-text addresses cannot support doorstep delivery, emergency response, or
-service targeting.
-
-**DIGIPIN defines the destination format. Nobody has built the bridge to it.**
-Hundreds of millions of legacy address strings sit in CRMs, loan files, patient
-records and order histories. Lattice is that migration layer.
-
----
-
-## 2. Why this is a *language* problem
-
-This is the part that makes it ours and not a mapping company's.
-
-1. **Landmarks are the primary key.** `mandir ke peeche`, `SBI ke bagal mein`,
-   `hospital ke saamne` — resolving these requires parsing Hindi/Marathi/Tamil
-   spatial-relational language, not string matching.
-2. **Script mixing.** The same address arrives in Latin, Devanagari, Tamil, or
-   Bengali script — sometimes mixed within one field.
-3. **Romanization variance.** `Kothrud` / `Kothrood`, `Bangalore` / `Bengaluru` /
-   `B'lore`, `Nagar` / `Ngr`.
-4. **Colloquial locality names** that appear on no map — what residents call an
-   area versus its official revenue name.
-
-An English-first geocoder cannot reason over any of this. **Saaras, Mayura and
-Sarvam's transliteration stack can.**
-
----
-
-## 3. Current solutions, and where each breaks
-
-| Solution | What it does | Where it breaks |
-|---|---|---|
-| **Google Address Validation API (India)** | ML-based parser built for Indian address formats | **In preview / pre-GA for India.** Per-call pricing and rate limits make full-database processing impractical; Maps Platform terms restrict storing and caching results, which is exactly what enterprises need. Validates *one* address — does not tell you two records are the same house. |
-| **Google Address Descriptors (India)** | Landmark-based descriptors generated *by Google* for a location | Generates landmarks **from Google's data outward**. Does not parse *your* messy user-entered Hindi landmark text inward. Opposite direction from the enterprise need. |
-| **Zippr** (Hyderabad, f. 2013) | Proprietary short address codes / digital door numbers | Requires universal adoption of a **new code** by consumers. Adoption-dependent, and now competing with a government standard (DIGIPIN) that is free and open. |
-| **PostGrid / GeoPostcodes / generic AV vendors** | Reference-database address validation | Built on postal reference files. Indian addresses substantially aren't *in* those files, and none handle Indic scripts or landmark semantics. |
-| **LogiNext and last-mile platforms** | Route optimisation, dispatch, tracking | Adjacent, not competing — they consume address quality, they don't produce it. **Potential channel partners.** |
-| **In-house regex + manual ops teams** | The actual incumbent at most companies | Address-cleanup staff and customer-care calls placed purely to resolve bad addresses. **This is the job Lattice replaces.** |
-
-### The honest competitive read
-
-Google is **actively in this space for India** and must be addressed directly in
-the pitch, not avoided. Three things survive that:
-
-1. **You cannot run Google over your own database.** Cost, rate limits, and terms
-   restricting result storage are hard constraints at enterprise volume. The need
-   is batch normalisation over data you own.
-2. **Google validates; it does not resolve entities.** "Are these six records the
-   same physical house?" is a different question, and it's the one that powers
-   both delivery consolidation and lending fraud detection.
-3. **Google will not bridge to DIGIPIN.** It competes with their own Plus Codes.
-   An open, government-backed standard is a structural opening.
-
----
-
-## 4. Who needs this
-
-**Primary — quick commerce & last-mile**
-Zepto, Swiggy Instamart, Blinkit, Dunzo-likes, Delhivery, Shadowfax, Ecom Express,
-Porter. Buying trigger: RTO rate, rider-call rate, first-attempt delivery success.
-
-**Lending & BFSI**
-Address is a KYC field *and* a risk signal. Deduplication surfaces fraud rings —
-six loan applications, one physical house, six spellings. Field-verification
-agent visits can be pre-screened rather than dispatched blind.
-
-**Healthcare**
-Patient record deduplication across hospital branches. Same patient, different
-address spellings, different MRNs — so an allergy recorded at one site is
-invisible at another. That is a patient-safety failure, not a data-hygiene one.
-
-**Insurance**
-Property risk rating requires knowing the actual structure. Address ambiguity
-means mispriced policies and disputed claims.
-
-**Regulators & public bodies**
-Registered-office verification (MCA), GST premises verification, drug-licence
-premises, factory-licence location, ration-shop and PDS outlet mapping.
-Same primitive: is this string a real, unique, locatable place — and is it the
-same place as that other string?
-
-**Utilities & emergency services**
-Response-time reduction is DIGIPIN's own stated rationale.
-
----
-
-## 5. What we build
-
-Core first, layers on top.
-
-### Layer 0 — the Sarvam core (build this first)
-Messy multilingual address string → structured components.
-- Script/language detection → normalisation across scripts
-- Component extraction: house, floor, building, street, landmark, locality, city, pincode
-- **Landmark isolated as a first-class field** — this is the Indian-specific move
-- Confidence score per component
-
-### Layer 1 — entity resolution
-Do two address strings refer to the same physical location?
-Normalised-space matching + landmark agreement + locality/pincode consistency.
-Output: cluster ID, match confidence.
-
-### Layer 2 — deliverability scoring
-Predict, before dispatch, whether this address will need a rider phone call.
-Signals: missing components, landmark-only addressing, pincode/locality conflict,
-ambiguous locality name.
-
-### Layer 3 — DIGIPIN bridge *(not built; scoped honestly)*
-DIGIPIN is already live. It encodes **GPS coordinates → 10-character code** —
-pure grid arithmetic, and an open algorithm. What it does *not* do is turn a
-messy text address into a location, and legacy CRM rows have no coordinates.
-
-So the missing half is exactly Layers 0–1: text → resolved location → (geocode)
-→ DIGIPIN. Layer 3 itself is trivial once coordinates exist; we have not built
-it because we have no geocoder in the loop. **Do not claim we output DIGIPIN.**
-
----
-
-## Status
-
-| Layer | State |
+| Module | Function |
 |---|---|
-| 0 — parse | ✅ built, running on Sarvam-105B + LID |
-| 1 — entity resolution | ✅ built, F1 1.000 on the seed set vs 0.353 baseline |
-| 2 — deliverability scoring | ◻ completeness score exists; call-risk model not built |
-| 3 — DIGIPIN bridge | ◻ needs a geocoder first |
+| `lattice/parser.py` | L0 extraction via `sarvam-105b`: 13 components + landmarks array `{name, relation}` (behind/opposite/near/beside/above/below, keyword table across scripts). Prompt rules: never invent a city, never respell proper nouns. Deterministic fallbacks: landmark recovery from raw segments, transliteration of any field left in native script. |
+| `lattice/resolver.py` | L1 pairwise comparison and single-link clustering. Stdlib only. |
+| `lattice/matcher.py` | Multi-key blocking (pincode + locality tokens) — O(n²) reduced to shared-key pairs, verified identical clusters; `AddressIndex` for corpus matching. |
+| `lattice/golden.py` | Golden records: per-component majority vote, completeness tie-breaks, pooled landmarks, per-field provenance, canonical writeback string. |
+| `lattice/scorer.py` | L2 rule-based risk; `ask_for` computed by re-scoring with the missing field filled in. |
+| `lattice/pincode.py` | Offline directory, 19,238 pincodes (GeoNames India, CC-BY 4.0): existence, state/city consistency (script-aware: unreadable values are unverifiable, not conflicts), verifiable inference of missing state/district. |
+| `lattice/digipin.py` | India Post DIGIPIN grid (verified against the published reference vector): encode, decode, cell bounds, truncate, neighbors, group. Pure arithmetic. |
+| `lattice/geocoder.py` | Pluggable adapter (default OSM Nominatim, cached, 1 req/s): segment-drop retry, precision labels (street/locality/city-level), match verification that demotes fuzzy hits. |
+| `lattice/sarvam.py` | Sarvam client: chat, LID, transliteration, STT. |
+| `lattice_mcp.py` | MCP server, 7 tools, stdio + streamable HTTP (stateless, host-allowlisted, async). |
+| `jobs.py` | Async batch jobs: background execution, raw-string parse cache, deduped parsing, blocked clustering, CSV in/out (raw body, no multipart). |
+| `users.py` | Accounts + usage, Postgres (JSON fallback): signups, per-account keys with labels/revocation ledger, per-key/endpoint/day metering. |
+| `app.py` | FastAPI: auth + metering middleware, 31 endpoints, MCP mount. |
 
-### Measured (20 records, 190 pairs, hand-built seed)
+### Sarvam usage
 
-| Method | P | R | F1 |
-|---|---|---|---|
-| **Lattice** | **1.000** | **1.000** | **1.000** |
-| Raw string similarity @0.55 | 0.500 | 0.273 | 0.353 |
-| Raw string similarity @0.75 | 0.500 | 0.091 | 0.154 |
+| Capability | Sarvam API | Where |
+|---|---|---|
+| Address parsing | `sarvam-105b` chat completions | `parser.py` — the full extraction schema is the system prompt |
+| Language/script ID | Text LID | `parser.py` |
+| Latin canonicalisation | Transliterate | `parser.py` fallback — resolver/directory/geocoder always see Latin |
+| Speech → address | Saaras `saaras:v3`, language auto-detect | `/stt`, `/stt/parse` |
 
-> Say "20 records, hand-built" out loud. It is a seed set, not a benchmark, and
-> we wrote it — so it is tuned to itself. The defensible claim is the
-> architecture, not the 1.0.
+## HTTP API
 
-**The architecture claim:** coarse signals (pincode, city, locality) *gate*;
-fine signals (house number, street, landmarks, building) *score*. Locality
-agreement in an Indian city spans tens of thousands of households — treating it
-as evidence of a door match is the specific bug that makes naive matching fail.
-That bug produced 4 false positives at score 1.0 before the split was
-introduced.
+31 endpoints. Auth: `X-API-Key` header (or `?key=`) on all except
+`/health`, `/docs`, `/signup`, `/stats`, `/examples/*`.
 
----
+| Group | Endpoints |
+|---|---|
+| Pipeline | `POST /parse` (components + risk + `pincode_check` + location + `digipin_at_precision` + composed status/message; optional DB hints `id/pincode/city/district/state`) · `POST /compare` · `POST /batch` (≤40, golden records) |
+| Batch | `POST /jobs` (≤5000, async) · `POST /jobs/csv` (raw CSV body) · `GET /jobs`, `/jobs/{id}`, `/jobs/{id}/results?format=json|csv` |
+| Matching | `POST /match` (top-k vs corpus) · `POST/GET /corpus` |
+| Location | `GET /pincode/{pin}` · `POST /digipin/encode`, `/decode`, `/from-address`, `/neighbors`, `/group` (≤5000 points, level 6 ≈ 1 km / 7 ≈ 250 m) |
+| Speech | `POST /stt` (raw audio ≤10 MB → transcript) · `POST /stt/parse` (audio → full parse contract) |
+| Keys & accounts | `POST /keys` (self-service, shown once) · `GET /keys` (master) · `POST /signup` · `POST/GET/DELETE /account/keys` · `GET /account/usage` · `GET /stats` |
+| Misc | `GET /health` · `GET /real` · `GET /examples/{name}` |
 
-## Run it
+**Auth model:** keys are stateless HMAC tokens (`ltk_<rand><hmac>`), signed
+against a master secret — valid on any deployment sharing the secret, no key
+database. Account endpoints are master-key-only; the console's server-side
+routes are the only callers and take the account email from the signed
+session, never from the browser.
+
+**Metering:** middleware records each successful authenticated call per key
+prefix, per endpoint, per day (Postgres `usage` / `usage_daily`).
+
+## MCP
+
+Seven tools mirroring the REST API 1:1: `parse_address`, `compare_addresses`,
+`dedupe_batch`, `match_address`, `check_pincode`, `digipin_encode`,
+`digipin_decode`. Text→DIGIPIN is not offered — DIGIPIN tools take
+coordinates only.
 
 ```bash
-# backend  (http://127.0.0.1:8077)
-env/bin/python3 -m uvicorn server.app:app --reload --port 8077
+# hosted (no checkout)
+claude mcp add --transport http lattice \
+  https://lattice-api-fs5f.onrender.com/mcp \
+  --header "X-API-Key: <ltk_key>"
 
-# frontend (http://127.0.0.1:8078)
-cd client && python3 -m http.server 8078
-
-# re-parse the seed set and re-run the evaluation
-env/bin/python3 server/eval.py --refresh
+# local stdio
+claude mcp add lattice \
+  --env LATTICE_API=<api-url> --env LATTICE_KEY=<ltk_key> \
+  -- python -m server.lattice_mcp
 ```
 
-The client picks its backend from `?api=<url>` first, so it can be repointed
-from the URL bar on stage without a redeploy.
+## Console (`client/`, Next.js 15 / React 19)
 
-**Deploy:** `render.yaml` for the API (set `SARVAM_API_KEY` in the dashboard —
-it is not in the repo), `client/vercel.json` for the static frontend.
+Google sign-in (NextAuth). Views: Extract, Compare, Deduplicate (CSV →
+clusters + golden records), Score, Group-by-DIGIPIN (map); REST API tester,
+Speech→JSON (mic + file), MCP setup, API keys (mint/label/revoke, shown-once),
+Usage (30-day calls, per-endpoint, daily series, per-key), Documentation.
+Responsive to phone widths; backend repointable via `?api=<url>&key=<key>`.
 
----
+`examples/` — stdlib-only scripts, verified against the deployed API:
+`createkey.sh`, `usage.py` (`/parse`), `stt.py` (`/stt/parse`).
 
-## 6. Demo
+## Evaluation
 
-Two strings. Same house. Written completely differently, in different scripts.
+Offline regression via `server/eval.py` and `server/eval_real.py`.
 
-Every string matcher on earth says *different*.
-Lattice says **same location, confidence 0.94.**
+| Set | Size | P | R | F1 |
+|---|---|---|---|---|
+| Hand-built seed | 20 records / 190 pairs | 1.000 | 1.000 | 1.000 |
+| Real IFSC pairs, human-labelled | 36 pairs | 1.000 | 0.625 | 0.769 |
+| Raw string similarity (best threshold) | 36 pairs | 0.625 | 0.625 | 0.625 |
 
-Then: a batch of fifty real addresses scored for call-risk, with the failures
-ranked. The buyer already tracks this number — they just have no lever on it.
+Provenance: the seed set is hand-built and tuned to itself. The real addresses
+are unmodified (Razorpay open IFSC dataset, 182,758 branches); the labels are
+ours, by inspection — shared MICR codes are not reliable ground truth (10 of
+18 shared-MICR pairs are different buildings). Precision 1.000 = no false
+merges on either set.
 
----
+DIGIPIN precision: the grid algorithm is exact; the geocoder is not. Results
+carry a `precision` label and `digipin_at_precision` truncates the code to the
+cell size the fix supports.
 
-## 7. Sources
+## Data
 
-- RTO and failed-delivery figures: [Shadowfax](https://www.shadowfax.in/blogs/how-to-reduce-rto-in-e-commerce), [eShipz](https://www.eshipz.com/blog/rto-in-ecommerce/), [Amazon Shipping India](https://shipping.amazon.in/blog/what-is-rto-how-to-reduce-return-to-origin), [Busy](https://busy.in/ecommerce-reconciliation/rto-meaning-in-ecommerce-india-causes-charges-and-18-ways-to-reduce/) — *industry-reported, not primary research*
-- DIGIPIN: [PIB press release](https://www.pib.gov.in/PressReleasePage.aspx?PRID=2131707&reg=3&lang=2), [India Post](https://www.indiapost.gov.in/digipin), [Business Standard](https://www.business-standard.com/india-news/india-post-digipin-pincode-explained-125061000618_1.html)
-- Google Maps Platform India: [Address Validation for India](https://mapsplatform.google.com/resources/blog/announcing-address-validation-api-with-machine-learning-for-india/), [Address Descriptors India](https://mapsplatform.google.com/resources/blog/announcing-expanded-coverage-and-new-features-for-address-descriptors/), [coverage status](https://developers.google.com/maps/documentation/address-validation/coverage)
-- Zippr: [Forbes India](https://www.forbesindia.com/article/hidden-gems-2017/zippr-in-the-right-direction/47987/1), [zippr.co](https://zippr.co/)
+- `data/pincode_dir.json.gz` — 19,238-pin directory, built by `data/pincodes.py`.
+- `data/real_sample.json` / `real_pairs_raw.json` / `labels.py` — real IFSC
+  addresses, pre-parsed, with labelled pairs.
+- `data/seed.py` — 20-record multilingual seed with ground truth.
+- `server/parsed_cache.json` — cached parses; evals run offline.
 
-**Unverified — check before it goes on a slide:** exact Google Maps Platform
-caching/storage terms, current Address Validation API India GA status, and any
-rider-call-rate figure.
+## Run
+
+```bash
+# API (http://127.0.0.1:8077) — SARVAM_API_KEY in .env
+env/bin/python3 -m uvicorn server.app:app --reload --port 8077
+
+# console (http://localhost:3000)
+cd client && npm run dev
+
+# regression
+env/bin/python3 server/eval.py
+env/bin/python3 server/eval_real.py
+```
+
+Push to `main` deploys automatically: API → Render, console → Vercel,
+accounts/usage → Postgres.
+
+## Known limitations
+
+Key revocation is a ledger, not yet enforced at auth time. No per-key rate
+limiting. Geocoding is locality-level for most real addresses (OSM adapter;
+swappable in one function). Async jobs are in-memory and do not survive
+restarts. The deliverability score is rule-based; calibration against real
+delivery outcomes needs pilot data.

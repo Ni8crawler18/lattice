@@ -20,3 +20,8 @@ server/users.json
 # anyone types. Never commit it; parsed_cache.json (the seed-set cache eval.py
 # needs) is the only address cache that belongs in the repo.
 server/parse_cache.json
+
+# local test assets — not part of the product
+data/IFSC.csv
+data/test-audio.mp3
+test/
