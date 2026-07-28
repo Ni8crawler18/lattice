@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { useSession, signOut } from "next-auth/react";
-import { apiBase, apiHeaders, apiKey, batchAddresses, compareAddresses, fetchReal, getJob, getJobResults, jobCsvUrl, listJobs, parseAddress, submitCsvJob } from "@/lib/api";
+import { apiBase, proxyBase, batchAddresses, compareAddresses, fetchReal, getJob, getJobResults, jobCsvUrl, listJobs, parseAddress, submitCsvJob } from "@/lib/api";
 import GroupByDigipin from "../map/GroupByDigipin";
 import { EXAMPLE_SNIPPETS } from "@/lib/exampleSnippets";
 
@@ -1098,9 +1098,9 @@ function ApiTester({ goKeys }) {
   const send = async () => {
     setBusy(true); setErr(""); setResp(null);
     try {
-      const r = await fetch(apiBase() + "/parse", {
+      const r = await fetch(proxyBase() + "/parse", {
         method: "POST",
-        headers: { "Content-Type": "application/json", ...apiHeaders() },
+        headers: { "Content-Type": "application/json" },
         body,
       });
       setResp({ status: r.status, data: await r.json() });
@@ -1377,9 +1377,9 @@ function SttView() {
   const sendAudio = async (blob, type) => {
     setBusy(true); setErr(""); setResp(null);
     try {
-      const r = await fetch(apiBase() + "/stt/parse", {
+      const r = await fetch(proxyBase() + "/stt/parse", {
         method: "POST",
-        headers: { "Content-Type": type || "audio/webm", ...apiHeaders() },
+        headers: { "Content-Type": type || "audio/webm" },
         body: blob,
       });
       setResp({ status: r.status, data: await r.json() });
@@ -1591,9 +1591,14 @@ function KeysView() {
     } catch (e) { setErr(e.message); }
   };
 
+  // Copying is the last time the full key is shown. It is stored hashed-by-
+  // signature, not looked up, so we genuinely cannot show it again -- clearing
+  // it here makes that visible instead of leaving a live key on a shared
+  // screen. The list below shows only a masked prefix.
   const copy = async (text, id) => {
     try { await navigator.clipboard.writeText(text); } catch {}
-    setCopied(id); setTimeout(() => setCopied(null), 1600);
+    setCopied(id);
+    setTimeout(() => { setCopied(null); if (id === "fresh") setFresh(null); }, 1200);
   };
 
   const mask = (k) => `${k.slice(0, 12)}${"•".repeat(12)}${k.slice(-4)}`;
@@ -1691,10 +1696,6 @@ function KeysView() {
                   <td style={{ fontWeight: 600 }}>{k.label}</td>
                   <td>
                     <span className="mono" style={{ fontSize: 11.5 }}>{mask(k.api_key)}</span>
-                    <button className="btn ghost" style={{ marginLeft: 10, padding: "2px 10px", fontSize: 11 }}
-                            onClick={() => copy(k.api_key, k.id)}>
-                      {copied === k.id ? "Copied" : "Copy"}
-                    </button>
                   </td>
                   <td style={{ fontSize: 12, color: "var(--muted)" }}>
                     {(k.created_at || "").slice(0, 10)}
@@ -1711,9 +1712,10 @@ function KeysView() {
       </div>
 
       <div className="note">
-        Keys validate by signature rather than by lookup, so revoking one here
-        removes it from this list immediately. Signing in with a different
-        Google account shows that account&apos;s keys and nothing else.
+        A key is shown in full once, when you generate it — copy it then, because
+        this list only ever shows a masked prefix. Lost one? Generate another and
+        revoke the old. Signing in with a different Google account shows that
+        account&apos;s keys and nothing else.
       </div>
     </div>
   );

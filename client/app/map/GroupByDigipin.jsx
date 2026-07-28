@@ -7,7 +7,7 @@
    enhancement, not a dependency. */
 
 import { useEffect, useRef, useState } from "react";
-import { apiBase, apiHeaders } from "@/lib/api";
+import { proxyBase } from "@/lib/api";
 
 const LEAFLET_JS = "https://unpkg.com/leaflet@1.9.4/dist/leaflet.js";
 const LEAFLET_CSS = "https://unpkg.com/leaflet@1.9.4/dist/leaflet.css";
@@ -134,9 +134,9 @@ export default function GroupByDigipin() {
   }, [result]); // eslint-disable-line react-hooks/exhaustive-deps
 
   async function post(path, body) {
-    const r = await fetch(apiBase() + path, {
+    const r = await fetch(proxyBase() + path, {
       method: "POST",
-      headers: { "Content-Type": "application/json", ...apiHeaders() },
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify(body),
     });
     if (!r.ok) throw new Error(`HTTP ${r.status}`);

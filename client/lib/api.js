@@ -1,8 +1,13 @@
-// Backend base URL resolution, in priority order:
-//   1. ?api=<url> query param — repointable from the URL bar on stage
-//      (e.g. ?api=http://127.0.0.1:8077 to hit a local server)
-//   2. NEXT_PUBLIC_LATTICE_API — set per deployment
-//   3. the deployed Render API — everywhere, including local dev
+// The console holds no API key.
+//
+// Every data call goes to same-origin /api/lattice/*, which is a server-side
+// route that checks the session and attaches the key itself. Nothing secret is
+// ever shipped to the browser, so there is no key to find in the bundle and
+// none to rotate when someone reads it.
+//
+// `apiBase()` is now display-only: the public URL we print in curl examples and
+// docs. It is deliberately NOT where the console sends its own requests.
+
 export function apiBase() {
   if (typeof window !== "undefined") {
     const q = new URLSearchParams(window.location.search).get("api");
@@ -14,25 +19,13 @@ export function apiBase() {
   return "https://lattice-api-fs5f.onrender.com";
 }
 
-// API key resolution: ?key=<k> in the URL bar, then env, then a built-in
-// console key. This fallback is deliberately an ORDINARY issued key, never the
-// master key: anything shipped to the browser is public, and the master key
-// grants access to /account/keys for any email. Rotate this one freely -- it
-// only needs to pass authentication.
-const DEV_KEY = "ltk_f226643ddf366fcdc374e4469e891526";
-export function apiKey() {
-  if (typeof window !== "undefined") {
-    const q = new URLSearchParams(window.location.search).get("key");
-    if (q) return q;
-  }
-  return process.env.NEXT_PUBLIC_LATTICE_API_KEY || DEV_KEY;
-}
-export const apiHeaders = () => ({ "X-API-Key": apiKey() });
+// Where the console's own fetches go. Same origin, no credentials in the URL.
+export const proxyBase = () => "/api/lattice";
 
 async function post(path, body) {
-  const r = await fetch(apiBase() + path, {
+  const r = await fetch(proxyBase() + path, {
     method: "POST",
-    headers: { "Content-Type": "application/json", ...apiHeaders() },
+    headers: { "Content-Type": "application/json" },
     body: JSON.stringify(body),
   });
   if (!r.ok) throw new Error(`HTTP ${r.status}`);
@@ -41,7 +34,7 @@ async function post(path, body) {
 
 export const compareAddresses = (a, b) => post("/compare", { a, b });
 export const fetchReal = async () => {
-  const r = await fetch(apiBase() + "/real", { headers: apiHeaders() });
+  const r = await fetch(proxyBase() + "/real");
   if (!r.ok) throw new Error(`HTTP ${r.status}`);
   return r.json();
 };
@@ -49,25 +42,26 @@ export const fetchReal = async () => {
 export const batchAddresses = (addresses) => post("/batch", { addresses });
 export const parseAddress = (address) => post("/parse", { address });
 export const submitCsvJob = async (csvText, label = "console-import") => {
-  const r = await fetch(`${apiBase()}/jobs/csv?label=${encodeURIComponent(label)}`, {
-    method: "POST", headers: { "Content-Type": "text/csv", ...apiHeaders() }, body: csvText,
+  const r = await fetch(`${proxyBase()}/jobs/csv?label=${encodeURIComponent(label)}`, {
+    method: "POST", headers: { "Content-Type": "text/csv" }, body: csvText,
   });
   if (!r.ok) throw new Error(`HTTP ${r.status}`);
   return r.json();
 };
 export const getJob = async (id) => {
-  const r = await fetch(`${apiBase()}/jobs/${id}`, { headers: apiHeaders() });
+  const r = await fetch(`${proxyBase()}/jobs/${id}`);
   if (!r.ok) throw new Error(`HTTP ${r.status}`);
   return r.json();
 };
 export const getJobResults = async (id) => {
-  const r = await fetch(`${apiBase()}/jobs/${id}/results`, { headers: apiHeaders() });
+  const r = await fetch(`${proxyBase()}/jobs/${id}/results`);
   if (!r.ok) throw new Error(`HTTP ${r.status}`);
   return r.json();
 };
-export const jobCsvUrl = (id) => `${apiBase()}/jobs/${id}/results?format=csv&key=${encodeURIComponent(apiKey())}`;
+// The download link is same-origin too, so no key rides along in the URL.
+export const jobCsvUrl = (id) => `${proxyBase()}/jobs/${id}/results?format=csv`;
 export const listJobs = async () => {
-  const r = await fetch(`${apiBase()}/jobs`, { headers: apiHeaders() });
+  const r = await fetch(`${proxyBase()}/jobs`);
   if (!r.ok) throw new Error(`HTTP ${r.status}`);
   const d = await r.json();
   return Array.isArray(d) ? d : d.jobs || [];
