@@ -127,12 +127,12 @@ function Steps({ items }) {
 
 const FLOW = [
   { name: "Address", sub: "free text, any script" },
-  { name: "LLM parse", sub: "sarvam-105b extraction" },
-  { name: "Normalise", sub: "canonical Latin record" },
-  { name: "PIN check", sub: "19,238-pin directory" },
-  { name: "DIGIPIN", sub: "grid cell · needs coordinates" },
-  { name: "Similarity", sub: "coarse gates, fine scores" },
-  { name: "Confidence", sub: "verdict + call risk" },
+  { name: "Read it", sub: "sarvam-105b pulls the fields out" },
+  { name: "Tidy up", sub: "one consistent spelling per field" },
+  { name: "Check the PIN", sub: "against a 19,238-pin directory" },
+  { name: "Map cell", sub: "DIGIPIN · needs coordinates" },
+  { name: "Line them up", sub: "area must agree before the door counts" },
+  { name: "Verdict", sub: "same door or not, and the risk" },
 ];
 
 function FlowStrip() {
@@ -293,7 +293,7 @@ function Overview({ real, go }) {
       <div className="block statgrid three">
         <button className="scell act" onClick={() => go("resolve")}>
           <div className="k">Layer 1</div>
-          <div className="qtitle">Resolve two addresses →</div>
+          <div className="qtitle">Compare two addresses →</div>
           <div className="d">Same door, or different door? Live, via Sarvam.</div>
         </button>
         <button className="scell act" onClick={() => go("batch")}>
@@ -363,7 +363,7 @@ function ParseView() {
                     onChange={(e) => { setText(e.target.value); setActive(null); }} />
           <div className="controls">
             <button className="btn" onClick={run} disabled={busy}>
-              {busy ? "Parsing via Sarvam…" : "Parse"}
+              {busy ? "Extracting…" : "Extract fields"}
             </button>
             {busy && <span className="hint"><span className="spin" />language ID + structured extraction</span>}
           </div>
@@ -505,7 +505,7 @@ function Resolve() {
           </div>
           <div className="controls">
             <button className="btn" onClick={run} disabled={busy}>
-              {busy ? "Parsing via Sarvam…" : "Resolve"}
+              {busy ? "Comparing…" : "Compare"}
             </button>
             <span className="hint">{busy ? <><span className="spin" />two parses + resolution</> : hint}</span>
           </div>
