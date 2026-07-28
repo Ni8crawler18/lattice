@@ -95,7 +95,8 @@ async def _meter(request: Request, call_next):
         if k:
             try:
                 from server import users as _u
-                _u.record_call(k[:13])
+                # first path segment is the API name: /jobs/{id}/results -> /jobs
+                _u.record_call(k[:13], "/" + (p.strip("/").split("/", 1)[0] or "other"))
             except Exception:
                 pass
     return resp
@@ -798,6 +799,16 @@ def api_job_results(job_id: str, format: str = "json"):
     if format == "csv":
         return PlainTextResponse(jobstore.results_csv(job), media_type="text/csv")
     return job.public(with_result=True)
+
+
+@app.get("/account/usage")
+def api_account_usage(request: Request, email: str = "", days: int = 30):
+    """Usage for one account's keys: totals, per-endpoint, per-day, per-key.
+    Master-only for the same reason as /account/keys -- email is a parameter,
+    so the only legitimate caller is the client's server-side /api/usage
+    route, which takes the email from the signed session."""
+    _require_master(request)
+    return userstore.usage_for(email, days=max(1, min(days, 90)))
 
 
 # ----------------------------------------------------------------------

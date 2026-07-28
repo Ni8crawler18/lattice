@@ -1902,6 +1902,158 @@ function DocsView() {
   );
 }
 
+/* --------------------------------- usage --------------------------------- */
+
+function UsageView({ goKeys }) {
+  const [u, setU] = useState(null);
+  const [err, setErr] = useState("");
+  const mono = { fontFamily: "var(--mono)" };
+
+  useEffect(() => {
+    fetch("/api/usage?days=30", { cache: "no-store" })
+      .then(async (r) => {
+        const d = await r.json();
+        if (!r.ok) throw new Error(d.error || `HTTP ${r.status}`);
+        setU(d);
+      })
+      .catch((e) => setErr(e.message));
+  }, []);
+
+  const ago = (iso) => {
+    if (!iso) return "never used";
+    const mins = Math.floor((Date.now() - new Date(iso).getTime()) / 60000);
+    if (mins < 1) return "just now";
+    if (mins < 60) return `${mins}m ago`;
+    if (mins < 1440) return `${Math.floor(mins / 60)}h ago`;
+    return `${Math.floor(mins / 1440)}d ago`;
+  };
+  const mask = (p) => `${p}${"•".repeat(10)}`;
+
+  if (err) return <div className="view"><div className="error">{err}</div></div>;
+  if (!u) return <div className="view"><div style={{ color: "var(--muted)", fontSize: 13 }}>Loading usage…</div></div>;
+
+  const windowCalls = u.endpoints.reduce((n, e) => n + e.calls, 0);
+  const maxEp = Math.max(1, ...u.endpoints.map((e) => e.calls));
+  const busiest = u.daily.reduce((b, d) => (d.calls > (b?.calls || 0) ? d : b), null);
+  const maxDay = Math.max(1, ...u.daily.map((d) => d.calls));
+  // render a continuous 30-day strip, zero-filling days with no calls
+  const days = [];
+  for (let i = 29; i >= 0; i--) {
+    const day = new Date(Date.now() - i * 86400000).toISOString().slice(0, 10);
+    days.push({ day, calls: u.daily.find((d) => d.day === day)?.calls || 0 });
+  }
+
+  return (
+    <div className="view">
+      <div className="block statgrid">
+        <div className="scell">
+          <div className="k">Calls · last 30 days</div>
+          <div className="v" style={{ color: "var(--blue)" }}>{windowCalls.toLocaleString()}</div>
+          <div className="d">{u.total_calls.toLocaleString()} all-time on this account</div>
+        </div>
+        <div className="scell">
+          <div className="k">APIs used</div>
+          <div className="v">{u.endpoints.length}</div>
+          <div className="d">{u.endpoints[0] ? `most called: ${u.endpoints[0].endpoint}` : "no calls yet"}</div>
+        </div>
+        <div className="scell">
+          <div className="k">Keys</div>
+          <div className="v">{u.keys.length}</div>
+          <div className="d">{u.keys.filter((k) => k.calls > 0).length} with recorded traffic</div>
+        </div>
+        <div className="scell">
+          <div className="k">Busiest day</div>
+          <div className="v" style={{ fontSize: 22, paddingTop: 4 }}>
+            {busiest ? busiest.day.slice(5) : "—"}
+          </div>
+          <div className="d">{busiest ? `${busiest.calls.toLocaleString()} calls` : "no traffic in window"}</div>
+        </div>
+      </div>
+
+      <div className="duo">
+        <div className="block">
+          <div className="block-head">
+            <h3>Calls by API</h3>
+            <span className="right">last 30 days</span>
+          </div>
+          <div className="block-body">
+            {u.endpoints.length === 0 && (
+              <div style={{ fontSize: 12.5, color: "var(--muted)" }}>
+                No calls recorded yet — send a request with one of your keys and it
+                will appear here within a second.
+              </div>
+            )}
+            {u.endpoints.map((e) => (
+              <div key={e.endpoint} style={{ display: "grid", gridTemplateColumns: "110px 1fr 64px",
+                                             gap: 10, alignItems: "center", padding: "7px 0" }}>
+                <span style={{ ...mono, fontSize: 12.5 }}>{e.endpoint}</span>
+                <div style={{ height: 8, background: "var(--canvas)", borderRadius: 99, overflow: "hidden" }}>
+                  <div style={{ height: "100%", width: `${(100 * e.calls) / maxEp}%`,
+                                background: "var(--blue)", borderRadius: 99 }} />
+                </div>
+                <span style={{ ...mono, fontSize: 12, textAlign: "right", color: "var(--ink-2)" }}>
+                  {e.calls.toLocaleString()}
+                </span>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div className="block">
+          <div className="block-head">
+            <h3>Daily activity</h3>
+            <span className="right">one bar per day · 30 days</span>
+          </div>
+          <div className="block-body">
+            <div style={{ display: "flex", alignItems: "flex-end", gap: 3, height: 120 }}>
+              {days.map((d) => (
+                <div key={d.day} title={`${d.day}: ${d.calls} calls`}
+                     style={{ flex: 1, minWidth: 4, borderRadius: 2,
+                              height: `${Math.max(3, (100 * d.calls) / maxDay)}%`,
+                              background: d.calls ? "var(--blue)" : "var(--line-2)" }} />
+              ))}
+            </div>
+            <div style={{ display: "flex", justifyContent: "space-between", marginTop: 8,
+                          fontSize: 10.5, color: "var(--muted)", fontFamily: "var(--mono)" }}>
+              <span>{days[0].day}</span><span>today</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div className="block">
+        <div className="block-head">
+          <h3>Per key</h3>
+          <span className="right">usage is metered per key</span>
+        </div>
+        {u.keys.length === 0 && (
+          <div className="block-body" style={{ fontSize: 12.5, color: "var(--muted)" }}>
+            No keys on this account yet.{" "}
+            <button className="expand" style={{ padding: 0 }} onClick={goKeys}>
+              Generate one under API keys →
+            </button>
+          </div>
+        )}
+        {u.keys.map((k) => (
+          <div key={k.id} className="brow" style={{ gridTemplateColumns: "160px 1fr 90px 110px" }}>
+            <div className="name" style={{ fontSize: 12.5 }}>{k.label}</div>
+            <div style={{ ...mono, fontSize: 12, color: "var(--muted)" }}>{mask(k.key_prefix)}</div>
+            <div style={{ ...mono, fontSize: 12.5, textAlign: "right" }}>{k.calls.toLocaleString()}</div>
+            <div style={{ fontSize: 11.5, color: "var(--muted)", textAlign: "right" }}>{ago(k.last_seen)}</div>
+          </div>
+        ))}
+      </div>
+
+      <div className="note">
+        Counts cover every authenticated call made with this account&apos;s keys —
+        console, curl, scripts and MCP agents alike. The console&apos;s shared demo key
+        is not attributed to your account, so playground clicks here don&apos;t inflate
+        your numbers.
+      </div>
+    </div>
+  );
+}
+
 /* --------------------------------- shell --------------------------------- */
 
 const VIEWS = {
@@ -1926,10 +2078,12 @@ const VIEWS = {
          sub: "the same tools, callable by an AI agent" },
   keys: { title: "API keys", icon: I.key, stage: null,
           sub: "generate and revoke keys for your account" },
+  usage: { title: "Usage", icon: I.evidence, stage: null,
+           sub: "what your keys actually did — calls, APIs, days" },
   docs: { title: "Documentation", icon: I.docs, stage: null,
           sub: "how to get a key, call the API, and send audio" },
 };
-const INTEGRATE_KEYS = ["rest", "stt", "mcp", "keys", "docs"];
+const INTEGRATE_KEYS = ["rest", "stt", "mcp", "keys", "usage", "docs"];
 const FLOW_KEYS = ["parse", "resolve", "batch", "deliver", "digipin"];
 
 export default function Page() {
@@ -2007,6 +2161,7 @@ export default function Page() {
           {view === "stt" && <SttView />}
           {view === "mcp" && <McpView />}
           {view === "keys" && <KeysView />}
+          {view === "usage" && <UsageView goKeys={() => setView("keys")} />}
           {view === "docs" && <DocsView />}
         </div>
       </div>

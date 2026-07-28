@@ -71,6 +71,13 @@ def init() -> str:
                     calls      BIGINT DEFAULT 0,
                     last_seen  TIMESTAMPTZ DEFAULT NOW()
                 );
+                CREATE TABLE IF NOT EXISTS usage_daily (
+                    key_prefix TEXT NOT NULL,
+                    day        DATE NOT NULL,
+                    endpoint   TEXT NOT NULL,
+                    calls      BIGINT DEFAULT 0,
+                    PRIMARY KEY (key_prefix, day, endpoint)
+                );
             """)
         return "postgres"
     except Exception:
@@ -225,7 +232,11 @@ def revoke_key(email: str, key_id: int) -> bool:
         return hit
 
 
-def record_call(key_prefix: str) -> None:
+def record_call(key_prefix: str, endpoint: str = "") -> None:
+    """One metered request. `endpoint` is the normalised first path segment
+    ("/parse", "/jobs", ...) so a usage page can break calls down by API
+    without storing full URLs."""
+    endpoint = (endpoint or "other")[:40]
     if _pg:
         try:
             with _conn() as c, c.cursor() as cur:
@@ -234,13 +245,78 @@ def record_call(key_prefix: str) -> None:
                        ON CONFLICT (key_prefix) DO UPDATE
                        SET calls = usage.calls + 1, last_seen = NOW()""",
                     (key_prefix,))
+                cur.execute(
+                    """INSERT INTO usage_daily (key_prefix, day, endpoint, calls)
+                       VALUES (%s, CURRENT_DATE, %s, 1)
+                       ON CONFLICT (key_prefix, day, endpoint) DO UPDATE
+                       SET calls = usage_daily.calls + 1""",
+                    (key_prefix, endpoint))
             return
         except Exception:
             pass
     with _LOCK:
         d = _load()
         d["usage"][key_prefix] = d["usage"].get(key_prefix, 0) + 1
+        daily = d.setdefault("usage_daily", {})
+        dk = f"{key_prefix}|{time.strftime('%Y-%m-%d')}|{endpoint}"
+        daily[dk] = daily.get(dk, 0) + 1
         _save(d)
+
+
+def usage_for(email: str, days: int = 30) -> dict:
+    """Everything a usage page needs, scoped to one account's keys:
+    total calls, per-endpoint counts, per-day series, per-key stats."""
+    keys = list_keys(email)
+    prefixes = {k["api_key"][:13]: k for k in keys}
+    out = {
+        "email": (email or "").strip().lower(),
+        "total_calls": sum(k.get("calls", 0) for k in keys),
+        "keys": [{"id": k["id"], "label": k["label"],
+                  "key_prefix": k["api_key"][:12], "calls": k.get("calls", 0),
+                  "last_seen": k.get("last_seen"), "created_at": k.get("created_at")}
+                 for k in keys],
+        "endpoints": [], "daily": [], "window_days": days,
+    }
+    if not prefixes:
+        return out
+    if _pg:
+        try:
+            with _conn() as c, c.cursor() as cur:
+                cur.execute(
+                    """SELECT endpoint, SUM(calls) FROM usage_daily
+                       WHERE key_prefix = ANY(%s)
+                         AND day > CURRENT_DATE - %s::int
+                       GROUP BY endpoint ORDER BY 2 DESC""",
+                    (list(prefixes), days))
+                out["endpoints"] = [{"endpoint": e, "calls": int(n)}
+                                    for e, n in cur.fetchall()]
+                cur.execute(
+                    """SELECT day, SUM(calls) FROM usage_daily
+                       WHERE key_prefix = ANY(%s)
+                         AND day > CURRENT_DATE - %s::int
+                       GROUP BY day ORDER BY day""",
+                    (list(prefixes), days))
+                out["daily"] = [{"day": d.isoformat(), "calls": int(n)}
+                                for d, n in cur.fetchall()]
+            return out
+        except Exception:
+            pass
+    daily = _load().get("usage_daily", {})
+    eps: dict[str, int] = {}
+    byday: dict[str, int] = {}
+    cutoff = time.strftime("%Y-%m-%d", time.gmtime(time.time() - days * 86400))
+    for dk, n in daily.items():
+        try:
+            prefix, day, endpoint = dk.split("|", 2)
+        except ValueError:
+            continue
+        if prefix in prefixes and day > cutoff:
+            eps[endpoint] = eps.get(endpoint, 0) + n
+            byday[day] = byday.get(day, 0) + n
+    out["endpoints"] = [{"endpoint": e, "calls": n}
+                        for e, n in sorted(eps.items(), key=lambda kv: -kv[1])]
+    out["daily"] = [{"day": d, "calls": n} for d, n in sorted(byday.items())]
+    return out
 
 
 def stats() -> dict:
