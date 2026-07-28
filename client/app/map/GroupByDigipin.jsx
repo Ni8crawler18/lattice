@@ -200,10 +200,13 @@ export default function GroupByDigipin() {
      Sequential on purpose: the geocoder is OSM Nominatim, which rate-limits,
      and a burst here drops otherwise-good addresses to a coarser fallback.
 
-     We write `digipin_at_precision`, never the full 10-symbol code. A locality
-     fix is a ~1 km cell; emitting all ten symbols would claim a 4 m square the
-     geocoder never earned, which is the exact failure this product exists to
-     avoid. The precision mix is reported so the coarse ones stay visible. */
+     A DIGIPIN is ten symbols -- always. Shortening one to signal a coarse
+     geocode produced a string that was not a DIGIPIN at all, and the grid
+     already has a proper place to express uncertainty: the CELL LEVEL. So the
+     full code is written out, and the coarsest precision any address earned
+     selects the grouping level, which is what the cells on the map actually
+     mean. A locality-only geocode therefore lands in a ~1 km cell without its
+     code ever pretending to be something else. */
   async function fromAddresses() {
     setError(null);
     setAddrNote(null);
@@ -224,7 +227,7 @@ export default function GroupByDigipin() {
         const r = await post("/digipin/from-address", { address });
         const prec = r.geocoder?.precision || "unknown";
         precision[prec] = (precision[prec] || 0) + 1;
-        out.push(`${id}, ${r.digipin_at_precision}`);
+        out.push(`${id}, ${r.digipin}`);
       } catch {
         failed.push(id);
       }
@@ -236,9 +239,18 @@ export default function GroupByDigipin() {
     }
     const mix = Object.entries(precision)
       .map(([k, n]) => `${n} ${k.replace("-level", "")}`).join(", ");
+    // Grouping finer than the worst geocode would invent precision on the map.
+    // Clamped to what the selector actually offers (5-8); a city-only geocode
+    // would otherwise set a level the dropdown cannot show.
+    const coarsest = precision["city-level"] ? 5
+      : precision["locality-level"] ? 6
+      : 8;
+    if (out.length) setLevel(coarsest);
+    const size = { 5: "~3.9 km", 6: "~1 km", 8: "~60 m" }[coarsest];
     setAddrNote(
-      `${out.length} geocoded (${mix}). Codes are truncated to the precision each ` +
-      `address earned — a locality fix is a ~1 km cell, not a 4 m one.` +
+      `${out.length} geocoded (${mix}). Codes are full 10-symbol DIGIPINs. ` +
+      `Cell level set to ${coarsest} (${size}) — the coarsest any of these earned, ` +
+      `because grouping tighter than that would show precision the geocoder never gave.` +
       (failed.length ? ` ${failed.length} not found: ${failed.join(", ")}.` : ""),
     );
   }
@@ -293,8 +305,8 @@ export default function GroupByDigipin() {
         import your own points (<code>id, DIGIPIN</code> or <code>id, lat, lon</code>, one
         per line); any valid DIGIPIN works, and lat/lon lines can be converted to codes
         with the button below. Text addresses work too — they go through the geocoder
-        adapter, and each code is truncated to the precision that address actually
-        earned rather than padded out to a 4 m cell.
+        adapter. Codes are always full DIGIPINs; how much precision the geocoder
+        actually gave is carried by the cell level, not by shortening the code.
       </p>
 
       <div className="addrbox">

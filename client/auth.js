@@ -32,14 +32,27 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     async signIn({ user }) {
       if (!user?.email) return;
       const api = (process.env.NEXT_PUBLIC_LATTICE_API || "https://lattice-api-fs5f.onrender.com").replace(/\/$/, "");
+      // HARD timeout, because this runs inside the OAuth callback. The API is
+      // on Render's free plan and spins down after ~15 minutes idle; a cold
+      // start takes 30-60s. An unbounded await here outlived the serverless
+      // function, killed the callback route, and surfaced to the user as
+      // "Server error - there is a problem with the server configuration".
+      // Signing in must never depend on the API being awake.
+      const ctl = new AbortController();
+      const timer = setTimeout(() => ctl.abort(), 2500);
       try {
         await fetch(`${api}/signup`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ email: user.email, name: user.name || "" }),
+          signal: ctl.signal,
         });
       } catch {
-        /* the ledger is not worth failing a login over */
+        /* Cold API or slow network: we lose this one ledger row, not the
+           login. The row is recovered on any later sign-in, since /signup is
+           idempotent on email. */
+      } finally {
+        clearTimeout(timer);
       }
     },
   },
