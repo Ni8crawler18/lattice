@@ -13,7 +13,10 @@ until something resolves, and report which query actually matched.
 
 from __future__ import annotations
 
+import json
+import os
 import re
+import threading
 import time
 
 import httpx
@@ -58,14 +61,29 @@ def _verified_precision(base: str, matched_query: str, display_name: str) -> tup
     return _ORDER[min(_ORDER.index(base), _ORDER.index(cap))], False
 
 
+_THROTTLE = threading.Lock()
+_LAST_REQ = [0.0]
+
+
+def _rate_limited_get(**kw) -> httpx.Response:
+    """All threads funnel through one 1 req/s gate. Six batch workers each
+    sleeping locally still violate the policy together; a shared gate doesn't."""
+    with _THROTTLE:
+        wait = 1.05 - (time.monotonic() - _LAST_REQ[0])
+        if wait > 0:
+            time.sleep(wait)
+        r = httpx.get(NOMINATIM, **kw)
+        _LAST_REQ[0] = time.monotonic()
+    return r
+
+
 def _query(q: str) -> dict | None:
     # One backoff retry on throttle/5xx: a burst of parses (a demo!) trips
     # Nominatim's 1 req/s policy, and without the retry every candidate
     # errors and a perfectly geocodable address falls to the district
     # centroid fallback.
     for attempt in (0, 1):
-        r = httpx.get(
-            NOMINATIM,
+        r = _rate_limited_get(
             params={"q": q, "format": "jsonv2", "limit": 1,
                     "countrycodes": "in", "addressdetails": 1},
             headers={"User-Agent": USER_AGENT},
@@ -99,7 +117,30 @@ def _candidates(text: str) -> list[str]:
     return uniq
 
 
-_CACHE: dict[str, dict | None] = {}
+_CACHE_FILE = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
+                           "geo_cache.json")
+_CACHE_LOCK = threading.Lock()
+
+
+def _load_cache() -> dict:
+    try:
+        with open(_CACHE_FILE) as fh:
+            return json.load(fh)
+    except (FileNotFoundError, json.JSONDecodeError):
+        return {}
+
+
+_CACHE: dict[str, dict | None] = _load_cache()
+
+
+def _cache_put(key: str, value: dict | None) -> None:
+    with _CACHE_LOCK:
+        _CACHE[key] = value
+        try:
+            with open(_CACHE_FILE, "w") as fh:
+                json.dump(_CACHE, fh)
+        except OSError:
+            pass                     # ephemeral/read-only disk: cache stays in-memory
 
 
 def geocode(text: str) -> dict | None:
@@ -111,22 +152,18 @@ def geocode(text: str) -> dict | None:
     are spaced to respect Nominatim's 1 req/s policy. Raises only if every
     candidate errored (so the caller can distinguish outage from no-match).
     """
-    import time
-
     errors, clean_misses = 0, 0
     for i, q in enumerate(_candidates(text)):
         ck = q.lower()
         if ck in _CACHE:
             hit = _CACHE[ck]
         else:
-            if i:
-                time.sleep(1.05)          # Nominatim usage policy: 1 req/s
             try:
                 hit = _query(q)
             except httpx.HTTPError:
                 errors += 1
                 continue
-            _CACHE[ck] = hit
+            _cache_put(ck, hit)
         if hit:
             base = _precision(hit.get("place_rank"), hit.get("addresstype"))
             precision, verified = _verified_precision(base, q, hit.get("display_name", ""))
