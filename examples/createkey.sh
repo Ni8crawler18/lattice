@@ -4,7 +4,7 @@
 set -euo pipefail
 
 NAME="${1:-$(whoami)}"
-API="${2:-${LATTICE_API:-https://lattice-api-96cn.onrender.com}}"
+API="${2:-${LATTICE_API:-https://lattice-api-fs5f.onrender.com}}"
 
 KEY=$(curl -sf -X POST "$API/keys" \
   -H 'Content-Type: application/json' \

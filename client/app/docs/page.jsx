@@ -8,7 +8,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { apiBase } from "@/lib/api";
 
-const RENDER_URL = "https://lattice-api-96cn.onrender.com";
+const RENDER_URL = "https://lattice-api-fs5f.onrender.com";
 
 const mono = { fontFamily: "var(--mono)", fontSize: 11, lineHeight: 1.7, margin: 0,
                padding: "12px 15px", overflowX: "auto", background: "var(--canvas)",

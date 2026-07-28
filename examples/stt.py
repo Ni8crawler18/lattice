@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """This curl, in Python (stdlib only -- nothing to install):
 
-    curl -s -X POST https://lattice-api-96cn.onrender.com/stt/parse \\
+    curl -s -X POST https://lattice-api-fs5f.onrender.com/stt/parse \\
       -H 'Content-Type: audio/wav' \\
       -H "X-API-Key: $LATTICE_KEY" \\
       --data-binary @spoken_address.wav
@@ -13,7 +13,7 @@ Speak an address; get the same JSON as /parse, plus `transcript` and
 import json
 import urllib.request
 
-URL = "https://lattice-api-96cn.onrender.com"
+URL = "https://lattice-api-fs5f.onrender.com"
 KEY = ""
 AUDIO = input("Audio file path (wav/mp3/ogg/webm): ").strip()
 

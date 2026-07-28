@@ -10,7 +10,7 @@ export const EXAMPLE_SNIPPETS = {
 set -euo pipefail
 
 NAME="\${1:-$(whoami)}"
-API="\${2:-\${LATTICE_API:-https://lattice-api-96cn.onrender.com}}"
+API="\${2:-\${LATTICE_API:-https://lattice-api-fs5f.onrender.com}}"
 
 KEY=$(curl -sf -X POST "$API/keys" \\
   -H 'Content-Type: application/json' \\
@@ -22,7 +22,7 @@ echo "export LATTICE_KEY=$KEY"
   "usage.py": `#!/usr/bin/env python3
 """This curl, in Python (stdlib only -- nothing to install):
 
-    curl -s -X POST https://lattice-api-96cn.onrender.com/parse \\\\
+    curl -s -X POST https://lattice-api-fs5f.onrender.com/parse \\\\
       -H 'Content-Type: application/json' \\\\
       -H "X-API-Key: $LATTICE_KEY" \\\\
       -d '{"address": "गणेश मंदिराच्या मागे, निळा गेट, एसबीआय एटीएम समोर, कोथरूड, पुणे ४११०३८"}'
@@ -33,7 +33,7 @@ Get a key first:  ./examples/createkey.sh
 import json
 import urllib.request
 
-URL: str = "https://lattice-api-96cn.onrender.com"
+URL: str = "https://lattice-api-fs5f.onrender.com"
 KEY = ""
 ADDRESS = "गणेश मंदिराच्या मागे, निळा गेट, एसबीआय एटीएम समोर, कोथरूड, पुणे ४११०३८"
 
@@ -46,7 +46,7 @@ with urllib.request.urlopen(req) as r:
   "stt.py": `#!/usr/bin/env python3
 """This curl, in Python (stdlib only -- nothing to install):
 
-    curl -s -X POST https://lattice-api-96cn.onrender.com/stt/parse \\\\
+    curl -s -X POST https://lattice-api-fs5f.onrender.com/stt/parse \\\\
       -H 'Content-Type: audio/wav' \\\\
       -H "X-API-Key: $LATTICE_KEY" \\\\
       --data-binary @spoken_address.wav
@@ -58,7 +58,7 @@ Speak an address; get the same JSON as /parse, plus \`transcript\` and
 import json
 import urllib.request
 
-URL = "https://lattice-api-96cn.onrender.com"
+URL = "https://lattice-api-fs5f.onrender.com"
 KEY = ""
 AUDIO = input("Audio file path (wav/mp3/ogg/webm): ").strip()
 

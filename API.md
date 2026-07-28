@@ -1,6 +1,6 @@
 # Lattice API — integration contract
 
-Base URL: `https://lattice-api-96cn.onrender.com`
+Base URL: `https://lattice-api-fs5f.onrender.com`
 
 Sample DB to test with: [`data/sample_input.json`](data/sample_input.json) — 12
 unstructured records (English, Hinglish, Devanagari), real Razorpay IFSC strings
@@ -18,7 +18,7 @@ Every engineer mints their own key. It is **shown once** — copy it immediately
 afterwards only a masked form (`ltk_518e2*****`) appears anywhere:
 
 ```bash
-curl -s -X POST https://lattice-api-96cn.onrender.com/keys \
+curl -s -X POST https://lattice-api-fs5f.onrender.com/keys \
   -H 'Content-Type: application/json' \
   -d '{"name": "your-name"}'
 # -> {"api_key": "ltk_…", "shown_once": true}
@@ -66,7 +66,7 @@ so any record with a real pincode always gets *some* lat/long + DIGIPIN,
 truncated to its honest precision.
 
 ```bash
-curl -s -X POST https://lattice-api-96cn.onrender.com/parse \
+curl -s -X POST https://lattice-api-fs5f.onrender.com/parse \
   -H 'Content-Type: application/json' -H "X-API-Key: $KEY" \
   -d '{"address": "गणेश मंदिराच्या मागे, निळा गेट, कोथरूड, पुणे ४११०३८"}'
 ```
@@ -134,7 +134,7 @@ Run the sample DB through `/parse` one record at a time:
 
 ```bash
 jq -c '.records[]' data/sample_input.json | while read -r rec; do
-  curl -s -X POST https://lattice-api-96cn.onrender.com/parse \
+  curl -s -X POST https://lattice-api-fs5f.onrender.com/parse \
     -H 'Content-Type: application/json' -H "X-API-Key: $KEY" \
     -d "$(jq -c '{address}' <<< "$rec")"
 done
@@ -148,7 +148,7 @@ put the format in `Content-Type`. Accepts mp3, wav, m4a, ogg, webm/opus
 Marathi, Tamil, Bengali, English and more.
 
 ```bash
-curl -s -X POST https://lattice-api-96cn.onrender.com/stt/parse \
+curl -s -X POST https://lattice-api-fs5f.onrender.com/stt/parse \
   -H 'Content-Type: audio/mpeg' \
   -H "X-API-Key: $LATTICE_KEY" \
   --data-binary @spoken_address.mp3
@@ -184,4 +184,4 @@ no guessing. Want the transcript only? `POST /stt`, same body, same auth.
 | `GET /pincode/{pin}` | offline postal-directory lookup |
 | `GET /health` | no auth — liveness + record count |
 
-Interactive docs: `https://lattice-api-96cn.onrender.com/docs`.
+Interactive docs: `https://lattice-api-fs5f.onrender.com/docs`.
