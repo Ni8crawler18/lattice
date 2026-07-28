@@ -11,7 +11,7 @@ export function apiBase() {
   if (process.env.NEXT_PUBLIC_LATTICE_API) {
     return process.env.NEXT_PUBLIC_LATTICE_API.replace(/\/$/, "");
   }
-  return "https://lattice-api-96cn.onrender.com";
+  return "https://lattice-api-fs5f.onrender.com";
 }
 
 // API key resolution: ?key=<k> in the URL bar, then env, then the demo
