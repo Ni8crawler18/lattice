@@ -164,6 +164,56 @@ def api_keys_list(request: Request):
             "note": "audit log (best-effort on ephemeral disks); validation is stateless"}
 
 
+# ---------------------------------------------------------------- account keys
+# An account may hold several keys (prod / staging / a teammate's laptop), so
+# one can be revoked without breaking the others. These three endpoints are
+# MASTER-KEY ONLY on purpose: `email` is a parameter here, so anyone who could
+# call them directly could read anyone's keys. The only caller is the client's
+# /api/keys route handler, which runs server-side and takes the email from the
+# signed session cookie rather than from the request. That is the whole
+# isolation story -- the browser never gets to name the account.
+
+class AccountKeyIn(BaseModel):
+    email: str = Field(min_length=3, max_length=200)
+    label: str = Field(default="", max_length=60)
+
+
+def _require_master(request: Request) -> None:
+    if (request.headers.get("x-api-key") or request.query_params.get("key")) != _MASTER_KEY:
+        raise HTTPException(status_code=403, detail="master key required")
+
+
+@app.post("/account/keys")
+def api_account_key_create(body: AccountKeyIn, request: Request):
+    """Mint a key owned by one account. Returns the key in full, once."""
+    _require_master(request)
+    import time
+    key = _mint_key()
+    row = userstore.add_key(body.email, key, body.label)
+    with _KEYS_LOCK:
+        _KEYS[key[:9] + "\u2026" + key[-4:]] = {
+            "name": (body.label or "").strip() or "account key",
+            "created": time.strftime("%Y-%m-%dT%H:%M:%S")}
+        _save_keys()
+    return row
+
+
+@app.get("/account/keys")
+def api_account_keys_list(request: Request, email: str = ""):
+    """Keys belonging to one account, and only that account."""
+    _require_master(request)
+    return {"email": email.strip().lower(), "keys": userstore.list_keys(email)}
+
+
+@app.delete("/account/keys/{key_id}")
+def api_account_key_revoke(key_id: int, request: Request, email: str = ""):
+    """Revoke a key. The email is part of the match, so an id alone is useless."""
+    _require_master(request)
+    if not userstore.revoke_key(email, key_id):
+        raise HTTPException(status_code=404, detail="no such key on this account")
+    return {"revoked": key_id}
+
+
 class ParseIn(BaseModel):
     address: str = Field(min_length=3, max_length=500)
     # optional context most databases already have in separate columns --

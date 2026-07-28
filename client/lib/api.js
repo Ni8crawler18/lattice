@@ -14,9 +14,12 @@ export function apiBase() {
   return "https://lattice-api-fs5f.onrender.com";
 }
 
-// API key resolution: ?key=<k> in the URL bar, then env, then the demo
-// master key (acceptable exposure for a hackathon console; rotate after).
-const DEV_KEY = "ltk_bf2f484e71fd93ff7ad5962424fca5d2";
+// API key resolution: ?key=<k> in the URL bar, then env, then a built-in
+// console key. This fallback is deliberately an ORDINARY issued key, never the
+// master key: anything shipped to the browser is public, and the master key
+// grants access to /account/keys for any email. Rotate this one freely -- it
+// only needs to pass authentication.
+const DEV_KEY = "ltk_f226643ddf366fcdc374e4469e891526";
 export function apiKey() {
   if (typeof window !== "undefined") {
     const q = new URLSearchParams(window.location.search).get("key");

@@ -12,3 +12,6 @@ server/geo_cache.json
 # Google OAuth client secret — never commit
 client_secret_*.json
 .env.local
+
+# local traction ledger fallback — holds real emails; production uses Postgres
+server/users.json

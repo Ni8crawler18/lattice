@@ -635,3 +635,63 @@ a.btn { text-decoration: none; }
 .curlbox { margin-top: 16px; background: #0f1218; border: 1px solid var(--line-2); padding: 14px 16px; overflow-x: auto; }
 .curl-label { font-size: 9.5px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: #7c8798; margin-bottom: 8px; }
 .curlbox pre { margin: 0; font-family: var(--mono); font-size: 11px; line-height: 1.65; color: #b9c2d0; }
+
+/* signed-in identity + sign out, pinned to the sidebar footer */
+.whoami { display: flex; align-items: center; gap: 9px; padding: 10px 11px 8px; }
+.avatar { width: 26px; height: 26px; border-radius: 99px; flex: none; object-fit: cover; }
+.avatar.ph { display: grid; place-items: center; background: var(--blue-soft); color: var(--blue); font-size: 12px; font-weight: 700; }
+.who { min-width: 0; line-height: 1.25; }
+.who b { display: block; font-size: 12px; font-weight: 600; color: var(--ink); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.who em { display: block; font-style: normal; font-size: 10.5px; color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.signout {
+  display: flex; align-items: center; gap: 9px; width: 100%;
+  padding: 9px 11px; border: none; background: none; cursor: pointer;
+  font-size: 12.5px; font-weight: 500; color: var(--muted); text-align: left;
+  transition: background 0.15s, color 0.15s;
+}
+.signout:hover { background: var(--canvas); color: var(--magenta); }
+
+/* signed-in chip, top right of the console */
+.userchip {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 5px 12px 5px 5px; border: 1px solid var(--line);
+  background: var(--card); font-size: 12.5px; font-weight: 600; color: var(--ink-2);
+}
+.userchip img, .userchip .ini, .userchip .chipimg {
+  width: 24px; height: 24px; border-radius: 99px; object-fit: cover; flex: none;
+}
+.userchip .ini, .userchip .chipimg.ph {
+  display: grid; place-items: center;
+  background: var(--blue); color: #fff; font-size: 11px; font-weight: 700;
+}
+
+/* ---- request/response panes: equal height, each scrolls on its own so a
+   long response never stretches the row past a screenful ---- */
+.codepane { margin-top: 0; height: 380px; overflow: auto; }
+.codepane pre { white-space: pre; }
+.codepane::-webkit-scrollbar { width: 10px; height: 10px; }
+.codepane::-webkit-scrollbar-track { background: #0b0e13; }
+.codepane::-webkit-scrollbar-thumb { background: #2a323f; border: 2px solid #0f1218; }
+.codepane::-webkit-scrollbar-thumb:hover { background: #3a4252; }
+.duo > .block { display: flex; flex-direction: column; }
+.duo > .block > .block-body { flex: 1; }
+
+/* ---- key row: the generated key is the thing to copy, so give it weight ---- */
+.keybox {
+  border-left: 3px solid var(--blue);
+  background: linear-gradient(0deg, var(--canvas), var(--canvas));
+  padding: 14px 16px;
+}
+.keybox code { font-size: 12.5px; font-weight: 600; letter-spacing: 0.01em; }
+
+/* ---- single-line text input, matched to .btn height so rows line up ---- */
+input[type="text"], input:not([type]) {
+  height: 42px; padding: 0 14px;
+  background: var(--canvas); border: 1px solid var(--line-2); border-radius: 0;
+  font-family: var(--sans); font-size: 13.5px; color: var(--ink);
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+input[type="text"]:focus, input:not([type]):focus {
+  outline: none; border-color: var(--blue); box-shadow: 0 0 0 3px rgba(47, 107, 224, 0.14);
+}
+input::placeholder { color: var(--muted); }

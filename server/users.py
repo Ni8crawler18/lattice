@@ -57,6 +57,15 @@ def init() -> str:
                     api_key    TEXT,
                     created_at TIMESTAMPTZ DEFAULT NOW()
                 );
+                CREATE TABLE IF NOT EXISTS api_keys (
+                    id         SERIAL PRIMARY KEY,
+                    email      TEXT NOT NULL,
+                    label      TEXT,
+                    api_key    TEXT NOT NULL,
+                    revoked    BOOLEAN DEFAULT FALSE,
+                    created_at TIMESTAMPTZ DEFAULT NOW()
+                );
+                CREATE INDEX IF NOT EXISTS api_keys_email_idx ON api_keys (email);
                 CREATE TABLE IF NOT EXISTS usage (
                     key_prefix TEXT PRIMARY KEY,
                     calls      BIGINT DEFAULT 0,
@@ -72,9 +81,11 @@ def init() -> str:
 def _load() -> dict:
     try:
         with open(_JSON_PATH) as fh:
-            return json.load(fh)
+            d = json.load(fh)
+        d.setdefault("signups", []); d.setdefault("usage", {}); d.setdefault("keys", [])
+        return d
     except (FileNotFoundError, json.JSONDecodeError):
-        return {"signups": [], "usage": {}}
+        return {"signups": [], "usage": {}, "keys": []}
 
 
 def _save(d: dict) -> None:
@@ -116,6 +127,86 @@ def add_signup(email: str, name: str = "", company: str = "",
                              "created_at": time.strftime("%Y-%m-%dT%H:%M:%S")})
         _save(d)
     return {"email": email, "api_key": api_key, "returning": False}
+
+
+# ------------------------------------------------------------------ api keys
+# One account may hold several keys -- one per environment or per integration,
+# so a leaked staging key can be revoked without breaking production. Keys are
+# stateless HMAC tokens (see app.py), so this table is a *ledger*, not the
+# authority: rows exist so an account can list and label what it minted. Every
+# read is scoped by email, and the email is never taken from the browser --
+# see the /api/keys route handler in the client, which reads it from the
+# signed session. That is what keeps one account from seeing another's keys.
+
+def add_key(email: str, api_key: str, label: str = "") -> dict:
+    email = (email or "").strip().lower()
+    label = (label or "").strip() or "default"
+    row = {"email": email, "label": label, "api_key": api_key,
+           "created_at": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
+           "revoked": False}
+    if _pg:
+        try:
+            with _conn() as c, c.cursor() as cur:
+                cur.execute(
+                    """INSERT INTO api_keys (email, label, api_key)
+                       VALUES (%s,%s,%s) RETURNING id, created_at""",
+                    (email, label, api_key))
+                kid, created = cur.fetchone()
+            row["id"] = kid
+            row["created_at"] = created.isoformat()
+            return row
+        except Exception:
+            pass
+    with _LOCK:
+        d = _load()
+        row["id"] = max([k.get("id", 0) for k in d["keys"]] or [0]) + 1
+        d["keys"].append(row)
+        _save(d)
+    return row
+
+
+def list_keys(email: str) -> list:
+    """Every key this account minted. Scoped by email, always."""
+    email = (email or "").strip().lower()
+    if not email:
+        return []
+    if _pg:
+        try:
+            with _conn() as c, c.cursor() as cur:
+                cur.execute(
+                    """SELECT id, label, api_key, revoked, created_at
+                       FROM api_keys WHERE email = %s AND NOT revoked
+                       ORDER BY id""", (email,))
+                return [{"id": r[0], "label": r[1], "api_key": r[2],
+                         "revoked": r[3], "created_at": r[4].isoformat()}
+                        for r in cur.fetchall()]
+        except Exception:
+            pass
+    return [k for k in _load()["keys"]
+            if k["email"] == email and not k.get("revoked")]
+
+
+def revoke_key(email: str, key_id: int) -> bool:
+    """Revoke only if the key belongs to this account -- the email is part of
+    the WHERE clause, so guessing another account's key id achieves nothing."""
+    email = (email or "").strip().lower()
+    if _pg:
+        try:
+            with _conn() as c, c.cursor() as cur:
+                cur.execute("UPDATE api_keys SET revoked = TRUE "
+                            "WHERE id = %s AND email = %s", (key_id, email))
+                return cur.rowcount > 0
+        except Exception:
+            pass
+    with _LOCK:
+        d = _load()
+        hit = False
+        for k in d["keys"]:
+            if k.get("id") == key_id and k["email"] == email:
+                k["revoked"] = True; hit = True
+        if hit:
+            _save(d)
+        return hit
 
 
 def record_call(key_prefix: str) -> None:

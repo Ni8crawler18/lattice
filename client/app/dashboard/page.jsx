@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
+import { useSession, signOut } from "next-auth/react";
 import { apiBase, apiHeaders, apiKey, batchAddresses, compareAddresses, fetchReal, getJob, getJobResults, jobCsvUrl, listJobs, parseAddress, submitCsvJob } from "@/lib/api";
 import GroupByDigipin from "../map/GroupByDigipin";
 import { EXAMPLE_SNIPPETS } from "@/lib/exampleSnippets";
@@ -614,65 +615,134 @@ function Resolve() {
 
 /* ---------------------------- deliverability ---------------------------- */
 
-function Deliver({ real }) {
-  const [showAll, setShowAll] = useState(false);
-  const records = real?.records || [];
-  const visible = showAll ? records : records.slice(0, 10);
+function Deliver() {
+  const [text, setText] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [err, setErr] = useState("");
+  const [res, setRes] = useState(null);
+
+  const run = async () => {
+    const addr = text.trim();
+    if (addr.length < 3) { setErr("Type an address first."); return; }
+    setBusy(true); setErr(""); setRes(null);
+    try {
+      const d = await parseAddress(addr);
+      if (!d.deliverability) throw new Error("no score returned");
+      setRes({ raw: addr, parsed: d, s: d.deliverability });
+    } catch (e) { setErr(`Could not score that: ${e.message}`); }
+    finally { setBusy(false); }
+  };
+
+  const s = res?.s;
 
   return (
     <div className="view">
       <div className="block">
         <div className="block-head">
-          <h3>Deliverability — scored before dispatch</h3>
-          <span className="right">{records.length} records · Razorpay open IFSC dataset</span>
+          <h3>Score an address before you dispatch</h3>
+          <span className="right">any script &middot; any format</span>
         </div>
-        <div style={{ overflowX: "auto" }}>
-          <table>
-            <thead>
-              <tr><th>Address (as written)</th><th>Band</th><th>Risk</th><th>Ask the customer for</th></tr>
-            </thead>
-            <tbody>
-              {visible.map((rec) => {
-                const s = rec.score;
-                return (
-                  <tr key={rec.id}>
-                    <td style={{ maxWidth: 420 }}>
-                      <span className="mono">{rec.raw}</span>
-                      {s.reasons[0] && (
-                        <div style={{ fontSize: 11.5, color: "var(--muted)", marginTop: 4 }}>{s.reasons[0]}</div>
-                      )}
-                    </td>
-                    <td><span className={`band ${s.band}`}>{s.band}</span></td>
-                    <td>
-                      <div className={`riskbar ${s.band}`}>
-                        <div className="track"><i style={{ width: `${Math.round(s.risk * 100)}%` }} /></div>
-                        <b>{s.risk.toFixed(2)}</b>
-                      </div>
-                    </td>
-                    <td style={{ fontSize: 12.5 }}>
-                      {s.ask_for ? (
-                        <>
-                          <b style={{ fontWeight: 600 }}>{s.ask_for.label}</b>
-                          <div style={{ fontSize: 11, color: "var(--muted)" }}>−{s.ask_for.risk_reduction} risk</div>
-                        </>
-                      ) : (
-                        <span style={{ color: "var(--muted)" }}>—</span>
-                      )}
+        <div className="block-body">
+          <p style={{ fontSize: 13.5, color: "var(--ink-2)", maxWidth: "64ch", marginBottom: 14 }}>
+            Paste an address exactly as a customer typed it. You get a risk band,
+            the reasons behind it, and the single field worth asking for.
+          </p>
+          <textarea
+            rows={3}
+            value={text}
+            onChange={(e) => setText(e.target.value)}
+            onKeyDown={(e) => { if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) run(); }}
+            placeholder="Ganesh mandir ke peeche, blue gate wala ghar, opp SBI ATM, Kothrud, Pune 411038"
+            style={{ width: "100%", fontFamily: "var(--mono)", fontSize: 12.5 }}
+          />
+          <div className="row" style={{ gap: 10, marginTop: 12, alignItems: "center", flexWrap: "wrap" }}>
+            <button className="btn" onClick={run} disabled={busy}>
+              {busy ? "Scoring…" : "Score this address"}
+            </button>
+            <span style={{ fontSize: 11.5, color: "var(--muted)" }}>
+              first call on a cold address takes a few seconds
+            </span>
+          </div>
+          {err && <div className="error" style={{ marginTop: 12 }}>{err}</div>}
+        </div>
+      </div>
+
+      {s && (
+        <>
+          <div className="block statgrid three">
+            <div className="scell">
+              <div className="k">Risk band</div>
+              <div className="qtitle"><span className={`band ${s.band}`}>{s.band}</span></div>
+              <div className="d">{s.band === "high" ? "likely to fail or need a rider call"
+                : s.band === "medium" ? "deliverable, but expect friction"
+                : "enough to find the door"}</div>
+            </div>
+            <div className="scell">
+              <div className="k">Risk score</div>
+              <div className="qtitle" style={{ fontFamily: "var(--mono)" }}>{s.risk.toFixed(2)}</div>
+              <div className={`riskbar ${s.band}`} style={{ marginTop: 6 }}>
+                <div className="track"><i style={{ width: `${Math.round(s.risk * 100)}%` }} /></div>
+              </div>
+            </div>
+            <div className="scell">
+              <div className="k">Ask the customer for</div>
+              <div className="qtitle" style={{ fontSize: 14 }}>
+                {s.ask_for ? s.ask_for.label : "nothing — it is complete"}
+              </div>
+              <div className="d">
+                {s.ask_for ? `would cut risk by ${s.ask_for.risk_reduction}` : "no single field improves it"}
+              </div>
+            </div>
+          </div>
+
+          <div className="block">
+            <div className="block-head">
+              <h3>Why</h3>
+              <span className="right">rule-based, so every point is checkable</span>
+            </div>
+            <div className="block-body">
+              <ul style={{ margin: 0, paddingLeft: 18, fontSize: 13.5, lineHeight: 1.9 }}>
+                {(s.reasons || []).map((r, i) => <li key={i}>{r}</li>)}
+                {!(s.reasons || []).length && <li>No risk signals fired on this address.</li>}
+              </ul>
+            </div>
+          </div>
+
+          <div className="block">
+            <div className="block-head">
+              <h3>What was read out of it</h3>
+              <span className="right">the fields the score is computed from</span>
+            </div>
+            <div style={{ overflowX: "auto" }}>
+              <table>
+                <thead><tr><th>Field</th><th>Value</th></tr></thead>
+                <tbody>
+                  {["house_number", "building", "street", "sublocality", "locality",
+                    "city", "district", "state", "pincode"].map((f) => (
+                    <tr key={f}>
+                      <td style={{ width: 190, color: "var(--muted)" }}>{f.replace(/_/g, " ")}</td>
+                      <td className="mono">
+                        {res.parsed[f] || <span style={{ color: "var(--muted)" }}>&mdash;</span>}
+                      </td>
+                    </tr>
+                  ))}
+                  <tr>
+                    <td style={{ color: "var(--muted)" }}>landmarks</td>
+                    <td className="mono">
+                      {(res.parsed.landmarks || []).length
+                        ? res.parsed.landmarks.map((l) => `${l.relation} ${l.name}`).join(", ")
+                        : <span style={{ color: "var(--muted)" }}>&mdash;</span>}
                     </td>
                   </tr>
-                );
-              })}
-            </tbody>
-          </table>
-        </div>
-        {records.length > 10 && (
-          <button className="expand" onClick={() => setShowAll(!showAll)}>
-            {showAll ? "Show fewer" : `Show all ${records.length} records`}
-          </button>
-        )}
-      </div>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </>
+      )}
+
       <div className="note">
-        Rule-based on purpose — an ops team can&apos;t action a black-box number.
+        Rule-based on purpose &mdash; an ops team can&apos;t action a black-box number.
         Every score names the missing field, and <b>ask-for</b> is computed by
         re-scoring with that field filled in: the one question that most reduces risk.
       </div>
@@ -1094,27 +1164,152 @@ function ApiTester({ goKeys }) {
   );
 }
 
+const REQ_SHAPE = `POST {api}/parse
+Content-Type: application/json
+X-API-Key: <your key>
+
+{
+  "address": "Ganesh mandir ke peeche, blue gate wala ghar, opp SBI ATM, Kothrud, Pune 411038",
+
+  // optional \u2014 fills what the string doesn't state.
+  // Never overrides something the address itself says.
+  "pincode":  "411038",
+  "city":     "Pune",
+  "district": "Pune",
+  "state":    "Maharashtra",
+
+  // optional \u2014 echoed back as "id", so you can match
+  // responses to your own rows in a batch.
+  "id": "cust_10482"
+}`;
+
+const RESP_SHAPE = `200 OK
+
+{
+  // ---- how usable is this, in one word ----
+  "status":  "partial",          // ok | partial | unusable
+  "message": "Locality and pincode agree; however, no house or flat
+              number is present. Adding the house / flat / door number
+              would substantially improve deliverability.",
+
+  // ---- the components, null when the address doesn't say ----
+  "occupant":      null,
+  "house_number":  null,
+  "building":      null,
+  "street":        null,
+  "sublocality":   null,
+  "locality":      "Kothrud",
+  "post_office":   null,
+  "city":          "Pune",
+  "district":      null,
+  "state":         "Maharashtra",
+  "pincode":       "411038",
+
+  // ---- landmarks keep their spatial relation ----
+  "landmarks": [
+    { "name": "Ganesh Mandir", "relation": "behind"   },
+    { "name": "SBI ATM",       "relation": "opposite" }
+  ],
+
+  "completeness": 0.44,
+  "missing": ["house_number", "street"],
+
+  // ---- layer 2: risk before dispatch ----
+  "deliverability": {
+    "risk": 0.66,
+    "band": "high",                     // low | medium | high
+    "will_likely_need_call": true,
+    "reasons": [
+      "No house or flat number \u2014 rider must identify the door from
+       the building name or landmark alone.",
+      "Landmark-only address \u2014 resolvable by someone who already
+       knows the area, not by a first-time rider."
+    ],
+    "ask_for": {                        // the ONE field worth asking for
+      "field": "house_number",
+      "label": "House / flat / door number",
+      "why":   "the single highest-value field \u2014 it is what identifies the door",
+      "risk_reduction": 0.44
+    }
+  },
+
+  // ---- offline postal-directory check ----
+  "pincode_check": {
+    "exists": true,
+    "state_consistent": true,
+    "city_consistent": true,
+    "locality_listed": true,
+    "conflicts": [],
+    "directory": { "state": "Maharashtra", "district": "Pune",
+                   "areas": ["Kothrud", "Bhusari Colony"] }
+  },
+
+  // ---- coordinates, with their honest precision ----
+  "location": {
+    "latitude": 18.5072618, "longitude": 73.8056676,
+    "precision": "street-level",        // never claimed finer than earned
+    "source": "osm-nominatim"
+  },
+  "digipin": "4FP-4CK-5L2",
+
+  "error": null
+}`;
+
+const FIELD_NOTES = [
+  ["status", "ok \u00b7 partial \u00b7 unusable", "Read this before anything else. It is the single field that says whether you can dispatch on this address."],
+  ["null fields", "null, never empty", "A field is null when the address does not state it. We never guess a city or respell a proper noun \u2014 a confident wrong value is worse than a missing one."],
+  ["landmarks[]", "{name, relation}", "relation \u2208 behind, opposite, near, beside, above, below. Kept as data, not flattened into a string, because the relation is what makes it navigable."],
+  ["deliverability.band", "low \u00b7 medium \u00b7 high", "Route high-band records to a confirmation step instead of a courier."],
+  ["ask_for", "one field", "Computed by re-scoring with that field filled in. Ask the customer this and nothing else."],
+  ["location.precision", "rooftop \u2192 district", "Capped at what the input earns. A locality-only address never returns a rooftop pin."],
+  ["error", "null on success", "Non-null means the parse itself failed; every other field is then unreliable."],
+];
+
 function RestApiView({ go }) {
   return (
     <div className="view">
       <ApiTester goKeys={() => go("keys")} />
 
-      <div className="block statgrid three">
-        <div className="scell">
-          <div className="k">REST endpoints</div>
-          <div className="v">21</div>
-          <div className="d">full OpenAPI 3 spec · self-service API keys</div>
+      <div className="duo">
+        <div className="block">
+          <div className="block-head">
+            <h3>Request</h3>
+            <span className="right">POST /parse &middot; address is the only required field</span>
+          </div>
+          <div className="block-body">
+            <div className="curlbox codepane"><pre>{REQ_SHAPE.replace("{api}", apiBase())}</pre></div>
+          </div>
         </div>
-        <a className="scell act" href={apiBase() + "/docs"} target="_blank" rel="noreferrer"
-           style={{ textDecoration: "none", color: "inherit" }}>
-          <div className="k">Interactive spec</div>
-          <div className="qtitle">Open Swagger UI →</div>
-          <div className="d">{"{api}"}/docs · try every endpoint live</div>
-        </a>
-        <div className="scell">
-          <div className="k">Sample DB</div>
-          <div className="qtitle" style={{ fontFamily: "var(--mono)", fontSize: 13 }}>data/sample_input.json</div>
-          <div className="d">12 multilingual records, ready to POST</div>
+
+        <div className="block">
+          <div className="block-head">
+            <h3>Response</h3>
+            <span className="right">structure + risk + coordinates in one call</span>
+          </div>
+          <div className="block-body">
+            <div className="curlbox codepane"><pre>{RESP_SHAPE}</pre></div>
+          </div>
+        </div>
+      </div>
+
+      <div className="block">
+        <div className="block-head">
+          <h3>Reading the response</h3>
+          <span className="right">the seven fields that carry the meaning</span>
+        </div>
+        <div style={{ overflowX: "auto" }}>
+          <table>
+            <thead><tr><th>Field</th><th>Values</th><th>What it means</th></tr></thead>
+            <tbody>
+              {FIELD_NOTES.map(([f, v, why]) => (
+                <tr key={f}>
+                  <td className="mono" style={{ whiteSpace: "nowrap", fontWeight: 600 }}>{f}</td>
+                  <td className="mono" style={{ whiteSpace: "nowrap", fontSize: 11.5, color: "var(--muted)" }}>{v}</td>
+                  <td style={{ fontSize: 12.5 }}>{why}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </div>
       </div>
 
@@ -1160,6 +1355,15 @@ const STT_RESP = `{
 // nothing intelligible in the audio -> no guessing:
 { "status": "error", "transcript": "",
   "message": "Could not hear an address in the audio -- it came back empty. …" }`;
+
+const STT_FIELD_NOTES = [
+  ["transcript", "the words heard", "Returned verbatim, in the script that was spoken. Show it back to the caller \u2014 it is how they catch a mishearing before it becomes a failed delivery."],
+  ["spoken_language", "mr-IN, hi-IN, ta-IN\u2026", "Auto-detected. You do not pass a language hint, and you do not need to know it in advance."],
+  ["language_probability", "0.0 \u2013 1.0", "Confidence in that detection. Low values usually mean noise or code-mixing, and are worth a re-record prompt."],
+  ["status", "ok \u00b7 partial \u00b7 unusable \u00b7 error", "error means nothing intelligible was heard \u2014 the transcript is empty and no address was guessed from silence."],
+  ["everything else", "same as /parse", "Components, landmarks, deliverability, pincode_check, location and digipin are identical to the typed endpoint. One integration covers both."],
+  ["Content-Type", "audio/mpeg, audio/wav\u2026", "The audio bytes are the raw request body. No multipart, no form fields \u2014 POST /stt returns the transcript alone if that is all you need."],
+];
 
 function SttView() {
   const [rec, setRec] = useState(false);
@@ -1273,15 +1477,7 @@ function SttView() {
             <span className="right">POST /stt/parse · raw audio body · X-API-Key</span>
           </div>
           <div className="block-body">
-            <pre style={{ ...mono, fontSize: 10.5, margin: 0, padding: "12px 14px", overflowX: "auto",
-                          background: "var(--canvas)", border: "1px solid var(--line)", color: "var(--ink-2)" }}>
-{STT_CURL.replace("{api}", apiBase())}
-            </pre>
-            <div style={{ fontSize: 11.5, color: "var(--muted)", marginTop: 12, lineHeight: 1.7 }}>
-              No multipart, no form fields — the audio bytes <i>are</i> the body, which keeps
-              every HTTP client trivial. <span style={{ fontFamily: "var(--mono)" }}>POST /stt</span> is
-              also available when you want the transcript only.
-            </div>
+            <div className="curlbox codepane"><pre>{STT_CURL.replace("{api}", apiBase())}</pre></div>
           </div>
         </div>
         <div className="block">
@@ -1290,12 +1486,29 @@ function SttView() {
             <span className="right">transcript + the standard /parse contract</span>
           </div>
           <div className="block-body">
-            <pre style={{ ...mono, fontSize: 10.5, margin: 0, padding: "12px 14px", overflowX: "auto",
-                          maxHeight: 380, overflowY: "auto",
-                          background: "var(--canvas)", border: "1px solid var(--line)", color: "var(--ink-2)" }}>
-{STT_RESP}
-            </pre>
+            <div className="curlbox codepane"><pre>{STT_RESP}</pre></div>
           </div>
+        </div>
+      </div>
+
+      <div className="block">
+        <div className="block-head">
+          <h3>Reading the response</h3>
+          <span className="right">what voice adds on top of the /parse contract</span>
+        </div>
+        <div style={{ overflowX: "auto" }}>
+          <table>
+            <thead><tr><th>Field</th><th>Values</th><th>What it means</th></tr></thead>
+            <tbody>
+              {STT_FIELD_NOTES.map(([f, v, why]) => (
+                <tr key={f}>
+                  <td className="mono" style={{ whiteSpace: "nowrap", fontWeight: 600 }}>{f}</td>
+                  <td className="mono" style={{ whiteSpace: "nowrap", fontSize: 11.5, color: "var(--muted)" }}>{v}</td>
+                  <td style={{ fontSize: 12.5 }}>{why}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </div>
       </div>
 
@@ -1312,122 +1525,204 @@ function SttView() {
 
 /* -------------------------------- api keys -------------------------------- */
 
+function Avatar({ user, className = "avatar" }) {
+  const [broken, setBroken] = useState(false);
+  const initial = (user?.name || user?.email || "?")[0].toUpperCase();
+  // Google's avatar CDN rejects requests that carry a referrer, which is what
+  // left a broken-image glyph here. no-referrer fixes the common case; onError
+  // covers the rest, because an initial always beats a broken icon.
+  if (!user?.image || broken) {
+    return <span className={`${className} ph`}>{initial}</span>;
+  }
+  return (
+    <img src={user.image} alt="" className={className}
+         referrerPolicy="no-referrer" onError={() => setBroken(true)} />
+  );
+}
+
 function KeysView() {
-  const [name, setName] = useState("");
-  const [minting, setMinting] = useState(false);
-  const [showOnce, setShowOnce] = useState(null);
-  const [copied, setCopied] = useState(false);
-  const [hist, setHist] = useState(null);   // {keys:[...]} | {forbidden:true}
+  const { data: session } = useSession();
+  const [keys, setKeys] = useState(null);
+  const [label, setLabel] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [fresh, setFresh] = useState(null);
+  const [copied, setCopied] = useState(null);
   const [err, setErr] = useState("");
-  const mono = { fontFamily: "var(--mono)", fontSize: 11.5, lineHeight: 1.65 };
+  const mono = { fontFamily: "var(--mono)" };
 
-  const loadHist = useCallback(async () => {
+  // Keys are fetched from this app's own /api/keys, not from the Lattice API.
+  // That route reads the account from the signed session server-side, so the
+  // browser cannot ask for someone else's keys -- there is no email to tamper
+  // with in the request.
+  const load = useCallback(async () => {
+    setErr("");
     try {
-      const r = await fetch(apiBase() + "/keys", { headers: apiHeaders() });
-      if (r.status === 403) { setHist({ forbidden: true }); return; }
-      if (!r.ok) throw new Error(`HTTP ${r.status}`);
-      setHist(await r.json());
-    } catch { setHist(null); }
+      const r = await fetch("/api/keys", { cache: "no-store" });
+      const d = await r.json();
+      if (!r.ok) throw new Error(d.error || `HTTP ${r.status}`);
+      setKeys(d.keys || []);
+    } catch (e) { setErr(e.message); setKeys([]); }
   }, []);
-  useEffect(() => { loadHist(); }, [loadHist]);
 
-  const mint = async () => {
-    setMinting(true); setErr("");
+  useEffect(() => { load(); }, [load]);
+
+  const generate = async () => {
+    setBusy(true); setErr("");
     try {
-      const r = await fetch(apiBase() + "/keys", {
+      const r = await fetch("/api/keys", {
         method: "POST", headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name: name.trim() || "engineer" }),
+        body: JSON.stringify({ label: label.trim() }),
       });
-      if (!r.ok) throw new Error(`HTTP ${r.status}`);
-      setShowOnce((await r.json()).api_key); setCopied(false);
-      loadHist();
-    } catch (e) { setErr(`Mint failed: ${e.message}`); }
-    finally { setMinting(false); }
+      const d = await r.json();
+      if (!r.ok) throw new Error(d.error || `HTTP ${r.status}`);
+      setFresh(d); setLabel(""); await load();
+    } catch (e) { setErr(e.message); }
+    finally { setBusy(false); }
   };
 
-  const copyOnce = async () => {
-    try { await navigator.clipboard.writeText(showOnce); } catch { /* http context */ }
-    setCopied(true);
-    setTimeout(() => setShowOnce(null), 900);
+  const revoke = async (id) => {
+    setErr("");
+    try {
+      const r = await fetch(`/api/keys?id=${id}`, { method: "DELETE" });
+      const d = await r.json();
+      if (!r.ok) throw new Error(d.error || `HTTP ${r.status}`);
+      if (fresh?.id === id) setFresh(null);
+      await load();
+    } catch (e) { setErr(e.message); }
   };
+
+  const copy = async (text, id) => {
+    try { await navigator.clipboard.writeText(text); } catch {}
+    setCopied(id); setTimeout(() => setCopied(null), 1600);
+  };
+
+  const mask = (k) => `${k.slice(0, 12)}${"•".repeat(12)}${k.slice(-4)}`;
 
   return (
     <div className="view">
-      <div className="block">
-        <div className="block-head">
-          <h3>Generate a key</h3>
-          <span className="right">POST /keys · self-service, one per engineer</span>
+      <div className="block statgrid three">
+        <div className="scell">
+          <div className="k">Account</div>
+          <div className="qtitle" style={{ fontSize: 14 }}>{session?.user?.email || "—"}</div>
+          <div className="d">Keys below belong to this account only</div>
         </div>
-        <div className="block-body">
-          {showOnce && (
-            <div style={{ display: "flex", gap: 12, alignItems: "center", flexWrap: "wrap",
-                          background: "var(--amber-soft)", border: "1px solid #eddbb6",
-                          padding: "11px 14px", marginBottom: 14 }}>
-              <span style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.07em",
-                             textTransform: "uppercase", color: "var(--amber)" }}>shown once</span>
-              <code style={{ ...mono, fontSize: 12.5, color: "var(--ink)" }}>{showOnce}</code>
-              <button className="chip-btn" style={{ marginLeft: "auto" }} onClick={copyOnce}>
-                {copied ? "Copied ✓" : "Copy key"}
-              </button>
-            </div>
-          )}
-          <div style={{ display: "flex", gap: 10, alignItems: "center", flexWrap: "wrap" }}>
-            <label style={{ margin: 0 }}>Name / team</label>
-            <input value={name} onChange={(e) => setName(e.target.value)} placeholder="checkout-service"
-                   spellCheck={false}
-                   style={{ ...mono, flex: 1, minWidth: 200, maxWidth: 340, padding: "9px 12px",
-                            border: "1px solid var(--line-2)", background: "var(--canvas)", color: "var(--ink)" }} />
-            <button className="btn" style={{ height: 38, padding: "0 24px", fontSize: 13 }}
-                    onClick={mint} disabled={minting}>
-              {minting ? "Minting…" : "Generate key"}
-            </button>
-          </div>
-          {err && <div className="error">{err}</div>}
-          <div style={{ fontSize: 11.5, color: "var(--muted)", marginTop: 12, lineHeight: 1.7, maxWidth: "72ch" }}>
-            The key is displayed <b>once</b> — copy it before it disappears; afterwards it only
-            ever appears masked. Keys are stateless (HMAC-signed against the server's master
-            secret): the same key works on localhost, on Render and on every replica, survives
-            restarts, and is revoked only by rotating the master secret.
-          </div>
+        <div className="scell">
+          <div className="k">How to send it</div>
+          <div className="qtitle" style={{ ...mono, fontSize: 13 }}>X-API-Key: {"<key>"}</div>
+          <div className="d">An HTTP header on every request</div>
+        </div>
+        <div className="scell">
+          <div className="k">Scope</div>
+          <div className="qtitle" style={{ fontSize: 14 }}>Every endpoint</div>
+          <div className="d">Parse, resolve, dedupe, score, voice, DIGIPIN, MCP</div>
         </div>
       </div>
 
       <div className="block">
         <div className="block-head">
-          <h3>History</h3>
-          <span className="right">GET /keys · masked audit log · master key only</span>
+          <h3>Generate an API key</h3>
+          <span className="right">as many as you need</span>
         </div>
-        {hist?.keys?.length ? (
+        <div className="block-body">
+          <p style={{ fontSize: 13.5, color: "var(--ink-2)", maxWidth: "64ch", marginBottom: 14 }}>
+            Give each key a name so you know what to revoke later &mdash; one per
+            environment or per integration means a leaked staging key never
+            takes production down with it.
+          </p>
+          <div className="row" style={{ gap: 10, alignItems: "center", flexWrap: "wrap" }}>
+            <input
+              value={label}
+              onChange={(e) => setLabel(e.target.value)}
+              onKeyDown={(e) => { if (e.key === "Enter" && !busy) generate(); }}
+              placeholder="production, staging, my-laptop…"
+              maxLength={60}
+              style={{ flex: "1 1 260px", minWidth: 220 }}
+            />
+            <button className="btn" onClick={generate} disabled={busy}>
+              {busy ? "Generating…" : "Generate API key"}
+            </button>
+          </div>
+          {err && <div className="error" style={{ marginTop: 12 }}>{err}</div>}
+
+          {fresh && (
+            <div style={{ marginTop: 18 }}>
+              <div className="k" style={{ marginBottom: 6 }}>
+                New key &mdash; {fresh.label}. Copy it now.
+              </div>
+              <div className="keybox">
+                <code>{fresh.api_key}</code>
+                <button className="btn ghost" onClick={() => copy(fresh.api_key, "fresh")}>
+                  {copied === "fresh" ? "Copied" : "Copy"}
+                </button>
+              </div>
+              <div className="curlbox" style={{ marginTop: 14 }}>
+                <div className="curl-label">Try it</div>
+                <pre>{`curl -X POST ${apiBase()}/parse \\
+  -H "X-API-Key: ${fresh.api_key}" \\
+  -H "Content-Type: application/json" \\
+  -d '{"address":"Ganesh mandir ke peeche, blue gate, Kothrud, Pune 411038"}'`}</pre>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+
+      <div className="block">
+        <div className="block-head">
+          <h3>Your keys</h3>
+          <span className="right">{keys === null ? "loading…" : `${keys.length} active`}</span>
+        </div>
+        <div style={{ overflowX: "auto" }}>
           <table>
-            <thead><tr><th>Key</th><th>Name</th><th>Created</th></tr></thead>
+            <thead>
+              <tr><th>Name</th><th>Key</th><th>Created</th><th /></tr>
+            </thead>
             <tbody>
-              {hist.keys.slice().reverse().map((k, i) => (
-                <tr key={i}>
-                  <td style={{ fontFamily: "var(--mono)", fontSize: 12 }}>{k.key}</td>
-                  <td style={{ fontSize: 12.5 }}>{k.name}</td>
-                  <td style={{ fontFamily: "var(--mono)", fontSize: 12, color: "var(--muted)" }}>{k.created}</td>
+              {keys === null && (
+                <tr><td colSpan={4} style={{ color: "var(--muted)" }}>Loading&hellip;</td></tr>
+              )}
+              {keys?.length === 0 && (
+                <tr><td colSpan={4} style={{ color: "var(--muted)" }}>
+                  No keys yet &mdash; generate one above.
+                </td></tr>
+              )}
+              {keys?.map((k) => (
+                <tr key={k.id}>
+                  <td style={{ fontWeight: 600 }}>{k.label}</td>
+                  <td>
+                    <span className="mono" style={{ fontSize: 11.5 }}>{mask(k.api_key)}</span>
+                    <button className="btn ghost" style={{ marginLeft: 10, padding: "2px 10px", fontSize: 11 }}
+                            onClick={() => copy(k.api_key, k.id)}>
+                      {copied === k.id ? "Copied" : "Copy"}
+                    </button>
+                  </td>
+                  <td style={{ fontSize: 12, color: "var(--muted)" }}>
+                    {(k.created_at || "").slice(0, 10)}
+                  </td>
+                  <td style={{ textAlign: "right" }}>
+                    <button className="btn ghost" style={{ padding: "2px 10px", fontSize: 11 }}
+                            onClick={() => revoke(k.id)}>Revoke</button>
+                  </td>
                 </tr>
               ))}
             </tbody>
           </table>
-        ) : (
-          <div className="block-body" style={{ fontSize: 12.5, color: "var(--muted)" }}>
-            {hist?.forbidden
-              ? "History requires the master key — this console is not using it."
-              : "No keys minted on this instance yet (the audit log is per-deployment and best-effort on ephemeral disks; validation itself is stateless)."}
-          </div>
-        )}
+        </div>
+      </div>
+
+      <div className="note">
+        Keys validate by signature rather than by lookup, so revoking one here
+        removes it from this list immediately. Signing in with a different
+        Google account shows that account&apos;s keys and nothing else.
       </div>
     </div>
   );
 }
 
-/* ----------------------------------- mcp ----------------------------------- */
-
 function McpView() {
   return (
     <div className="view">
-      <div className="block statgrid three">
+      <div className="block statgrid two">
         <div className="scell">
           <div className="k">MCP tools</div>
           <div className="v" style={{ color: "var(--blue)" }}>7</div>
@@ -1437,11 +1732,6 @@ function McpView() {
           <div className="k">Transport</div>
           <div className="v" style={{ fontSize: 22, paddingTop: 4 }}>stdio</div>
           <div className="d">works against local or deployed API</div>
-        </div>
-        <div className="scell">
-          <div className="k">Server</div>
-          <div className="qtitle" style={{ fontFamily: "var(--mono)", fontSize: 13 }}>server/lattice_mcp.py</div>
-          <div className="d">registered project-scope via .mcp.json</div>
         </div>
       </div>
 
@@ -1481,18 +1771,6 @@ function McpView() {
             </div>
           </div>
 
-          <div className="block">
-            <div className="block-head">
-              <h3>Verified tool calls</h3>
-              <span className="right">recorded from a live session</span>
-            </div>
-            <div className="block-body" style={{ fontFamily: "var(--mono)", fontSize: 11.5, lineHeight: 2, color: "var(--ink-2)" }}>
-              <div>→ compare_addresses(Indore pair)</div>
-              <div style={{ color: "var(--amber)" }}>← verdict: "likely" · score: 0.734</div>
-              <div style={{ marginTop: 6 }}>→ check_pincode("411038")</div>
-              <div style={{ color: "var(--green)" }}>← exists: true · Maharashtra / Pune</div>
-            </div>
-          </div>
         </div>
       </div>
 
@@ -1512,21 +1790,20 @@ function DocsView() {
   return (
     <div className="view">
       <div className="block statgrid three">
-        <Link className="scell act" href="/docs" style={{ textDecoration: "none", color: "inherit" }}>
-          <div className="k">Integration docs</div>
-          <div className="qtitle">Read the API docs →</div>
-          <div className="d">auth, /parse contract, snippets, deploy — for the engineering team</div>
-        </Link>
-        <a className="scell act" href={apiBase() + "/docs"} target="_blank" rel="noreferrer"
-           style={{ textDecoration: "none", color: "inherit" }}>
-          <div className="k">OpenAPI spec</div>
-          <div className="qtitle">Swagger UI →</div>
-          <div className="d">try every endpoint live against this instance</div>
-        </a>
         <div className="scell">
-          <div className="k">Sample DB</div>
-          <div className="qtitle" style={{ fontFamily: "var(--mono)", fontSize: 13 }}>data/sample_input.json</div>
-          <div className="d">12 multilingual records, ready to POST</div>
+          <div className="k">Step 1</div>
+          <div className="qtitle">Get a key</div>
+          <div className="d">Self-service, shown once. Send it as <code style={{ fontFamily: "var(--mono)" }}>X-API-Key</code>.</div>
+        </div>
+        <div className="scell">
+          <div className="k">Step 2</div>
+          <div className="qtitle">Use the REST API</div>
+          <div className="d">POST an address, get structured fields, risk and DIGIPIN back.</div>
+        </div>
+        <div className="scell">
+          <div className="k">Step 3</div>
+          <div className="qtitle">Use speech → JSON</div>
+          <div className="d">Post audio of a spoken address; Saaras transcribes, Lattice parses.</div>
         </div>
       </div>
 
@@ -1603,8 +1880,6 @@ function DocsView() {
 /* --------------------------------- shell --------------------------------- */
 
 const VIEWS = {
-  overview: { title: "The problem", icon: I.overview, stage: null,
-              sub: "what Indian addresses actually look like, and what they cost" },
   parse: { title: "Parse", icon: I.parse, stage: "L0",
            sub: "one messy string → structured components" },
   resolve: { title: "Resolve", icon: I.resolve, stage: "L1",
@@ -1615,8 +1890,6 @@ const VIEWS = {
              sub: "call risk before dispatch, and the field to ask for" },
   digipin: { title: "Group by DIGIPIN", icon: I.digipin, stage: "L3",
              sub: "points bucketed into grid cells — one cell, one delivery batch" },
-  evidence: { title: "Evidence", icon: I.evidence, stage: null,
-              sub: "benchmarks, provenance, and the honest caveats" },
   rest: { title: "REST API", icon: I.rest, stage: null,
           sub: "one call: unstructured address in, structured JSON + DIGIPIN out" },
   stt: { title: "Speech → JSON", icon: I.mic, stage: null,
@@ -1629,10 +1902,11 @@ const VIEWS = {
           sub: "integration guide — tool reference, registration, API contract" },
 };
 const INTEGRATE_KEYS = ["rest", "stt", "mcp", "keys", "docs"];
-const FLOW_KEYS = ["overview", "parse", "resolve", "batch", "deliver", "digipin", "evidence"];
+const FLOW_KEYS = ["parse", "resolve", "batch", "deliver", "digipin"];
 
 export default function Page() {
-  const [view, setView] = useState("overview");
+  const { data: session } = useSession();
+  const [view, setView] = useState("parse");
   const [real, setReal] = useState(null);
 
   useEffect(() => {
@@ -1653,7 +1927,6 @@ export default function Page() {
         {FLOW_KEYS.map((k) => [k, VIEWS[k]]).map(([k, v]) => (
           <button key={k} className={`nav-item${view === k ? " on" : ""}`} onClick={() => setView(k)}>
             {v.icon}{v.title}
-            {v.stage && <span className="stage">{v.stage}</span>}
           </button>
         ))}
         <div className="nav-group">Integrate</div>
@@ -1662,21 +1935,46 @@ export default function Page() {
             {v.icon}{v.title}
           </button>
         ))}
+
+        <div className="side-foot">
+          {session?.user && (
+            <div className="whoami">
+              <Avatar user={session.user} />
+              <span className="who">
+                <b>{session.user.name || "Signed in"}</b>
+                <em>{session.user.email}</em>
+              </span>
+            </div>
+          )}
+          <button className="signout" onClick={() => signOut({ callbackUrl: "/" })}>
+            <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor"
+                 strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M6 14H3.5A1.5 1.5 0 0 1 2 12.5v-9A1.5 1.5 0 0 1 3.5 2H6M10.5 11 14 8l-3.5-3M14 8H6" />
+            </svg>
+            Sign out
+          </button>
+        </div>
       </aside>
 
       <div className="main">
         <div className="topbar">
           <h1>{VIEWS[view].title}</h1>
           <span className="topbar-sub">{VIEWS[view].sub}</span>
+          {session?.user && (
+            <div className="top-right">
+              <span className="userchip" title={session.user.email}>
+                <Avatar user={session.user} className="chipimg" />
+                <span>{session.user.name?.split(" ")[0] || "Signed in"}</span>
+              </span>
+            </div>
+          )}
         </div>
         <div className="content">
-          {view === "overview" && <Overview real={real} go={setView} />}
           {view === "parse" && <ParseView />}
           {view === "resolve" && <Resolve />}
           {view === "batch" && <BatchView />}
-          {view === "deliver" && <Deliver real={real} />}
+          {view === "deliver" && <Deliver />}
           {view === "digipin" && <div className="view"><GroupByDigipin /></div>}
-          {view === "evidence" && <Evidence />}
           {view === "rest" && <RestApiView go={setView} />}
           {view === "stt" && <SttView />}
           {view === "mcp" && <McpView />}
