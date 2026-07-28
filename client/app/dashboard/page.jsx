@@ -114,6 +114,16 @@ const I = {
 
 /* ---------------------------- shared visuals ---------------------------- */
 
+function Steps({ items }) {
+  return (
+    <div className="steps" aria-label="How to use this screen">
+      {items.map((t, i) => (
+        <span key={i} className="step"><b>{i + 1}</b>{t}</span>
+      ))}
+    </div>
+  );
+}
+
 const FLOW = [
   { name: "Address", sub: "free text, any script" },
   { name: "LLM parse", sub: "sarvam-105b extraction" },
@@ -345,6 +355,7 @@ function ParseView() {
   return (
     <div className="view play">
       <div>
+        <Steps items={["Pick a real example on the right (or type your own)", "Press Parse", "Read the fields, the risk, and what to ask the customer"]} />
         <div className="block" style={{ padding: 22 }}>
           <label htmlFor="parse-in">One address — any script, any structure</label>
           <textarea id="parse-in" value={text}
@@ -479,6 +490,7 @@ function Resolve() {
   return (
     <div className="view play">
       <div>
+        <Steps items={["Pick an example — each shows a different real-world trap", "Press Resolve", "The verdict: are these two records one physical door?"]} />
         <div className="block" style={{ padding: 22 }}>
           <div className="two">
             <div>
@@ -498,7 +510,15 @@ function Resolve() {
           </div>
           {err && <div className="error">{err}</div>}
 
-          {r && (
+          {res && (res.a?.error || res.b?.error) && (
+            <div className="error" style={{ marginTop: 14, padding: "10px 14px",
+                 background: "var(--magenta-soft)", border: "1px solid #edc7d8" }}>
+              Parse failed on address {res.a?.error ? "A" : "B"} — the model returned
+              nothing after 5 attempts. The verdict below is not meaningful; press
+              Resolve again.
+            </div>
+          )}
+          {r && !res.a?.error && !res.b?.error && (
             <div className="verdict">
               <div className="vhead">
                 <div className="vscore" style={{
@@ -525,7 +545,7 @@ function Resolve() {
                       <div className="fill" style={{ width: `${Math.round((r.fine || 0) * 100)}%` }} />
                       <div className="tick" style={{ left: "75%" }} title="decision threshold 0.75" />
                     </div>
-                    <div className="gd">house no · building · landmarks · street</div>
+                    <div className="gd">house no · building · landmarks · street — <b>0.75+ means same door</b></div>
                   </div>
                 </div>
                 <div className="chips">
@@ -540,7 +560,7 @@ function Resolve() {
                 {r.matched_landmarks?.length > 0 && (
                   <div className="lmmatch"><b>Landmarks agreed:</b> {r.matched_landmarks.join(", ")}</div>
                 )}
-                {r.veto && <div className="veto">Veto — {r.veto}</div>}
+                {r.veto && <div className="veto">Deal-breaker — {r.veto === "no door-level evidence" ? "no house number, building or landmark to compare — same area is not proof of same door" : r.veto}</div>}
 
                 <div className="two" style={{ marginTop: 22 }}>
                   {[["A", res.a], ["B", res.b]].map(([tag, p]) => (
@@ -742,6 +762,7 @@ function BatchView() {
 
   return (
     <div className="view">
+      <Steps items={["Run the prefilled sample, or import your own CSV", "Watch duplicates collapse into doors", "Download the cleaned file"]} />
       <div className="block" style={{ padding: 22 }}>
         <label htmlFor="batch-in">
           Addresses — one per line, up to 40 · prefilled with real IFSC records containing duplicates
@@ -854,6 +875,10 @@ function BatchView() {
 
       {res && (
         <>
+          <div className="note" style={{ borderStyle: "solid", background: "var(--blue-soft)", borderColor: "#c6d6f2", fontSize: 14, fontWeight: 600, color: "var(--ink)" }}>
+            {res.parsed.length} addresses went in — they describe {res.unique_locations} real doors.{" "}
+            {res.duplicates_collapsed > 0 ? `${res.duplicates_collapsed} were the same place written differently.` : "No duplicates found."}
+          </div>
           <div className="block statgrid">
             <div className="scell"><div className="k">Records in</div><div className="v">{res.parsed.length}</div></div>
             <div className="scell"><div className="k">Unique locations</div><div className="v" style={{ color: "var(--blue)" }}>{res.unique_locations}</div></div>
@@ -889,7 +914,7 @@ function BatchView() {
                 {golden && (
                   <div className="golden">
                     <span>
-                      golden record · agreed from {golden.member_count ?? members.length} records
+                      golden record — one clean merged address · agreed from {golden.member_count ?? members.length} records
                       {golden.contested_fields?.length
                         ? ` · contested: ${golden.contested_fields.join(", ")}` : ""}
                     </span>

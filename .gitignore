@@ -7,3 +7,5 @@ node_modules/
 .next/
 server/raw_cache.json
 server/api_keys.json
+server/geo_cache.json
+server/parse_cache.json

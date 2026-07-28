@@ -8,6 +8,7 @@ of an Indian address on the floor.
 
 import json
 import re
+import time
 from dataclasses import asdict, dataclass, field
 
 from . import sarvam
@@ -209,7 +210,46 @@ def _score(d: dict) -> tuple[float, list[str]]:
     return round(total, 3), missing
 
 
-def parse(raw: str) -> ParsedAddress:
+# --- successful-parse cache -------------------------------------------
+# Sarvam intermittently returns empty completions (measured: ~2 in 6 on a
+# repeated address, uncorrelated with temperature). Retrying helps but cannot
+# guarantee a live demo. Caching by raw string means any address parses at
+# most once: the second call is instant AND cannot fail. Only successes are
+# cached, so a failure is always retried rather than memoised.
+import os as _os
+
+_PCACHE_FILE = _os.path.join(_os.path.dirname(_os.path.dirname(
+    _os.path.abspath(__file__))), "parse_cache.json")
+_PCACHE_LOCK = __import__("threading").Lock()
+
+
+def _pcache_load() -> dict:
+    try:
+        with open(_PCACHE_FILE) as fh:
+            return json.load(fh)
+    except (FileNotFoundError, json.JSONDecodeError):
+        return {}
+
+
+_PCACHE: dict = _pcache_load()
+
+
+def _pcache_put(key: str, value: dict) -> None:
+    with _PCACHE_LOCK:
+        _PCACHE[key] = value
+        try:
+            tmp = _PCACHE_FILE + ".tmp"
+            with open(tmp, "w") as fh:
+                json.dump(_PCACHE, fh, ensure_ascii=False)
+            _os.replace(tmp, _PCACHE_FILE)
+        except OSError:
+            pass                      # read-only disk: stay in-memory
+
+
+def parse(raw: str, use_cache: bool = True) -> ParsedAddress:
+    key = " ".join(raw.split()).lower()
+    if use_cache and key in _PCACHE:
+        return ParsedAddress(**_PCACHE[key])
     out = ParsedAddress(raw=raw)
 
     try:
@@ -219,18 +259,27 @@ def parse(raw: str) -> ParsedAddress:
     except Exception:
         pass  # LID is advisory; the LLM transliterates regardless
 
+    # Empty completions are the dominant failure here, and they CLUSTER: at
+    # temperature 0 the sampler is deterministic, so a prompt that returns
+    # empty once returns empty every retry. Measured 1-in-3 end-to-end failures
+    # on a demo pair before this. So never sample greedily, escalate the
+    # temperature each attempt (a different sample is the whole point of a
+    # retry), and give the upstream a moment between tries.
     data, last_err = None, None
-    for attempt in range(3):  # empty completions happen; retry before giving up
+    _TEMPS = (0.1, 0.2, 0.35, 0.55, 0.8)
+    for attempt, temp in enumerate(_TEMPS):
         try:
             text = sarvam.chat(
                 [{"role": "system", "content": SYSTEM},
                  {"role": "user", "content": raw}],
-                temperature=0.0 if attempt == 0 else 0.3,
+                temperature=temp,
             )
             data = _extract_json(text)
             break
         except Exception as exc:
             last_err = f"{type(exc).__name__}: {exc}"
+            if attempt < len(_TEMPS) - 1:
+                time.sleep(0.4 * (attempt + 1))
     if data is None:
         out.error = last_err
         return out
@@ -250,6 +299,8 @@ def parse(raw: str) -> ParsedAddress:
         out.pincode = digits if len(digits) == 6 else None
 
     out.completeness, out.missing = _score(out.as_dict())
+    if not out.error:
+        _pcache_put(key, out.as_dict())
     return out
 
 
