@@ -31,11 +31,13 @@ app = FastAPI(title="Lattice", description="Indian Address Intelligence")
 import hashlib                                                # noqa: E402
 import hmac as hmac_mod                                       # noqa: E402
 import secrets                                                # noqa: E402
+import time as _t                                             # noqa: E402
 import threading                                              # noqa: E402
 from dotenv import load_dotenv                                # noqa: E402
 load_dotenv()
 _MASTER_KEY = (os.getenv("LATTICE_API_KEY") or "").strip().strip('"').strip("'")
-_OPEN_PATHS = {"/health", "/docs", "/openapi.json", "/redoc", "/keys"}
+_OPEN_PATHS = {"/health", "/docs", "/openapi.json", "/redoc", "/keys",
+                "/signup", "/stats"}
 _KEYS_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), "api_keys.json")
 _KEYS_LOCK = threading.Lock()
 _RAND_LEN, _SIG_LEN = 12, 20
@@ -80,6 +82,23 @@ def _save_keys() -> None:
             json.dump(_KEYS, fh, indent=1)
     except OSError:
         pass                        # read-only disk: auditing is best-effort
+
+
+@app.middleware("http")
+async def _meter(request: Request, call_next):
+    resp = await call_next(request)
+    p = request.url.path
+    if (request.method != "OPTIONS" and resp.status_code < 400
+            and p not in ("/health", "/stats", "/docs", "/openapi.json", "/signup")
+            and not p.startswith("/examples")):
+        k = (request.headers.get("x-api-key") or request.query_params.get("key") or "")
+        if k:
+            try:
+                from server import users as _u
+                _u.record_call(k[:13])
+            except Exception:
+                pass
+    return resp
 
 
 @app.middleware("http")
@@ -577,6 +596,47 @@ def api_pincode(pin: str):
     return {"pincode": pin, "exists": True,
             "state": entry["state"], "district": entry["district"],
             "areas": entry["areas"]}
+
+
+# ---------------------------------------------------------------- signups
+# Traction ledger: who asked for a key, and who actually used it. Kept above
+# Neon's appended section per tasklist.md convention.  -- Argon
+from server import users as userstore                       # noqa: E402
+
+USERS_BACKEND = userstore.init()
+
+
+class SignupIn(BaseModel):
+    email: str = Field(min_length=5, max_length=120)
+    name: str = Field(default="", max_length=80)
+    company: str = Field(default="", max_length=80)
+    use_case: str = Field(default="", max_length=200)
+
+
+@app.post("/signup")
+def api_signup(body: SignupIn):
+    """Self-service: email in, working API key out. Shown once."""
+    email = body.email.strip().lower()
+    if "@" not in email or "." not in email.split("@")[-1]:
+        raise HTTPException(status_code=422, detail="a valid email is required")
+    key = _mint_key()
+    rec = userstore.add_signup(email, body.name.strip(), body.company.strip(),
+                               body.use_case.strip(), key)
+    if rec.get("returning") and rec.get("api_key"):
+        key = rec["api_key"]            # same email -> same key, not a new one
+    with _KEYS_LOCK:
+        _KEYS[key[:9] + "\u2026" + key[-4:]] = {
+            "name": body.name.strip() or email, "created": _t.strftime("%Y-%m-%dT%H:%M:%S")}
+        _save_keys()
+    return {"api_key": key, "email": email, "returning": rec.get("returning", False),
+            "usage": "send header 'X-API-Key: <key>' (or ?key=<key>)",
+            "docs": "/docs", "quickstart": "/examples"}
+
+
+@app.get("/stats")
+def api_stats():
+    """Public traction counters. Signups are interest; calls are use."""
+    return {**userstore.stats(), "storage": USERS_BACKEND}
 
 
 # ======================================================================

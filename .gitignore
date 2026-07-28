@@ -8,4 +8,7 @@ node_modules/
 server/raw_cache.json
 server/api_keys.json
 server/geo_cache.json
-server/parse_cache.json
+
+# Google OAuth client secret — never commit
+client_secret_*.json
+.env.local
