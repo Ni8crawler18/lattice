@@ -1073,12 +1073,6 @@ const MCP_REMOTE_JSON = `{
     }
   }
 }`;
-
-const MCP_LOCAL_CMD = `claude mcp add lattice \
-  --env LATTICE_API={api} \
-  --env LATTICE_KEY=ltk_your-key \
-  -- python -m server.lattice_mcp`;
-
 /* The docs render the static copies shipped with the build
    (lib/exampleSnippets.js, generated from examples/*). Deliberately NOT
    fetched live from GET /examples/{name}: the deployed API can lag the repo
@@ -1795,7 +1789,7 @@ function McpView() {
       <div className="block">
         <div className="block-head">
           <h3>Tools an agent can call</h3>
-          <span className="right">the same seven, whichever transport you use</span>
+          <span className="right">verified live against {"{api}"}/mcp</span>
         </div>
         {MCP_TOOLS.map(([name, desc]) => (
           <div key={name} className="brow" style={{ gridTemplateColumns: "180px 1fr" }}>
@@ -1803,22 +1797,6 @@ function McpView() {
             <div style={{ fontSize: 12.5, color: "var(--muted)" }}>{desc}</div>
           </div>
         ))}
-      </div>
-
-      <div className="block">
-        <div className="block-head">
-          <h3>Running it locally instead</h3>
-          <span className="right">stdio · needs a clone of the repo</span>
-        </div>
-        <div className="block-body">
-          <p style={{ fontSize: 13.5, color: "var(--ink-2)", maxWidth: "64ch", marginBottom: 14 }}>
-            Only worth it if you are developing against a local API. It is the
-            same server process either way &mdash;
-            <span style={{ fontFamily: "var(--mono)" }}> server/lattice_mcp.py</span> &mdash;
-            just spoken over stdio rather than HTTP.
-          </p>
-          <div className="curlbox"><pre>{MCP_LOCAL_CMD.replace("{api}", api)}</pre></div>
-        </div>
       </div>
 
       <div className="note">
