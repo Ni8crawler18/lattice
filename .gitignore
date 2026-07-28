@@ -15,3 +15,8 @@ client_secret_*.json
 
 # local traction ledger fallback — holds real emails; production uses Postgres
 server/users.json
+
+# runtime parse cache — keyed on raw address text, so it accumulates whatever
+# anyone types. Never commit it; parsed_cache.json (the seed-set cache eval.py
+# needs) is the only address cache that belongs in the repo.
+server/parse_cache.json

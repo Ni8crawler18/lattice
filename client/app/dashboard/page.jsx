@@ -1608,230 +1608,138 @@ function KeysView() {
   );
 }
 
-/* ------------------------- resolve (2 or many) -------------------------- */
-
-/* Compare and Deduplicate ask the SAME question -- "is this the same physical
-   door?" -- at n=2 and n>2. One tab, one toggle: two separate tabs implied two
-   capabilities where there is one. */
-function ResolveView() {
-  const [mode, setMode] = useState("pair");
-  return (
-    <div className="view">
-      <div className="segbar">
-        <button className={`seg${mode === "pair" ? " on" : ""}`} onClick={() => setMode("pair")}>
-          Two addresses
-        </button>
-        <button className={`seg${mode === "list" ? " on" : ""}`} onClick={() => setMode("list")}>
-          A whole list
-        </button>
-        <span className="seghint">
-          {mode === "pair"
-            ? "one pair, with the per-signal evidence behind the verdict"
-            : "many records collapsed into the distinct doors they describe"}
-        </span>
-      </div>
-      {mode === "pair" ? <Resolve /> : <BatchView />}
-    </div>
-  );
-}
-
-/* ----------------------------- golden record ---------------------------- */
-
-const GOLDEN_DEMO = [
-  "Flat 402, B Wing, Shivneri Apts, Ganesh mandir ke peeche, Kothrud, Pune 411038",
-  "402 B-wing, Shivneri Apartments, behind Ganesh Temple, Kothrud, Pune - 411 038",
-  "B-402 Shivneri, opp SBI ATM, Kothrud, Pune 411038",
-].join("\n");
-
-/* Distinct from Resolve on purpose. Resolve answers WHICH records are the same
-   door; this answers what the ONE correct record is once you know -- majority
-   vote per field, and an explicit list of the fields the sources disagree on.
-   That disagreement is the output a data steward actually acts on. */
-function GoldenView() {
-  const [text, setText] = useState(GOLDEN_DEMO);
+function Deliver() {
+  const [text, setText] = useState("");
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState("");
   const [res, setRes] = useState(null);
 
   const run = async () => {
-    const lines = text.split("\n").map((l) => l.trim()).filter(Boolean);
-    if (lines.length < 2) { setErr("Give at least two records to merge."); return; }
-    setBusy(true); setErr(""); setRes(null);
-    try { setRes(await batchAddresses(lines)); }
-    catch (e) { setErr(`Could not merge these: ${e.message}`); }
-    finally { setBusy(false); }
-  };
-
-  return (
-    <>
-      <div className="block">
-        <div className="block-head">
-          <h3>Records describing the same place</h3>
-          <span className="right">one per line &middot; duplicates welcome</span>
-        </div>
-        <div className="block-body">
-          <p style={{ fontSize: 13.5, color: "var(--ink-2)", maxWidth: "64ch", marginBottom: 14 }}>
-            Three records for one house, each written differently. This picks
-            the <b>one</b> version to keep: every field goes to a majority vote,
-            and anything the records disagree on is flagged instead of quietly
-            overwritten.
-          </p>
-          <textarea rows={5} value={text} onChange={(e) => setText(e.target.value)}
-                    spellCheck={false} style={{ width: "100%" }} />
-          <div className="row" style={{ marginTop: 12 }}>
-            <button className="btn" onClick={run} disabled={busy}>
-              {busy ? "Merging…" : "Merge into one record"}
-            </button>
-          </div>
-          {err && <div className="error" style={{ marginTop: 12 }}>{err}</div>}
-        </div>
-      </div>
-
-      {res?.golden_records?.map((g) => (
-        <div className="block" key={g.cluster}>
-          <div className="block-head">
-            <h3>Merged record &middot; group {g.cluster}</h3>
-            <span className="right">merged from {g.members?.length ?? 0} record(s)</span>
-          </div>
-          <div className="block-body">
-            {g.canonical_text && (
-              <div className="keybox" style={{ marginBottom: 16 }}>
-                <code>{g.canonical_text}</code>
-              </div>
-            )}
-            <div style={{ overflowX: "auto" }}>
-              <table>
-                <thead><tr><th>Field</th><th>Agreed value</th><th>Agreement</th><th>Status</th></tr></thead>
-                <tbody>
-                  {Object.entries(g.provenance || {}).map(([field, pv]) => (
-                    <tr key={field}>
-                      <td style={{ color: "var(--muted)" }}>{field.replace(/_/g, " ")}</td>
-                      <td className="mono">
-                        {typeof pv.value === "string" ? pv.value : JSON.stringify(pv.value)}
-                      </td>
-                      <td className="mono" style={{ fontSize: 12 }}>{pv.agreement}</td>
-                      <td>
-                        <span className={`band ${pv.contested ? "medium" : "low"}`}>
-                          {pv.contested ? "contested" : "agreed"}
-                        </span>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </div>
-        </div>
-      ))}
-
-      {res && (
-        <div className="note">
-          <b>Contested</b> means the sources disagreed and a winner was chosen by
-          vote — those are the fields worth a human glance before this record
-          overwrites anything in your system.
-        </div>
-      )}
-    </>
-  );
-}
-
-/* -------------------------------- match --------------------------------- */
-
-/* Distinct from Resolve: Resolve works within the records you hand it, this
-   one retrieves against a corpus already held -- the "has this customer written
-   in before, under any spelling?" question that arrives one record at a time. */
-function MatchView() {
-  const [addr, setAddr] = useState("NEAR BUS STAND, MEGHA MART, WARD NO 11, KATANGI");
-  const [busy, setBusy] = useState(false);
-  const [err, setErr] = useState("");
-  const [res, setRes] = useState(null);
-
-  const run = async () => {
-    if (addr.trim().length < 3) { setErr("Type an address to look up."); return; }
+    const addr = text.trim();
+    if (addr.length < 3) { setErr("Type an address first."); return; }
     setBusy(true); setErr(""); setRes(null);
     try {
-      const r = await fetch(proxyBase() + "/match", {
-        method: "POST", headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ address: addr.trim(), top_k: 5 }),
-      });
-      if (!r.ok) throw new Error(`HTTP ${r.status}`);
-      setRes(await r.json());
-    } catch (e) { setErr(`Lookup failed: ${e.message}`); }
+      const d = await parseAddress(addr);
+      if (!d.deliverability) throw new Error("no score returned");
+      setRes({ raw: addr, parsed: d, s: d.deliverability });
+    } catch (e) { setErr(`Could not score that: ${e.message}`); }
     finally { setBusy(false); }
   };
 
+  const s = res?.s;
+
   return (
-    <>
+    <div className="view">
       <div className="block">
         <div className="block-head">
-          <h3>Look an address up against the corpus</h3>
-          <span className="right">blocked retrieval &middot; not a full scan</span>
+          <h3>Score an address before you dispatch</h3>
+          <span className="right">any script &middot; any format</span>
         </div>
         <div className="block-body">
           <p style={{ fontSize: 13.5, color: "var(--ink-2)", maxWidth: "64ch", marginBottom: 14 }}>
-            One address arrives. Is it already on file, written some other way?
-            Candidates are drawn by shared blocking keys — pincode and locality
-            tokens — so the corpus can grow without comparing against all of it.
+            Paste an address exactly as a customer typed it. You get a risk band,
+            the reasons behind it, and the single field worth asking for.
           </p>
-          <textarea rows={2} value={addr} onChange={(e) => setAddr(e.target.value)}
-                    spellCheck={false} style={{ width: "100%", fontFamily: "var(--mono)", fontSize: 12.5 }} />
-          <div className="row" style={{ marginTop: 12 }}>
+          <textarea
+            rows={3}
+            value={text}
+            onChange={(e) => setText(e.target.value)}
+            onKeyDown={(e) => { if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) run(); }}
+            placeholder="Ganesh mandir ke peeche, blue gate wala ghar, opp SBI ATM, Kothrud, Pune 411038"
+            style={{ width: "100%", fontFamily: "var(--mono)", fontSize: 12.5 }}
+          />
+          <div style={{ display: "flex", gap: 16, marginTop: 12, alignItems: "center", flexWrap: "wrap" }}>
             <button className="btn" onClick={run} disabled={busy}>
-              {busy ? "Looking up…" : "Find it"}
+              {busy ? "Scoring…" : "Score this address"}
             </button>
-            {res?.corpus && (
-              <span style={{ fontSize: 11.5, color: "var(--muted)" }}>
-                corpus: {res.corpus.records} records &middot; {res.corpus.blocking_keys} blocking keys
-              </span>
-            )}
+            <span style={{ fontSize: 11.5, color: "var(--muted)" }}>
+              first call on a cold address takes a few seconds
+            </span>
           </div>
           {err && <div className="error" style={{ marginTop: 12 }}>{err}</div>}
         </div>
       </div>
 
-      {res && (
-        <div className="block">
-          <div className="block-head">
-            <h3>{res.matches?.length ? "Already on file" : "Nothing on file"}</h3>
-            <span className="right">
-              {res.matches?.length ? `${res.matches.length} candidate(s) above threshold` : "no candidate cleared the bar"}
-            </span>
+      {s && (
+        <>
+          <div className="block statgrid three">
+            <div className="scell">
+              <div className="k">Risk band</div>
+              <div className="qtitle"><span className={`band ${s.band}`}>{s.band}</span></div>
+              <div className="d">{s.band === "high" ? "likely to fail or need a rider call"
+                : s.band === "medium" ? "deliverable, but expect friction"
+                : "enough to find the door"}</div>
+            </div>
+            <div className="scell">
+              <div className="k">Risk score</div>
+              <div className="qtitle" style={{ fontFamily: "var(--mono)" }}>{s.risk.toFixed(2)}</div>
+              <div className={`riskbar ${s.band}`} style={{ marginTop: 6 }}>
+                <div className="track"><i style={{ width: `${Math.round(s.risk * 100)}%` }} /></div>
+              </div>
+            </div>
+            <div className="scell">
+              <div className="k">Ask the customer for</div>
+              <div className="qtitle" style={{ fontSize: 14 }}>
+                {s.ask_for ? s.ask_for.label : "nothing — it is complete"}
+              </div>
+              <div className="d">
+                {s.ask_for ? `would cut risk by ${s.ask_for.risk_reduction}` : "no single field improves it"}
+              </div>
+            </div>
           </div>
-          {res.matches?.length ? (
+
+          <div className="block">
+            <div className="block-head">
+              <h3>Why</h3>
+              <span className="right">rule-based, so every point is checkable</span>
+            </div>
+            <div className="block-body">
+              <ul style={{ margin: 0, paddingLeft: 18, fontSize: 13.5, lineHeight: 1.9 }}>
+                {(s.reasons || []).map((r, i) => <li key={i}>{r}</li>)}
+                {!(s.reasons || []).length && <li>No risk signals fired on this address.</li>}
+              </ul>
+            </div>
+          </div>
+
+          <div className="block">
+            <div className="block-head">
+              <h3>What was read out of it</h3>
+              <span className="right">the fields the score is computed from</span>
+            </div>
             <div style={{ overflowX: "auto" }}>
               <table>
-                <thead><tr><th>Record on file</th><th>Verdict</th><th>Score</th><th>Why</th></tr></thead>
+                <thead><tr><th>Field</th><th>Value</th></tr></thead>
                 <tbody>
-                  {res.matches.map((m) => (
-                    <tr key={m.corpus_id}>
-                      <td style={{ maxWidth: 420 }}>
-                        <span className="mono">{m.raw}</span>
-                        {m.meta && (
-                          <div style={{ fontSize: 11, color: "var(--muted)", marginTop: 4 }}>
-                            {[m.meta.bank, m.meta.id].filter(Boolean).join(" · ")}
-                          </div>
-                        )}
-                      </td>
-                      <td><span className={`band ${m.verdict === "same" ? "low" : "medium"}`}>{m.verdict}</span></td>
-                      <td className="mono">{m.score?.toFixed(3)}</td>
-                      <td style={{ fontSize: 12, color: "var(--muted)" }}>
-                        {m.veto ? `veto: ${m.veto}`
-                          : m.matched_landmarks?.length ? `landmark: ${m.matched_landmarks.join(", ")}`
-                          : "—"}
+                  {["house_number", "building", "street", "sublocality", "locality",
+                    "city", "district", "state", "pincode"].map((f) => (
+                    <tr key={f}>
+                      <td style={{ width: 190, color: "var(--muted)" }}>{f.replace(/_/g, " ")}</td>
+                      <td className="mono">
+                        {res.parsed[f] || <span style={{ color: "var(--muted)" }}>&mdash;</span>}
                       </td>
                     </tr>
                   ))}
+                  <tr>
+                    <td style={{ color: "var(--muted)" }}>landmarks</td>
+                    <td className="mono">
+                      {(res.parsed.landmarks || []).length
+                        ? res.parsed.landmarks.map((l) => `${l.relation} ${l.name}`).join(", ")
+                        : <span style={{ color: "var(--muted)" }}>&mdash;</span>}
+                    </td>
+                  </tr>
                 </tbody>
               </table>
             </div>
-          ) : (
-            <div className="block-body" style={{ fontSize: 13.5, color: "var(--ink-2)" }}>
-              No record in the corpus resolves to this door. Treated as new.
-            </div>
-          )}
-        </div>
+          </div>
+        </>
       )}
-    </>
+
+      <div className="note">
+        Rule-based on purpose &mdash; an ops team can&apos;t action a black-box number.
+        Every score names the missing field, and <b>ask-for</b> is computed by
+        re-scoring with that field filled in: the one question that most reduces risk.
+      </div>
+    </div>
   );
 }
 
@@ -2154,14 +2062,14 @@ const VIEWS = {
   // Compare/Deduplicate merged because both asked "same door?" at different n.
   parse: { title: "Extract", icon: I.parse, stage: null,
            sub: "turn one messy address into clean, labelled fields" },
-  resolve: { title: "Find duplicates", icon: I.resolve, stage: null,
-             sub: "do these point at the same door? two records, or a whole list" },
-  golden: { title: "Merge duplicates", icon: I.batch, stage: null,
-            sub: "combine them into one correct record, disagreements flagged" },
-  match: { title: "Look up", icon: I.digipin, stage: null,
-           sub: "is this address already in your records, written another way?" },
-  digipin: { title: "Group on map", icon: I.digipin, stage: null,
-             sub: "bucket addresses into DIGIPIN cells — one cell, one delivery run" },
+  resolve: { title: "Compare", icon: I.resolve, stage: null,
+             sub: "do these two addresses point at the same door?" },
+  batch: { title: "Find duplicates", icon: I.batch, stage: null,
+           sub: "upload a list, get one clean record per real location" },
+  deliver: { title: "Score", icon: I.deliver, stage: null,
+             sub: "how likely is this to fail, and what should you ask for?" },
+  digipin: { title: "Group by DIGIPIN", icon: I.digipin, stage: null,
+             sub: "bucket addresses into map cells — one cell, one delivery run" },
   rest: { title: "REST API", icon: I.rest, stage: null,
           sub: "one call: address in, structured JSON out" },
   stt: { title: "Speech → JSON", icon: I.mic, stage: null,
@@ -2176,7 +2084,7 @@ const VIEWS = {
           sub: "how to get a key, call the API, and send audio" },
 };
 const INTEGRATE_KEYS = ["rest", "stt", "mcp", "keys", "usage", "docs"];
-const FLOW_KEYS = ["parse", "resolve", "golden", "match", "digipin"];
+const FLOW_KEYS = ["parse", "resolve", "batch", "deliver", "digipin"];
 
 export default function Page() {
   const { data: session } = useSession();
@@ -2245,9 +2153,9 @@ export default function Page() {
         </div>
         <div className="content">
           {view === "parse" && <ParseView />}
-          {view === "resolve" && <ResolveView />}
-          {view === "golden" && <div className="view"><GoldenView /></div>}
-          {view === "match" && <div className="view"><MatchView /></div>}
+          {view === "resolve" && <Resolve />}
+          {view === "batch" && <BatchView />}
+          {view === "deliver" && <Deliver />}
           {view === "digipin" && <div className="view"><GroupByDigipin /></div>}
           {view === "rest" && <RestApiView go={setView} />}
           {view === "stt" && <SttView />}

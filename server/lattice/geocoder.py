@@ -167,6 +167,20 @@ def geocode(text: str) -> dict | None:
         if hit:
             base = _precision(hit.get("place_rank"), hit.get("addresstype"))
             precision, verified = _verified_precision(base, q, hit.get("display_name", ""))
+            # Cap by how much of the input we had to throw away to get a hit.
+            # _verified_precision compares the result against the query that
+            # SUCCEEDED, so once the door-level prefix has been dropped it only
+            # ever checks that "Kothrud" is Kothrud -- and passes. That let two
+            # different doors in one locality come back as separate street-level
+            # fixes at identical coordinates, which is exactly the confident-
+            # wrong-precision failure this module exists to prevent.
+            # i == 0 means the full string resolved; anything else means the
+            # specific part was discarded, so this is a locality centroid at
+            # best, and the bare-pincode rung is coarser still.
+            if i > 0:
+                cap = "city-level" if re.fullmatch(r"\d{6}, India", q) else "locality-level"
+                precision = _ORDER[min(_ORDER.index(precision), _ORDER.index(cap))]
+                verified = False
             return {
                 "latitude": float(hit["lat"]),
                 "longitude": float(hit["lon"]),
