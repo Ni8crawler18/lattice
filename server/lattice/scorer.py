@@ -71,14 +71,24 @@ def score(p: dict) -> dict:
     # --- pincode directory checks ---------------------------------------
     # Only for well-formed pins: _ask_for probes with "placeholder", which must
     # not trip a directory miss and distort the risk-reduction estimate.
+    # A directory miss is not one more penalty to add up -- it is disqualifying.
+    # The resolver already works this way (hard vetoes cap the score); the scorer
+    # needs the mirror image, a FLOOR. An address whose pincode does not exist
+    # cannot be sorted, however complete the rest of it looks: house number,
+    # street and locality do not help a sorting machine that has no such bin.
+    # Without this floor a fully-specified address on a fictional pin scored
+    # 0.21 "low risk" while its own reasons said routing would fail.
+    floor = 0.0
     if has_pincode and re.fullmatch(r"\d{6}", str(p["pincode"] or "")):
         v = pincode_dir.validate(p)
         if v.get("exists") is False:
             risk += 0.15
-            reasons.append(f"Pincode {p['pincode']} does not exist in the postal "
-                           "directory — routing will fail at sorting.")
+            floor = max(floor, 0.70)
+            reasons.insert(0, f"Pincode {p['pincode']} does not exist in the postal "
+                              "directory — routing will fail at sorting.")
         elif v.get("conflicts"):
             risk += 0.12
+            floor = max(floor, 0.45)
             reasons.extend(v["conflicts"])
 
     # --- structural signals from the raw string ------------------------
@@ -113,7 +123,7 @@ def score(p: dict) -> dict:
         risk = 1.0
         reasons = ["Address could not be parsed."]
 
-    risk = round(min(1.0, risk), 3)
+    risk = round(min(1.0, max(risk, floor)), 3)
     band = "high" if risk >= 0.55 else "medium" if risk >= 0.28 else "low"
 
     return {
@@ -139,11 +149,24 @@ _ASK = [
 ]
 
 
+def _pin_is_bad(p: dict) -> bool:
+    """True when a well-formed pincode is not in the postal directory."""
+    pin = str(p.get("pincode") or "")
+    if not re.fullmatch(r"\d{6}", pin):
+        return False
+    return pincode_dir.validate(p).get("exists") is False
+
+
 def _ask_for(p: dict, risk: float) -> dict | None:
     if risk < 0.28:
         return None
     for key, label, why in _ASK:
         present = bool(p.get(key))
+        # A pincode that is present but absent from the directory is worse than
+        # a missing one, and previously could never be asked for -- the loop
+        # only ever offered fields that were blank.
+        if key == "pincode" and present and _pin_is_bad(p):
+            present = False
         if not present:
             # Estimate the gain by re-scoring with the field filled in.
             probe = dict(p)
