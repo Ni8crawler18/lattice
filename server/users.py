@@ -166,7 +166,12 @@ def add_key(email: str, api_key: str, label: str = "") -> dict:
 
 
 def list_keys(email: str) -> list:
-    """Every key this account minted. Scoped by email, always."""
+    """Every key this account minted, with what each one has actually done.
+
+    Usage is metered on the first 13 characters of the key (see the _meter
+    middleware in app.py), so the join is on that prefix rather than on the
+    whole value. Keys that were never used simply report zero -- absence from
+    the usage table is not an error."""
     email = (email or "").strip().lower()
     if not email:
         return []
@@ -174,16 +179,27 @@ def list_keys(email: str) -> list:
         try:
             with _conn() as c, c.cursor() as cur:
                 cur.execute(
-                    """SELECT id, label, api_key, revoked, created_at
-                       FROM api_keys WHERE email = %s AND NOT revoked
-                       ORDER BY id""", (email,))
+                    """SELECT k.id, k.label, k.api_key, k.revoked, k.created_at,
+                              COALESCE(u.calls, 0), u.last_seen
+                       FROM api_keys k
+                       LEFT JOIN usage u ON u.key_prefix = LEFT(k.api_key, 13)
+                       WHERE k.email = %s AND NOT k.revoked
+                       ORDER BY k.id""", (email,))
                 return [{"id": r[0], "label": r[1], "api_key": r[2],
-                         "revoked": r[3], "created_at": r[4].isoformat()}
+                         "revoked": r[3], "created_at": r[4].isoformat(),
+                         "calls": int(r[5]),
+                         "last_seen": r[6].isoformat() if r[6] else None}
                         for r in cur.fetchall()]
         except Exception:
             pass
-    return [k for k in _load()["keys"]
-            if k["email"] == email and not k.get("revoked")]
+    usage = _load().get("usage", {})
+    out = []
+    for k in _load()["keys"]:
+        if k["email"] != email or k.get("revoked"):
+            continue
+        out.append({**k, "calls": int(usage.get(k["api_key"][:13], 0)),
+                    "last_seen": None})
+    return out
 
 
 def revoke_key(email: str, key_id: int) -> bool:

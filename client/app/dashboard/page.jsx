@@ -1060,17 +1060,24 @@ const MCP_TOOLS = [
   ["digipin_decode", "DIGIPIN code → cell centre and bounds."],
 ];
 
-const MCP_CONFIG = `{
+const MCP_REMOTE_CMD = `claude mcp add --transport http lattice \
+  {api}/mcp \
+  --header "X-API-Key: ltk_your-key"`;
+
+const MCP_REMOTE_JSON = `{
   "mcpServers": {
     "lattice": {
-      "type": "stdio",
-      "command": "python",
-      "args": ["-m", "server.lattice_mcp"],
-      "env": { "LATTICE_API": "https://your-lattice-api",
-               "LATTICE_KEY": "ltk_your-key" }
+      "type": "http",
+      "url": "{api}/mcp",
+      "headers": { "X-API-Key": "ltk_your-key" }
     }
   }
 }`;
+
+const MCP_LOCAL_CMD = `claude mcp add lattice \
+  --env LATTICE_API={api} \
+  --env LATTICE_KEY=ltk_your-key \
+  -- python -m server.lattice_mcp`;
 
 /* The docs render the static copies shipped with the build
    (lib/exampleSnippets.js, generated from examples/*). Deliberately NOT
@@ -1602,6 +1609,17 @@ function KeysView() {
   };
 
   const mask = (k) => `${k.slice(0, 12)}${"•".repeat(12)}${k.slice(-4)}`;
+  const totalCalls = (keys || []).reduce((n, k) => n + (k.calls || 0), 0);
+  // Usage is metered per key, so "never used" is a real and useful state --
+  // it is usually a key someone generated and then lost.
+  const ago = (iso) => {
+    if (!iso) return null;
+    const mins = Math.floor((Date.now() - new Date(iso).getTime()) / 60000);
+    if (mins < 1) return "just now";
+    if (mins < 60) return `${mins}m ago`;
+    if (mins < 1440) return `${Math.floor(mins / 60)}h ago`;
+    return `${Math.floor(mins / 1440)}d ago`;
+  };
 
   return (
     <div className="view">
@@ -1617,9 +1635,11 @@ function KeysView() {
           <div className="d">An HTTP header on every request</div>
         </div>
         <div className="scell">
-          <div className="k">Scope</div>
-          <div className="qtitle" style={{ fontSize: 14 }}>Every endpoint</div>
-          <div className="d">Parse, resolve, dedupe, score, voice, DIGIPIN, MCP</div>
+          <div className="k">Calls made</div>
+          <div className="v">{keys === null ? "\u2014" : totalCalls.toLocaleString()}</div>
+          <div className="d">
+            {keys === null ? "loading" : `across ${keys.length} key${keys.length === 1 ? "" : "s"} on this account`}
+          </div>
         </div>
       </div>
 
@@ -1680,14 +1700,14 @@ function KeysView() {
         <div style={{ overflowX: "auto" }}>
           <table>
             <thead>
-              <tr><th>Name</th><th>Key</th><th>Created</th><th /></tr>
+              <tr><th>Name</th><th>Key</th><th>Calls</th><th>Last used</th><th>Created</th><th /></tr>
             </thead>
             <tbody>
               {keys === null && (
-                <tr><td colSpan={4} style={{ color: "var(--muted)" }}>Loading&hellip;</td></tr>
+                <tr><td colSpan={6} style={{ color: "var(--muted)" }}>Loading&hellip;</td></tr>
               )}
               {keys?.length === 0 && (
-                <tr><td colSpan={4} style={{ color: "var(--muted)" }}>
+                <tr><td colSpan={6} style={{ color: "var(--muted)" }}>
                   No keys yet &mdash; generate one above.
                 </td></tr>
               )}
@@ -1696,6 +1716,12 @@ function KeysView() {
                   <td style={{ fontWeight: 600 }}>{k.label}</td>
                   <td>
                     <span className="mono" style={{ fontSize: 11.5 }}>{mask(k.api_key)}</span>
+                  </td>
+                  <td className="mono" style={{ fontSize: 12.5, fontVariantNumeric: "tabular-nums" }}>
+                    {(k.calls || 0).toLocaleString()}
+                  </td>
+                  <td style={{ fontSize: 12, color: "var(--muted)" }}>
+                    {ago(k.last_seen) || (k.calls ? "\u2014" : "never used")}
                   </td>
                   <td style={{ fontSize: 12, color: "var(--muted)" }}>
                     {(k.created_at || "").slice(0, 10)}
@@ -1712,7 +1738,9 @@ function KeysView() {
       </div>
 
       <div className="note">
-        A key is shown in full once, when you generate it — copy it then, because
+        Usage is counted per key, which is what makes a key worth naming: a
+        key with calls is in something, a key that says <b>never used</b> is
+        safe to revoke. A key is shown in full once, when you generate it — copy it then, because
         this list only ever shows a masked prefix. Lost one? Generate another and
         revoke the old. Signing in with a different Google account shows that
         account&apos;s keys and nothing else.
@@ -1722,57 +1750,74 @@ function KeysView() {
 }
 
 function McpView() {
+  const api = apiBase();
   return (
     <div className="view">
-      <div className="block statgrid two">
+      <div className="block statgrid three">
         <div className="scell">
-          <div className="k">MCP tools</div>
+          <div className="k">Tools</div>
           <div className="v" style={{ color: "var(--blue)" }}>7</div>
-          <div className="d">parse · resolve · dedupe · match · validate</div>
+          <div className="d">extract · compare · dedupe · match · validate · DIGIPIN</div>
         </div>
         <div className="scell">
           <div className="k">Transport</div>
-          <div className="v" style={{ fontSize: 22, paddingTop: 4 }}>stdio</div>
-          <div className="d">works against local or deployed API</div>
+          <div className="v" style={{ fontSize: 22, paddingTop: 4 }}>HTTP</div>
+          <div className="d">hosted — nothing to install, nothing to clone</div>
+        </div>
+        <div className="scell">
+          <div className="k">Auth</div>
+          <div className="qtitle" style={{ fontFamily: "var(--mono)", fontSize: 13 }}>X-API-Key</div>
+          <div className="d">your own key, sent as a header</div>
         </div>
       </div>
 
-      <div className="duo">
-        <div className="block">
-          <div className="block-head">
-            <h3>Tools an agent can call</h3>
-            <span className="right">server/lattice_mcp.py</span>
-          </div>
-          {MCP_TOOLS.map(([name, desc]) => (
-            <div key={name} className="brow" style={{ gridTemplateColumns: "170px 1fr" }}>
-              <div className="name" style={{ fontFamily: "var(--mono)", fontSize: 12.5 }}>{name}</div>
-              <div style={{ fontSize: 12.5, color: "var(--muted)" }}>{desc}</div>
-            </div>
-          ))}
+      <div className="block">
+        <div className="block-head">
+          <h3>Add it to your agent</h3>
+          <span className="right">one command, no checkout</span>
         </div>
-
-        <div style={{ display: "grid", gap: 16, alignContent: "start" }}>
-          <div className="block">
-            <div className="block-head"><h3>Register — one command</h3></div>
-            <div className="block-body">
-              <pre style={{ margin: 0, fontFamily: "var(--mono)", fontSize: 11.5, lineHeight: 1.7,
-                            color: "var(--ink-2)", overflowX: "auto" }}>
-{`claude mcp add lattice \
-  --env LATTICE_API=<api-url> \
-  --env LATTICE_KEY=<ltk_key> \
-  -- python -m server.lattice_mcp`}
-              </pre>
-              <div style={{ fontSize: 11.5, color: "var(--muted)", marginTop: 10 }}>
-                or via <span style={{ fontFamily: "var(--mono)" }}>.mcp.json</span>, checked into this repo:
-              </div>
-              <pre style={{ margin: "8px 0 0", fontFamily: "var(--mono)", fontSize: 10.5, lineHeight: 1.65,
-                            color: "var(--ink-2)", overflowX: "auto", background: "var(--canvas)",
-                            border: "1px solid var(--line)", padding: "10px 13px" }}>
-{MCP_CONFIG}
-              </pre>
-            </div>
+        <div className="block-body">
+          <p style={{ fontSize: 13.5, color: "var(--ink-2)", maxWidth: "64ch", marginBottom: 14 }}>
+            Lattice is served as a hosted MCP server, so an agent connects to it
+            over HTTP the way it would any other remote tool. Generate a key
+            under <b>API keys</b>, drop it into the header, and the seven tools
+            below appear in your agent&apos;s toolbox.
+          </p>
+          <div className="curlbox"><pre>{MCP_REMOTE_CMD.replace("{api}", api)}</pre></div>
+          <div style={{ fontSize: 11.5, color: "var(--muted)", margin: "14px 0 8px" }}>
+            Or, for a client that reads a config file — Claude Desktop, Cursor,
+            or a checked-in <span style={{ fontFamily: "var(--mono)" }}>.mcp.json</span>:
           </div>
+          <div className="curlbox"><pre>{MCP_REMOTE_JSON.replace("{api}", api)}</pre></div>
+        </div>
+      </div>
 
+      <div className="block">
+        <div className="block-head">
+          <h3>Tools an agent can call</h3>
+          <span className="right">the same seven, whichever transport you use</span>
+        </div>
+        {MCP_TOOLS.map(([name, desc]) => (
+          <div key={name} className="brow" style={{ gridTemplateColumns: "180px 1fr" }}>
+            <div className="name" style={{ fontFamily: "var(--mono)", fontSize: 12.5 }}>{name}</div>
+            <div style={{ fontSize: 12.5, color: "var(--muted)" }}>{desc}</div>
+          </div>
+        ))}
+      </div>
+
+      <div className="block">
+        <div className="block-head">
+          <h3>Running it locally instead</h3>
+          <span className="right">stdio · needs a clone of the repo</span>
+        </div>
+        <div className="block-body">
+          <p style={{ fontSize: 13.5, color: "var(--ink-2)", maxWidth: "64ch", marginBottom: 14 }}>
+            Only worth it if you are developing against a local API. It is the
+            same server process either way &mdash;
+            <span style={{ fontFamily: "var(--mono)" }}> server/lattice_mcp.py</span> &mdash;
+            just spoken over stdio rather than HTTP.
+          </p>
+          <div className="curlbox"><pre>{MCP_LOCAL_CMD.replace("{api}", api)}</pre></div>
         </div>
       </div>
 

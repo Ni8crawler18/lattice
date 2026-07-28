@@ -804,7 +804,7 @@ def api_job_results(job_id: str, format: str = "json"):
 # Remote MCP: the same 7 tools, served over streamable HTTP at {api}/mcp.
 # No local checkout needed -- register with just the URL and an API key:
 #   claude mcp add --transport http lattice \
-#     https://lattice-api-96cn.onrender.com/mcp \
+#     https://lattice-api-fs5f.onrender.com/mcp \
 #     --header "X-API-Key: <ltk_key>"
 # The existing key middleware guards /mcp like any other endpoint; the MCP
 # tools then call this same server over loopback with the master key.
