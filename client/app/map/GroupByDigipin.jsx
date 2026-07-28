@@ -34,6 +34,13 @@ ord-5, 4P3-JM4-M295
 ord-6, 4P3-JM4-M675
 ord-7, 4FP-4CK-6L8L`;
 
+/* Addresses for the geocode path. Deliberately mixed: the first two resolve to
+   street level, the third only to its locality -- so the precision column shows
+   two different truncations rather than a uniform, flattering one. */
+const ADDR_DEMO = `Shivneri Apartments, Kothrud, Pune 411038
+Connaught Place, New Delhi 110001
+Ganesh mandir ke peeche, Kothrud, Pune 411038`;
+
 const DIGIPIN_RE = /^[23456789CFJKLMPT]{10}$/i;
 
 function parseLines(text) {
@@ -58,6 +65,9 @@ function parseLines(text) {
 
 export default function GroupByDigipin() {
   const [text, setText] = useState(DEMO);
+  const [addrText, setAddrText] = useState(ADDR_DEMO);
+  const [addrBusy, setAddrBusy] = useState(null);   // "3/7" while running
+  const [addrNote, setAddrNote] = useState(null);
   const [level, setLevel] = useState(6);
   const [result, setResult] = useState(null);
   const [error, setError] = useState(null);
@@ -186,6 +196,53 @@ export default function GroupByDigipin() {
     }
   }
 
+  /* Addresses -> DIGIPIN, one call each through the geocoder adapter.
+     Sequential on purpose: the geocoder is OSM Nominatim, which rate-limits,
+     and a burst here drops otherwise-good addresses to a coarser fallback.
+
+     We write `digipin_at_precision`, never the full 10-symbol code. A locality
+     fix is a ~1 km cell; emitting all ten symbols would claim a 4 m square the
+     geocoder never earned, which is the exact failure this product exists to
+     avoid. The precision mix is reported so the coarse ones stay visible. */
+  async function fromAddresses() {
+    setError(null);
+    setAddrNote(null);
+    const lines = addrText.split("\n").map((l) => l.trim()).filter(Boolean);
+    if (!lines.length) { setError("No addresses to convert."); return; }
+
+    const out = [];
+    const precision = {};
+    const failed = [];
+    for (let i = 0; i < lines.length; i++) {
+      setAddrBusy(`${i + 1}/${lines.length}`);
+      // "id | address" if a pipe is given, else auto-numbered -- addresses are
+      // full of commas, so a comma cannot delimit the id here.
+      const bar = lines[i].indexOf("|");
+      const id = bar > -1 ? lines[i].slice(0, bar).trim() : `addr-${i + 1}`;
+      const address = bar > -1 ? lines[i].slice(bar + 1).trim() : lines[i];
+      try {
+        const r = await post("/digipin/from-address", { address });
+        const prec = r.geocoder?.precision || "unknown";
+        precision[prec] = (precision[prec] || 0) + 1;
+        out.push(`${id}, ${r.digipin_at_precision}`);
+      } catch {
+        failed.push(id);
+      }
+    }
+    setAddrBusy(null);
+    if (out.length) {
+      setText(out.join("\n"));
+      setResult(null);
+    }
+    const mix = Object.entries(precision)
+      .map(([k, n]) => `${n} ${k.replace("-level", "")}`).join(", ");
+    setAddrNote(
+      `${out.length} geocoded (${mix}). Codes are truncated to the precision each ` +
+      `address earned — a locality fix is a ~1 km cell, not a 4 m one.` +
+      (failed.length ? ` ${failed.length} not found: ${failed.join(", ")}.` : ""),
+    );
+  }
+
   /* Import a CSV/TXT: one point per line, `id, lat, lon` or `id, DIGIPIN`.
      Read client-side into the textarea -- nothing uploads until Group. */
   function importFile(e) {
@@ -224,15 +281,37 @@ export default function GroupByDigipin() {
         .dgmap td.cellcode { font-family: ui-monospace, monospace; }
         .dgmap .err { color: #b3261e; font-size: 13.5px; margin-top: 10px; }
         .dgmap .rej { font-size: 12.5px; opacity: 0.75; margin-top: 8px; }
+        .dgmap .addrbox { border: 1px solid #d0d0cc; border-radius: 10px; padding: 14px 16px; margin-bottom: 18px; }
+        .dgmap .addrbox label { display: block; font-size: 11px; font-weight: 700; letter-spacing: 0.07em;
+          text-transform: uppercase; opacity: 0.6; margin-bottom: 8px; }
+        .dgmap .addrbox textarea { min-height: 0; }
+        .dgmap .hint { font-size: 12px; opacity: 0.7; }
       `}</style>
 
       <p className="note">
         Buckets points into DIGIPIN grid cells — one cell, one delivery batch. Paste or
         import your own points (<code>id, DIGIPIN</code> or <code>id, lat, lon</code>, one
         per line); any valid DIGIPIN works, and lat/lon lines can be converted to codes
-        with the button below. Lattice does not geocode text addresses, so an address
-        string has no place on this map until a geocoder is in the loop.
+        with the button below. Text addresses work too — they go through the geocoder
+        adapter, and each code is truncated to the precision that address actually
+        earned rather than padded out to a 4 m cell.
       </p>
+
+      <div className="addrbox">
+        <label htmlFor="dg-addr">Start from addresses</label>
+        <textarea id="dg-addr" value={addrText} onChange={(e) => setAddrText(e.target.value)}
+          spellCheck={false} rows={3}
+          aria-label="One address per line, optionally prefixed with an id and a pipe" />
+        <div className="row">
+          <button className="go" onClick={fromAddresses} disabled={!!addrBusy || busy}>
+            {addrBusy ? `Geocoding ${addrBusy}…` : "Addresses \u2192 DIGIPIN"}
+          </button>
+          <span className="hint">
+            one per line &middot; <code>id | address</code> to name them
+          </span>
+        </div>
+        {addrNote && <div className="rej">{addrNote}</div>}
+      </div>
 
       <div className="panel">
         <div>
