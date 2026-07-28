@@ -698,3 +698,94 @@ input::placeholder { color: var(--muted); }
 
 /* generic flex row -- referenced widely, was never defined (buttons sat flush against hint text) */
 .row { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+
+/* ================= narrow screens ================= */
+/* The console is a laptop tool, but the demo link gets opened on a phone more
+   often than not — so nothing may be unreachable there, only tighter. */
+
+/* Request/Response panes sat side by side at every width, which on a phone
+   meant two ~180px columns of monospace. Stack them instead. */
+@media (max-width: 900px) {
+  .duo { grid-template-columns: 1fr; }
+  .duo .block + .block { margin-left: 0; margin-top: -1px; }
+  .codepane { height: 300px; }
+}
+
+/* Sign out lived in .side-foot, which the 880px rule hid outright — leaving
+   no way to sign out on a phone. Keep the button, drop the name and email
+   (the top-right chip already carries identity). */
+@media (max-width: 880px) {
+  .side-foot { display: flex; align-items: center; margin-top: 0; margin-left: auto; padding: 0 4px; }
+  .side-foot .whoami { display: none; }
+  .signout { white-space: nowrap; }
+}
+
+/* Tables already scroll horizontally; give them back some width by trimming
+   the generous desktop gutters. */
+@media (max-width: 700px) {
+  th, td { padding: 11px 14px; }
+  .content { padding: 20px 16px 40px; }
+  .block-body { padding: 16px 16px; }
+  .block-head { padding: 13px 16px; }
+  .scell { padding: 15px 16px; }
+  .brow { padding: 12px 16px; }
+}
+
+/* Buttons and their inputs wrap rather than overflow the viewport. */
+@media (max-width: 560px) {
+  .row > .btn, .row > input { width: 100%; }
+  .btn { padding: 0 18px; }
+}
+
+/* ================= mobile polish ================= */
+
+/* Sidebar-as-strip (≤880): items keep the column layout's width:100% and can
+   wrap their labels mid-word — as a horizontal strip each item hugs its label. */
+@media (max-width: 880px) {
+  .side .nav-item { width: auto; flex: none; white-space: nowrap; }
+  .side .brand { flex: none; padding-bottom: 6px; }
+}
+
+/* Phones: .brow rows carry fixed multi-column grids as inline styles
+   (e.g. "160px 1fr 90px 110px" on the Usage per-key table) which exceed a
+   360px viewport. Stack the cells; !important because the widths and right
+   alignment arrive inline. */
+@media (max-width: 560px) {
+  .brow { grid-template-columns: 1fr !important; gap: 4px; }
+  .brow > * { text-align: left !important; }
+}
+
+/* Landing + console rhythm on phones: same structure, tighter gutters. */
+@media (max-width: 560px) {
+  .lwrap { padding: 0 20px; }
+  .lnav-in { padding: 13px 20px; gap: 16px; }
+  .lhero { padding: 64px 0 52px; }
+  .lhero-in { gap: 36px; }
+  .lsec { padding: 60px 0; }
+  .lmetrics { gap: 24px; }
+  .lterm pre { font-size: 11px; padding: 14px; }
+  .topbar { padding: 12px 16px; }
+}
+
+/* ---- segmented toggle: two scales of one question, not two features ---- */
+.segbar {
+  display: flex; align-items: center; gap: 0;
+  background: var(--card); border: 1px solid var(--line);
+  padding: 10px 14px; margin-bottom: -1px; flex-wrap: wrap;
+}
+.seg {
+  height: 30px; padding: 0 14px; border: 1px solid var(--line-2);
+  background: var(--card); color: var(--ink-2);
+  font-size: 12.5px; font-weight: 600; cursor: pointer; border-radius: 0;
+}
+.seg + .seg { border-left: none; }
+.seg.on { background: var(--navy); border-color: var(--navy); color: #fff; }
+.seghint { margin-left: 14px; font-size: 11.5px; color: var(--muted); }
+@media (max-width: 620px) { .seghint { margin-left: 0; margin-top: 8px; flex-basis: 100%; } }
+
+/* Dashboard on phones: full-length keys (ltk_…, 36 mono chars) and other
+   unbroken mono strings must wrap inside their cells, not push the layout. */
+@media (max-width: 560px) {
+  code, .scell .qtitle, .whoami em { word-break: break-all; }
+  .userchip span { max-width: 90px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+}
